@@ -1,0 +1,50 @@
+{
+  "feature_matrix_row": {
+    "product": "string",
+    "unit_of_analysis": ["article", "claim", "citation", "argument-graph"],
+    "claim_decomposition": ["none", "manual", "automatic"],
+    "evidence_quality_metadata": ["none", "source-level", "study-level"],
+    "verdict_behavior": ["issues-verdicts", "rates-sources-only", "transparency-only"],
+    "symmetric_contrasting_evidence": ["yes", "no"],
+    "persistent_knowledge_reuse": ["none", "cache", "structured-KB-with-provenance", "dependency-tracked-KB"],
+    "interactivity": ["static", "inspectable-drilldown"],
+    "coverage_domain": ["news", "scientific-literature", "political-claims", "general"],
+    "automation_level": ["human", "hybrid", "fully-automated"],
+    "access_model": ["free", "freemium", "API", "institutional"],
+    "cell_provenance": "REQUIRED per cell: {source_url, access_date, confidence: verified|inferred|marketing-claim}"
+  },
+  "literature_row": {
+    "paper": "string (authors, year, venue)",
+    "bucket": [
+      "entailment-trees-backward-chaining",
+      "claim-decomposition-factuality",
+      "fact-verification-benchmarks",
+      "discourse-decomposition",
+      "belief-updating",
+      "knowledge-substrate"
+    ],
+    "task_formulation": "string",
+    "method_summary": "string (<=3 sentences)",
+    "metrics_and_best_numbers": "string",
+    "dataset": "string",
+    "not_handled_relative_to_verity": "string (explicit gap statement)",
+    "source_url": "string",
+    "access_date": "string"
+  },
+  "hypotheses": {
+    "H1": "No consumer product auto-decomposes claims into premises with per-premise evidence",
+    "H2": "scite has no argument-structure layer above citations",
+    "H3": "No checker offers symmetric transparency-only inspection as core product",
+    "H4": "No standard benchmark exists for claim-to-premise decomposition quality",
+    "H5": "Debunkbot line not productized as self-serve tool",
+    "H6": "No system combines argument-structure decomposition (vs discourse/atomic) with evidence-quality metadata",
+    "H7": "No product does dependency-propagated invalidation (retraction flags downstream claims)"
+  },
+  "hypothesis_verdict_format": {
+    "hypothesis_id": "H1-H7",
+    "verdict": ["survives", "dies", "weakened"],
+    "strongest_counterexample": "string or null",
+    "required_pivot_if_dead": "string or null",
+    "phrasing_note": "Negative claims phrased as 'none found as of Aug 2026'"
+  }
+}
