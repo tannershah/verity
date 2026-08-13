@@ -94,3 +94,5 @@
 {"url":"https://arxiv.org/abs/2509.18403","access_date":"2026-08-13","confidence":"inferred","cited_by":[],"verify_before_proposal":true}
 {"url":"https://www.crossref.org/documentation/retrieve-metadata/retraction-watch/","access_date":"2026-08-13","confidence":"verified","cited_by":[],"verify_before_proposal":false}
 {"url":"https://arxiv.org/abs/2604.22864","access_date":"2026-08-13","confidence":"verified","cited_by":[],"verify_before_proposal":false}
+{"url":"https://www.technologyreview.com/2025/10","access_date":"2026-08-13","confidence":"verified","cited_by":["H5-prime"],"verify_before_proposal":false,"note":"MIT Technology Review piece by DebunkBot authors announcing debunkbot.com consumer deployment, Oct 2025"}
+{"url":"https://debunkbot.com","access_date":"2026-08-13","confidence":"verified","cited_by":["H5-prime"],"verify_before_proposal":false,"note":"DebunkBot self-serve consumer deployment, live as of Aug 13 2026; also demoed at MIT Museum; kills H5 as stated"}

@@ -89,14 +89,16 @@ H4a: EntailmentBank's four dimensions are the standard, and the method line is m
 ```json
 {
   "hypothesis_id": "H5",
-  "verdict": "survives",
-  "strongest_counterexample": null,
-  "required_pivot_if_dead": null,
-  "phrasing_note": "None found as of Aug 2026: the line exists only as research deployments, never as a self-serve product."
+  "verdict": "dies",
+  "strongest_counterexample": "debunkbot.com: a publicly deployed, self-serve consumer product by the DebunkBot authors, confirmed live Aug 13 2026. Also publicly demonstrated at MIT Museum. Authors announced the deployment in MIT Technology Review, Oct 2025.",
+  "required_pivot_if_dead": "H5' = 'The belief-updating line is productized only as persuasion — verdict-shaped counterarguments — not as self-serve symmetric inspection; none found as of Aug 2026.' ADOPTED.",
+  "phrasing_note": "H5 as stated is dead. All downstream copy must use H5'. Detection note: H5 was originally marked 'survives (moderate confidence)' because neither deep-research run queried for consumer deployments; a targeted post-synthesis search found debunkbot.com."
 }
 ```
 
-Adjudicated from the matrix: none of the 24 product rows is a dialogue-based belief-updating tool, and the entire DebunkBot line appears only as literature — the original RCT (lit-020, N=2,190), the mechanism preprint (lit-021, N≈1,297), the perceived-human replication (lit-022, N=955) — plus report B's Area 5 mentions of study-setting extensions (e.g., the Hou et al. Nat. Med. 2025 HPV-vaccine chatbot RCT; skipped from the matrix for lack of extractable detail per EXTRACTION_NOTES). Confidence is moderate rather than high: neither report ran a dedicated search for consumer debunking chatbots, so H5 survives on absence across two broad sweeps rather than a targeted one.
+H5 dies: debunkbot.com is a live, self-serve consumer deployment of the DebunkBot line, confirmed via the authors' MIT Technology Review piece (Oct 2025) and the site itself (accessed Aug 13 2026). A public MIT Museum demo corroborates deployment. The original pass 3 adjudication assigned moderate confidence precisely because neither deep-research run included a targeted consumer-deployment query; the correction came from a post-synthesis search.
+
+Pivot H5′ survives: the belief-updating line's product form is persuasion — a verdict-shaped AI that argues back against the user's stated belief. debunkbot.com delivers counterarguments, not symmetric evidence inspection. No product found as of Aug 2026 that deploys the belief-updating paradigm as a transparency-only, no-verdict, symmetric evidence map (the posture Verity takes). The roadmap note in §3.4 stands: adapt belief-updating to measure discernment/calibration rather than persuasion, since Verity deliberately does not persuade (lit-023).
 
 ### H6 — No system combines argument-structure decomposition with evidence-quality metadata
 
