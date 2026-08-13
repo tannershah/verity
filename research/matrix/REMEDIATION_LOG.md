@@ -91,3 +91,85 @@ See `research/STRESS_SEARCH.md` §D (written after URL fetch, 2026-08-13).
 ## E. Targeted source verification
 
 See `research/STRESS_SEARCH.md` §E (written after URL fetch, 2026-08-13).
+
+---
+
+# REMEDIATION_LOG.md — Pass 4.6
+
+**Date:** 2026-08-13
+**Pass:** 4.6 — Escalation rulings (Tanner)
+**Rule:** Every edit logged here with file, row/section, before → after, and escalation resolved.
+
+---
+
+## F. H4b verdict refinement (SYNTHESIS.md + literature.jsonl)
+
+### F.1 — H4b phrasing_note refined
+**File:** `research/SYNTHESIS.md`, §1 H4 verdict — H4b JSON object
+**Escalation resolved:** Zhang et al. 2025 (CACDD) ruled to test atomic-claim identification only (Chinese/WebCPM), not joint sufficiency / load-bearing entailment structure; FactLens (Mitra et al., ACL Findings 2025) likewise tests fine-grained sub-claim verification, not entailment-preserving decomposition. H4b remains proxy-only.
+
+**Before:**
+> `"phrasing_note": "None found as of Aug 2026: no gold standard exists; measurement is proxy-only (DecompScore, entailment coverage, verifier-confidence deltas)."`
+
+**After:**
+> `"phrasing_note": "Proxy-only for entailment-structured decomposition faithfulness; gold benchmarks exist only for atomic-claim identification (CACDD, Zhang et al. 2025, Chinese/WebCPM; cf. FactLens, Mitra et al., ACL Findings 2025, fine-grained sub-claim verification). Neither tests joint sufficiency / load-bearing structure. None found for entailment-preserving decomposition as of Aug 2026."`
+
+---
+
+### F.2 — H4b escalation text resolved
+**File:** `research/SYNTHESIS.md`, §1 H4 — paragraph following the JSON array
+**Escalation resolved:** same as F.1.
+
+**Before:**
+> "H4b targeted search performed 2026-08-13: one ESCALATE (Zhang et al. 2025, "A Claim Decomposition Benchmark for Long-Form Answer Verification," SpringerLink) — Tanner to determine whether it tests entailment-preservation of decompositions or only downstream verification accuracy; verdict on hold."
+
+**After:**
+> "H4b targeted search performed 2026-08-13: CACDD (Zhang et al. 2025, "A Claim Decomposition Benchmark for Long-Form Answer Verification," SpringerLink, doi:10.1007/978-981-96-1710-4_4) tests atomic-claim identification in Chinese/WebCPM context only; FactLens (Mitra et al., ACL Findings 2025, aclanthology.org/2025.findings-acl.929) tests fine-grained sub-claim verification. Neither tests joint sufficiency or load-bearing entailment structure. Ruling (pass 4.6): proxy-only; both added to literature.jsonl as lit-029 and lit-030, bucket claim-decomposition-factuality."
+
+---
+
+### F.3 — lit-029 (CACDD) added to literature.jsonl
+**File:** `research/matrix/literature.jsonl`
+**Row added:** `lit-029` — Zhang et al. (2025), CACDD, SpringerLink/CCKS 2024, doi:10.1007/978-981-96-1710-4_4, arxiv.org/pdf/2410.12558
+**Bucket:** claim-decomposition-factuality
+**not_handled field:** states CACDD tests atomic-claim identification only; neither CACDD nor FactLens tests joint sufficiency / load-bearing entailment structure; confirms proxy-only for H4b.
+
+---
+
+### F.4 — lit-030 (FactLens) added to literature.jsonl
+**File:** `research/matrix/literature.jsonl`
+**Row added:** `lit-030` — Mitra et al. (2025), FactLens, ACL Findings 2025, aclanthology.org/2025.findings-acl.929
+**Bucket:** claim-decomposition-factuality
+**not_handled field:** states FactLens tests fine-grained sub-claim verification only; sub-claims are independent units, not load-bearing premises; confirms proxy-only for H4b.
+
+---
+
+## G. product-024 access_model correction (products.jsonl)
+
+### G.1 — RedacTek access_model set from 'institutional' to 'freemium', confidence verified
+**File:** `research/matrix/products.jsonl`, row `product-024`
+**Escalation resolved:** Doody's review confirms individual subscription ~$3/mo as primary access model; not institutional-only. 'subscription' is not a schema enum value; 'freemium' is the closest available enum.
+
+**Before:**
+- `access_model`: "institutional"
+- `provenance.access_model.confidence`: "inferred"
+- extraction_note: "access_model ESCALATED (Doody's review shows $3/mo individual subscription as primary model, not institutional-only)"
+
+**After:**
+- `access_model`: "freemium"
+- `provenance.access_model.confidence`: "verified"
+- extraction_note: "access_model set to 'freemium' (closest enum; Doody's review confirms individual subscription ~$3/mo as primary model, confidence verified; 'subscription' not in schema enum)"
+
+---
+
+## H. Nature Index URL attribution fix (products.jsonl)
+
+### H.1 — Nature Index URL moved from product-024 to product-020 extraction_note
+**File:** `research/matrix/products.jsonl`, rows `product-020` and `product-024`
+**Escalation resolved:** Nature Index article (nature.com/nature-index/news/new-bot-flags-scientific-research-studies-that-cite-retracted-papers) describes scite Reference Check (product-020), not RedacTek (product-024). URL was removed from product-024 provenance in pass 4.5; now added to product-020 extraction_note as corroborating provenance for automation_level.
+
+**product-020 extraction_note — appended:**
+> "Automation_level corroborated by Nature Index article (nature.com/nature-index/news/new-bot-flags-scientific-research-studies-that-cite-retracted-papers; describes scite Reference Check's primary-citation flagging, consistent with 'direct-status only' characterization; moved from product-024 provenance per pass 4.6)."
+
+**product-024 extraction_note — updated:**
+> "...moved to product-020 extraction_note per pass 4.6. See STRESS_SEARCH.md §D. Single-source row (Doody's only)."

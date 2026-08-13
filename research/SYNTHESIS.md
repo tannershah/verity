@@ -74,7 +74,7 @@ One verdict cannot represent H4 honestly; the evidence splits three ways (report
     "verdict": "survives",
     "strongest_counterexample": null,
     "required_pivot_if_dead": null,
-    "phrasing_note": "None found as of Aug 2026: no gold standard exists; measurement is proxy-only (DecompScore, entailment coverage, verifier-confidence deltas)."
+    "phrasing_note": "Proxy-only for entailment-structured decomposition faithfulness; gold benchmarks exist only for atomic-claim identification (CACDD, Zhang et al. 2025, Chinese/WebCPM; cf. FactLens, Mitra et al., ACL Findings 2025, fine-grained sub-claim verification). Neither tests joint sufficiency / load-bearing structure. None found for entailment-preserving decomposition as of Aug 2026."
   },
   {
     "hypothesis_id": "H4c — decomposition of CONTESTED real-world claims",
@@ -86,7 +86,7 @@ One verdict cannot represent H4 honestly; the evidence splits three ways (report
 ]
 ```
 
-H4b targeted search performed 2026-08-13: one ESCALATE (Zhang et al. 2025, "A Claim Decomposition Benchmark for Long-Form Answer Verification," SpringerLink) — Tanner to determine whether it tests entailment-preservation of decompositions or only downstream verification accuracy; verdict on hold.
+H4b targeted search performed 2026-08-13: CACDD (Zhang et al. 2025, "A Claim Decomposition Benchmark for Long-Form Answer Verification," SpringerLink, doi:10.1007/978-981-96-1710-4_4) tests atomic-claim identification in Chinese/WebCPM context only; FactLens (Mitra et al., ACL Findings 2025, aclanthology.org/2025.findings-acl.929) tests fine-grained sub-claim verification. Neither tests joint sufficiency or load-bearing entailment structure. Ruling (pass 4.6): proxy-only; both added to literature.jsonl as lit-029 and lit-030, bucket claim-decomposition-factuality.
 H4c targeted existence search performed 2026-08-13; no counterexample found.
 
 H4a: EntailmentBank's four dimensions are the standard, and the method line is mature — NLProofS (lit-005) raised Task 2 Overall-AllCorrect 20.9% → 33.3% and Leaves-AllCorrect 35.6% → 58.8% with a verifier-guided search. H4b: Wanner et al. (lit-013) showed FActScore is sensitive to the decomposition method itself and introduced DecompScore precisely because no gold standard exists; DnDScore (lit-014) confirms factuality scores are unstable across decomposition/decontextualization strategies. H4c: no benchmark decomposes contested claims into premise structures — AVeriTeC's Conflicting/Cherry-picking label (lit-017) is the closest analog and is itself the field's worst-performing class (near-zero F1 for most systems, <7% of training data).
