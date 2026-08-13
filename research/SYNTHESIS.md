@@ -156,7 +156,7 @@ Adopts report B's Bucket 1/2/3 evaluation-status map, compressed to proposal-rea
 | Criterion (v0 spec) | Meaning | Concrete eval | Anchors |
 |---|---|---|---|
 | Joint sufficiency | premises jointly entail the claim | EntailmentBank Steps / Overall-AllCorrect metrics on generated trees + an NLProofS-style learned verifier scoring every step (also used as an inference-time gate) | lit-001, lit-005 |
-| Verifiability descent | each premise strictly easier to verify; guarantees termination | termination tests against the alethiology: % of branches grounding in a KB fact within a depth budget; mean/max depth; non-terminating-branch rate (NELLIE's ground-or-recurse pattern is the model) | lit-009 |
+| Verifiability descent | each premise strictly easier to verify; termination enforced by depth budget; grounding rate, depth, and budget-exit rate measured and reported. | termination tests against the alethiology: % of branches grounding in a KB fact within a depth budget; mean/max depth; non-terminating-branch rate (NELLIE's ground-or-recurse pattern is the model) | lit-009 |
 | Non-redundancy | every premise load-bearing | leave-one-out entailment ablation: removing any single premise must drop verifier entailment confidence below threshold; a premise whose removal doesn't is redundant | lit-013; report B Stage 2 (verifier-confidence deltas) |
 
 ### 3.2 Bucket 1 — established benchmarks (run first; report comparable numbers)

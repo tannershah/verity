@@ -173,3 +173,55 @@ See `research/STRESS_SEARCH.md` §E (written after URL fetch, 2026-08-13).
 
 **product-024 extraction_note — updated:**
 > "...moved to product-020 extraction_note per pass 4.6. See STRESS_SEARCH.md §D. Single-source row (Doody's only)."
+
+---
+
+# REMEDIATION_LOG.md — Pass 5
+
+**Date:** 2026-08-13
+**Pass:** 5 — Application drafting; Task 0 copy fixes required by the red team before drafting.
+
+---
+
+## I. "guarantees termination" replaced repo-wide (red team 1c adoption requirement)
+
+### I.1 — SYNTHESIS.md §3.1 verifiability-descent row
+**File:** `research/SYNTHESIS.md`, §3.1 table, "Verifiability descent" row, Meaning column
+**Red-team finding answered:** 1c (termination is enforced, not guaranteed; the same row's own eval defines a non-terminating-branch rate) via the adoption requirement stated at the end of §3 of the red team.
+
+**Before:**
+> "each premise strictly easier to verify; guarantees termination"
+
+**After:**
+> "each premise strictly easier to verify; termination enforced by depth budget; grounding rate, depth, and budget-exit rate measured and reported."
+
+### I.2 — CLAUDE.md decomposition validity criteria
+**File:** `.claude/CLAUDE.md`, "Decomposition validity criteria (v0 spec + eval)" paragraph
+**Red-team finding answered:** same as I.1.
+
+**Before:**
+> "verifiability descent (guarantees termination)"
+
+**After:**
+> "verifiability descent (termination enforced by depth budget; grounding rate, depth, and budget-exit rate measured and reported)"
+
+### I.3 — Occurrences intentionally left unchanged
+The four remaining occurrences of "guarantees termination" in `research/SYNTHESIS.md` (red-team section, findings 1c and the §3 adoption note) are the red team *quoting* the flawed phrase in order to criticize it. Rewriting them would falsify the review record; they are left as-is. No occurrence exists anywhere else in the repo (verified by grep, 2026-08-13).
+
+---
+
+## J. Bibliographic verification of residual citation debts (pass 5; web access per pass5 prompt)
+
+All four residual debts verified 2026-08-13; `literature.jsonl` rows updated (source_url + derivation only, plus one page-number correction). No verdict or content-field changes.
+
+### J.1 — lit-015 (FEVER)
+Verified via aclanthology.org/N18-1074: Thorne, Vlachos, Christodoulopoulos & Mittal (2018), NAACL-HLT 2018 Volume 1 (Long Papers), pp. 809–819, doi:10.18653/v1/N18-1074. `source_url` set from `research/raw/report_b.md` to the ACL Anthology page. Confirms the EXTRACTION_NOTES suspicion: the sources_a.md "(FEVER)" label on aclanthology.org/2020.emnlp-main.609 was a mislabeling (that URL is SciFact, EMNLP 2020).
+
+### J.2 — lit-022 (Boissin et al.)
+Verified via Oxford Academic: PNAS Nexus 4(11):pgaf325, Nov 2025, doi:10.1093/pnasnexus/pgaf325; authors Boissin, Costello, Spinoza-Martín, Rand & Pennycook — the matrix row's citation string was already exactly correct. `source_url` set to the DOI.
+
+### J.3 — lit-026 (Doyle 1979, JTMS)
+Verified: Artificial Intelligence 12(3):231–272, doi:10.1016/0004-3702(79)90008-0. `source_url` set to the DOI.
+
+### J.4 — lit-027 (de Kleer 1986, ATMS) — page-number correction
+Verified via ACM DL journal record: "An assumption-based TMS," Artificial Intelligence 28(2):**127–162**, doi:10.1016/0004-3702(86)90080-9. The row's prior span 127–262 conflated the three-paper ATMS series with the ATMS paper proper; `paper` field corrected. DOI replaces the 403-walled academia.edu URL, as recommended in STRESS_SEARCH.md §E.

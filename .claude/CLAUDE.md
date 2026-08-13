@@ -14,7 +14,8 @@ transparency-only treatment: surface evidence and critiques on all sides, never
 issue a verdict. Do not draft copy or code that violates this.
 
 **Decomposition validity criteria (v0 spec + eval):** joint sufficiency
-(entailment), verifiability descent (guarantees termination), non-redundancy
+(entailment), verifiability descent (termination enforced by depth budget;
+grounding rate, depth, and budget-exit rate measured and reported), non-redundancy
 (every premise load-bearing: removing it breaks the entailment).
 
 ## Deadline & deliverables
