@@ -8,7 +8,7 @@ The project is a continuation of work I've already done. In CIS 5190 I built a p
 
 The attached work sample was produced under Verity's own evidentiary standards. The extraction schema was frozen before any evidence was reviewed; every matrix cell carries provenance; an independent red-team pass killed two of my seven differentiation hypotheses; and every surviving negative claim sits behind a targeted existence search. The pipeline demonstrates the product's epistemics.
 
-The work also sits naturally at Penn: its evaluation plan borrows its LLM-annotation validation template from the Media Bias Detector (Watts's group) and the Hopkins-coauthored discourse-decomposition line it already cites.
+The work also sits naturally at Penn: its evaluation plan borrows the LLM-annotation validation template of the Media Bias Detector (Watts's group), and its scoping engages the Hopkins-coauthored discourse-decomposition line directly.
 
 Verity's whitespace claim is narrow and documented, its hardest open questions are named in the proposal rather than papered over, and an eight-day build plan takes it to a working prototype. I'd like to build and test it in the studio.
 
