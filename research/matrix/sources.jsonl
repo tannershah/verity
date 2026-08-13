@@ -62,7 +62,7 @@
 {"url":"https://github.com/ebmdatalab/retractobot","access_date":"2026-08-13","confidence":"inferred","cited_by":["product-022"],"verify_before_proposal":false}
 {"url":"https://retractioncheck.com","access_date":"2026-08-13","confidence":"inferred","cited_by":["product-023"],"verify_before_proposal":false}
 {"url":"https://crossref.org/blog/retraction-watch-retractions-now-in-the-crossref-api","access_date":"2026-08-13","confidence":"verified","cited_by":["product-023","product-021"],"verify_before_proposal":false}
-{"url":"https://dcdm.doody.com/2025/10/a-review-of-redactek","access_date":"2026-08-13","confidence":"inferred","cited_by":["product-024"],"verify_before_proposal":true}
+{"url":"https://dcdm.doody.com/2025/10/a-review-of-redactek","access_date":"2026-08-13","confidence":"verified","cited_by":["product-024"],"verify_before_proposal":false,"verified_note":"Confirmed 2026-08-13 via Doody's CDMR review: paper-level three-generation propagation confirmed; no claim-level invalidation; claim_decomposition/verdict_behavior/persistent_knowledge_reuse/automation_level all verified. access_model ESCALATED (individual subscription primary, not institutional-only). See STRESS_SEARCH.md §D."}
 {"url":"https://doi.org/10.1007/978-3-031-72437-4_7","access_date":"2026-08-13","confidence":"verified","cited_by":["product-024"],"verify_before_proposal":false}
 {"url":"https://arxiv.org/abs/2104.08661","access_date":"2026-08-13","confidence":"verified","cited_by":["lit-001"],"verify_before_proposal":false}
 {"url":"https://aclanthology.org/2021.emnlp-main.585/","access_date":"2026-08-13","confidence":"verified","cited_by":["lit-001"],"verify_before_proposal":false}
@@ -79,8 +79,8 @@
 {"url":"https://arxiv.org/abs/2412.13175","access_date":"2026-08-13","confidence":"verified","cited_by":["lit-014"],"verify_before_proposal":false}
 {"url":"https://doi.org/10.1126/science.adq1814","access_date":"2026-08-13","confidence":"verified","cited_by":["lit-020"],"verify_before_proposal":false}
 {"url":"https://doi.org/10.31234/osf.io/h7n8u","access_date":"2026-08-13","confidence":"verified","cited_by":["lit-021"],"verify_before_proposal":true}
-{"url":"https://arxiv.org/abs/2510.01537","access_date":"2026-08-13","confidence":"verified","cited_by":["lit-023"],"verify_before_proposal":true}
-{"url":"https://arxiv.org/abs/2601.05050","access_date":"2026-08-13","confidence":"verified","cited_by":["lit-024"],"verify_before_proposal":true}
+{"url":"https://arxiv.org/abs/2510.01537","access_date":"2026-08-13","confidence":"verified","cited_by":["lit-023"],"verify_before_proposal":false,"verified_note":"Confirmed 2026-08-13: N=67; immediate belief shift does not transfer to lasting discernment skills (independent performance declined 15.3% by week 4). Directly supports Verity's discernment-not-persuasion endpoint."}
+{"url":"https://arxiv.org/abs/2601.05050","access_date":"2026-08-13","confidence":"verified","cited_by":["lit-024"],"verify_before_proposal":false,"verified_note":"Confirmed 2026-08-13: same LLM persuasion architecture increases conspiracy beliefs when directed at amplification; conspiracy-promoting LLMs rated as equally or more credible. Directly supports no-verdict design rationale."}
 {"url":"https://dl.acm.org/doi/10.1145/3191513","access_date":"2026-08-13","confidence":"verified","cited_by":["lit-025"],"verify_before_proposal":false}
 {"url":"https://doi.org/10.1162/qss_a_00146","access_date":"2026-08-13","confidence":"verified","cited_by":["lit-028"],"verify_before_proposal":false}
 {"url":"https://arxiv.org/abs/2504.07400","access_date":"2026-08-13","confidence":"verified","cited_by":["lit-018"],"verify_before_proposal":false}
@@ -88,10 +88,10 @@
 {"url":"https://arxiv.org/pdf/1804.05639","access_date":"2026-08-13","confidence":"inferred","cited_by":["lit-025"],"verify_before_proposal":false}
 {"url":"https://huggingface.co/datasets/rtw-cmu/nell","access_date":"2026-08-13","confidence":"verified","cited_by":["lit-025"],"verify_before_proposal":false}
 {"url":"http://rtw.ml.cmu.edu/papers/carlson-aaai10.pdf","access_date":"2026-08-13","confidence":"inferred","cited_by":["lit-025"],"verify_before_proposal":true}
-{"url":"https://www.academia.edu/16674638/An_assumption_based_TMS","access_date":"2026-08-13","confidence":"inferred","cited_by":["lit-027"],"verify_before_proposal":true}
+{"url":"https://www.academia.edu/16674638/An_assumption_based_TMS","access_date":"2026-08-13","confidence":"inferred","cited_by":["lit-027"],"verify_before_proposal":true,"escalate_note":"HTTP 403 Forbidden — authentication wall; URL inaccessible to unauthenticated fetch. De Kleer 1986 ATMS is not in scholarly doubt. Recommend replacing with journal DOI: 10.1016/0004-3702(86)90080-9 (Artificial Intelligence, 28(2):127-262). Tanner decides."}
 {"url":"https://journals.indianapolis.iu.edu/index.php/hypothesis/article/view/26528","access_date":"2026-08-13","confidence":"verified","cited_by":["lit-028"],"verify_before_proposal":false}
 {"url":"https://arxiv.org/abs/2403.13339","access_date":"2026-08-13","confidence":"verified","cited_by":[],"verify_before_proposal":false}
-{"url":"https://arxiv.org/abs/2509.18403","access_date":"2026-08-13","confidence":"inferred","cited_by":[],"verify_before_proposal":true}
+{"url":"https://arxiv.org/abs/2509.18403","access_date":"2026-08-13","confidence":"verified","cited_by":[],"verify_before_proposal":false,"verified_note":"Confirmed 2026-08-13: 'The Persistence of Retracted Papers on Wikipedia' (Shi, Yu, Romero, Horvát); 71.6% of retracted-paper citations initially problematic; median persistence 3.68 years. Directly supports §3.4 invalidation-motivation argument."}
 {"url":"https://www.crossref.org/documentation/retrieve-metadata/retraction-watch/","access_date":"2026-08-13","confidence":"verified","cited_by":[],"verify_before_proposal":false}
 {"url":"https://arxiv.org/abs/2604.22864","access_date":"2026-08-13","confidence":"verified","cited_by":[],"verify_before_proposal":false}
 {"url":"https://www.technologyreview.com/2025/10","access_date":"2026-08-13","confidence":"verified","cited_by":["H5-prime"],"verify_before_proposal":false,"note":"MIT Technology Review piece by DebunkBot authors announcing debunkbot.com consumer deployment, Oct 2025"}

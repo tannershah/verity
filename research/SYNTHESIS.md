@@ -22,6 +22,8 @@ Verdicts follow `hypothesis_verdict_format`. Surviving negative claims are phras
 }
 ```
 
+Targeted existence search performed 2026-08-13; no counterexample found.
+
 Verified against the matrix: the only rows with `claim_decomposition: automatic` are Loki (product-009), SAFE (product-010), and FActScore (product-011) — all researcher-facing tools or evaluators, all decomposing into independent atomic facts, none consumer products (report A, H1; schema gap 5 records that the consumer/professional boundary is a judgment call, per report A's own caveat). Every consumer-facing row has `claim_decomposition: none` — Ground News (product-001), PolitiFact (product-003), Factiverse (product-005), Perplexity (product-006), Originality.ai (product-007) — with Factiverse and Originality.ai doing claim *detection*, not decomposition (schema gap 6); Kialo (product-019) reaches the argument-graph level but is fully `manual`. Report A's qualified-survive verdict is confirmed, with one tension carried forward: product-009's `verdict_behavior: transparency-only` enum understates that Loki ultimately produces a verdict (gate-checked adversary qualification in the row's extraction_note), which makes Loki a weaker counterexample on the no-verdict axis than the enum alone suggests.
 
 ### H2 — scite has no argument-structure layer above citations
@@ -35,6 +37,8 @@ Verified against the matrix: the only rows with `claim_decomposition: automatic`
   "phrasing_note": "None found as of Aug 2026: scite's own feature documentation describes citation-level operation only."
 }
 ```
+
+Targeted existence search performed 2026-08-13; no counterexample found.
 
 scite.ai (product-002) and scite Reference Check (product-020) both carry `unit_of_analysis: citation` and `claim_decomposition: none`, verified against scite's primary feature pages. The full product surface — Smart Citation classification (supporting/contrasting/mentioning), Reports, Reference Check, Collections, Assistant, MCP integration — contains no premise or argument graph above the citation statement (report A, H2). Confirmed with no counterexample.
 
@@ -50,7 +54,7 @@ scite.ai (product-002) and scite Reference Check (product-020) both carry `unit_
 }
 ```
 
-The matrix kills H3 as stated: Ground News (product-001) is `verdict_behavior: transparency-only` + `symmetric_contrasting_evidence: yes` as its core product ("we keep our team's subjective opinions out of the product"), Penn MBD (product-004) is transparency-only by design ("our goal is not to adjudicate what is true"), and scite (product-002) shows symmetric supporting/contrasting citations while rating sources only. I agree with report A's "FAILS (partially)" and record it as a clean death at the stated formulation. The pivot H3' survives by enumeration: every transparency-only row sits at article, source, or citation level; the decomposed-premise-level candidates all fail it — SAFE and FActScore issue verdicts (product-010, -011), Loki is atomic-not-entailment and ultimately verdict-producing (product-009), Kialo is premise-structured and no-verdict but fully manual with no evidence layer (product-019). H3' is adopted for all downstream positioning.
+The matrix kills H3 as stated: Ground News (product-001) is `verdict_behavior: transparency-only` + `symmetric_contrasting_evidence: yes` as its core product ("we keep our team's subjective opinions out of the product"), Penn MBD (product-004) is transparency-only by design ("our goal is not to adjudicate what is true"), and scite (product-002) shows symmetric supporting/contrasting citations while rating sources only. I agree with report A's "FAILS (partially)" and record it as a clean death at the stated formulation. The pivot H3' survives by enumeration: the five transparency-only rows span article level (Ground News, product-001; Penn MBD, product-004), claim level (Perplexity, product-006; Loki, product-009), and argument-graph level (Kialo, product-019) — none at the decomposed-premise level of a composite claim. The claim-level candidates each fail H3' for independent reasons: Perplexity has no symmetric contrasting evidence and no decomposition (product-006, `symmetric_contrasting_evidence: no`, `claim_decomposition: none`, lowest-confidence row in the matrix); Loki decomposes into independent atomic facts not entailment-linked premises, and ultimately produces a verdict (product-009). The argument-graph candidate (Kialo) is fully manual with no evidence layer (product-019). SAFE and FActScore also issue verdicts (product-010, -011). H3' is adopted for all downstream positioning.
 
 ### H4 — No standard benchmark for claim-to-premise decomposition quality
 
@@ -82,6 +86,9 @@ One verdict cannot represent H4 honestly; the evidence splits three ways (report
 ]
 ```
 
+H4b targeted search performed 2026-08-13: one ESCALATE (Zhang et al. 2025, "A Claim Decomposition Benchmark for Long-Form Answer Verification," SpringerLink) — Tanner to determine whether it tests entailment-preservation of decompositions or only downstream verification accuracy; verdict on hold.
+H4c targeted existence search performed 2026-08-13; no counterexample found.
+
 H4a: EntailmentBank's four dimensions are the standard, and the method line is mature — NLProofS (lit-005) raised Task 2 Overall-AllCorrect 20.9% → 33.3% and Leaves-AllCorrect 35.6% → 58.8% with a verifier-guided search. H4b: Wanner et al. (lit-013) showed FActScore is sensitive to the decomposition method itself and introduced DecompScore precisely because no gold standard exists; DnDScore (lit-014) confirms factuality scores are unstable across decomposition/decontextualization strategies. H4c: no benchmark decomposes contested claims into premise structures — AVeriTeC's Conflicting/Cherry-picking label (lit-017) is the closest analog and is itself the field's worst-performing class (near-zero F1 for most systems, <7% of training data).
 
 ### H5 — DebunkBot line not productized as self-serve tool
@@ -112,6 +119,8 @@ Pivot H5′ survives: the belief-updating line's product form is persuasion — 
 }
 ```
 
+Targeted existence search performed 2026-08-13; no counterexample found.
+
 Report A's claim that the decomposition × study-level-metadata intersection is empty is CONFIRMED by enumeration over all 24 rows. Rows with any decomposition: Loki, SAFE, FActScore (`automatic` — all atomic-fact decomposers at `source-level` metadata or below) and Kialo (`manual` argument graphs, `evidence_quality_metadata: none`). Rows with `study-level` metadata: scite.ai, scite Reference Check, Zotero+Retraction Watch, RetractoBot, RetractionCheck, RedacTek (product-002, -020 through -024) — every one has `claim_decomposition: none`. The literature side matches: all entailment-tree systems (lit-001 through lit-009) assume leaves true with no evidence-quality metadata (per each row's not_handled field). The intersection is empty on both the product and research sides.
 
 ### H7 — No product does dependency-propagated invalidation
@@ -126,13 +135,15 @@ Report A's claim that the decomposition × study-level-metadata intersection is 
 }
 ```
 
+Targeted existence search performed 2026-08-13; no counterexample found.
+
 Verified: every shipping retraction tool in the matrix is direct-status or 1-hop — scite Reference Check ("direct-status only", product-020), Zotero+Retraction Watch ("one hop, no propagation", product-021), RetractoBot ("1-hop emails", product-022), RetractionCheck/Crossref API ("federated lookup only", product-023). RedacTek (product-024) is the strongest counterexample and the paper-level→claim-level gap is the load-bearing distinction; note its row is all-inferred from a third-party review and is a high-priority verify-before-proposal item (EXTRACTION_NOTES). The only paradigm that does true dependency-directed retraction — truth maintenance systems (JTMS lit-026, ATMS lit-027) — has never been applied to scholarly retractions (report B, Area 6b). Report A's qualified-survive verdict is confirmed.
 
 ---
 
 ## 2. Positioning statement
 
-Verity's defensible position is a conjunction, not any single feature. Automatic claim decomposition ships today (Loki, product-009; SAFE, product-010) — but into independent atomic facts, verdict-oriented, with no persistent KB. Transparency-only presentation ships today (Ground News, product-001; Penn Media Bias Detector, product-004) — but at the article/source level, never below it. Study-level evidence metadata ships today (scite, product-002: supporting/contrasting citations, retraction and editorial-concern flags) — but per citation statement, with no argument layer above it (H2). Persistent fact stores ship today (Wolfram Alpha's curated Knowledgebase, product-008; the ClaimReview fact-check cache behind Squash, product-015; AVeriTeC's knowledge store, product-014) — but none is dependency-tracked, and no shipping product propagates a retraction to the claims that depend on it (H7; nearest: RedacTek's paper-level three-generation risk scores, product-024). The cell where all four meet — recursive, entailment-structured premise decomposition + per-premise study-level evidence quality + a dependency-tracked verified-fact KB + symmetric no-verdict treatment of contested composites — is empty as of Aug 2026 (H1, H3', H6, H7). The architecturally closest research system is NELLIE (lit-009), which already does recursive backward-chaining decomposition grounded in a fact store and is missing exactly Verity's three distinctive layers: evidence-quality metadata, invalidation propagation, and no-verdict output. The closest analog to the argument graph itself is Kialo (product-019) — human-authored, no evidence retrieval, no quality metadata: the manual version of what Verity automates.
+Verity's defensible position is a conjunction, not any single feature. Automatic claim decomposition ships today (Loki, product-009; SAFE, product-010) — but into independent atomic facts, verdict-oriented, with no persistent KB. Transparency-only presentation ships today (Ground News, product-001; Penn Media Bias Detector, product-004) — but at the article/source level, never below it. Study-level evidence metadata ships today (scite, product-002: supporting/contrasting citations, retraction and editorial-concern flags) — but per citation statement, with no argument layer above it (H2). Persistent fact stores ship today (Wolfram Alpha's curated Knowledgebase, product-008; the ClaimReview fact-check cache behind Squash, product-015) — but none is dependency-tracked, and no shipping product propagates a retraction to the claims that depend on it (H7; nearest: RedacTek's paper-level three-generation risk scores, product-024). [Note: AVeriTeC's knowledge store (product-014) codes `persistent_knowledge_reuse: none` — it is a benchmark artifact, not a reusable persistent KB, and has been removed from this list per red-team finding 2.5.] The cell where all four meet — recursive, entailment-structured premise decomposition + per-premise study-level evidence quality + a dependency-tracked verified-fact KB + symmetric no-verdict treatment of contested composites — is empty as of Aug 2026 (H1, H3', H6, H7). The architecturally closest research system is NELLIE (lit-009), which already does recursive backward-chaining decomposition grounded in a fact store and is missing exactly Verity's three distinctive layers: evidence-quality metadata, invalidation propagation, and no-verdict output. The closest analog to the argument graph itself is Kialo (product-019) — human-authored, no evidence retrieval, no quality metadata: the manual version of what Verity automates.
 
 ---
 
@@ -193,7 +204,7 @@ Roadmap, not v0: human-facing no-verdict presentation quality — adapt the beli
 - **D7** — eval harness: EntailmentBank step-metric sample, leave-one-out ablation, termination stats; two demo claims (a viral statistic; a retracted-but-still-cited finding).
 - **D8** — polish; run logs + prompt-history packaging (this repo's commit and prompt history is itself a work sample).
 
-**Motivation citation (baked in).** Cite DebunkBot as motivating-but-contested: Costello et al. 2024 (lit-020) always with the June 11, 2026 Science Editorial Expression of Concern noted, paired with the PNAS Nexus 2025 perceived-human replication (lit-022) and the "Just the facts" mechanism preprint (lit-021) — the direction (evidence exposure moves beliefs) is independently corroborated; exact effect sizes are treated as upper bounds pending correction. Verity's human endpoint is discernment, not persuasion (lit-023).
+**Motivation citation (baked in).** Cite DebunkBot as motivating-but-contested: Costello et al. 2024 (lit-020) always with the June 11, 2026 Science Editorial Expression of Concern noted, paired with the PNAS Nexus 2025 perceived-human replication (lit-022, three shared authors: Costello, Rand, Pennycook) and the "Just the facts" mechanism preprint (lit-021, same authors, unreviewed) — the direction (evidence exposure moves beliefs) is corroborated by same-team replications only; no fully independent replication is in the matrix; exact effect sizes are treated as upper bounds pending correction. Verity's human endpoint is discernment, not persuasion (lit-023); the verdict boundary is further motivated by lit-024 (same machinery amplifies conspiracy beliefs when directed at persuasion, not inspection).
 
 ---
 
