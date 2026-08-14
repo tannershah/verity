@@ -171,6 +171,62 @@ Scope: flagged sources supporting claims in the proposal skeleton or the two red
 
 ---
 
+---
+
+## F. Pass 6 — H3'/H5' existence battery (committee-run)
+
+**Date:** 2026-08-13
+**Note:** This battery was run by a committee subagent because the orchestrating agent is unavailable, per Tanner's instruction. Recall was prioritized over economy: ~14 searches conducted plus targeted site fetches. Verdict and copy changes are the committee chair's to adjudicate.
+
+---
+
+### H3' — "No checker offers symmetric transparency-only inspection at the decomposed-premise level of a composite claim."
+
+**Queries (verbatim):**
+1. `symmetric claim transparency decomposed premise level inspection tool 2025 2026`
+2. `argument map evidence both sides claim breakdown AI app 2025 2026`
+3. `see both sides claim app "break down" evidence premises AI 2025`
+4. `AI debate map "both sides" argument breakdown evidence sources app Product Hunt 2025`
+5. `"argument mapping" OR "deliberation" tool AI automated evidence quality claim decompose symmetric deployed product 2025`
+6. `deliberation technology tool argument decomposition evidence quality both sides public 2025 2026`
+
+| # | Candidate | URL | Judgment | Reason |
+|---|---|---|---|---|
+| 1 | Consensus (consensus.app) | consensus.app | NOT-A-COUNTEREXAMPLE | Renders a yes/no/possibly/mixed stance distribution over papers for an atomically treated question; no decomposition of the input claim into load-bearing premises. Operates at the atomic-claim level only, not the decomposed-premise level. |
+| 2 | The Society Library | societylibrary.org | NEAR-MISS-FORCES-QUALIFIER | Multi-level argument maps linking claims, evidence, and 20+ logical relationships across contested topics — structurally the closest match to decomposed symmetric inspection. However: (a) maps are human-curated (not automated over a user-submitted composite claim); (b) deployment is partial — many topics listed as "Started" or "Not Yet Started" requiring funding. Forces qualifier "automated" into H3' if hypothesis is to survive. Survives with: "No automated system offers symmetric transparency-only inspection at the decomposed-premise level of a composite claim." |
+| 3 | Kialo | kialo.com | NEAR-MISS-FORCES-QUALIFIER | Fully deployed public product (32,886 debates, 798,051 claims). Organizes discussion as an interactive tree of pro and con arguments, branching hierarchically from a thesis. Users can attach links/source citations to claims. No evidence quality metadata (study design, retraction status, sample N). No AI automation — entirely user/community-driven. Renders sides symmetrically without verdict. Forces qualifier "automated" and/or "evidence-quality-metadata-attached" into H3' alongside Society Library. |
+| 4 | ARGUMEND | argumend.org | NEAR-MISS-FORCES-QUALIFIER | Publicly accessible product covering 140+ topics with AI-synthesized weighted evidence, confidence levels, and "both sides" presentation. Attaches study citations to specific argument nodes (e.g., named 2025 studies). However: (a) operates over pre-selected topic positions, not over a user-submitted composite claim decomposed on-the-fly; (b) evidence quality metadata (study design, retraction, sample N) is absent — citations are narrative-cited without structured metadata. Forces qualifier "user-submitted composite claim" to clarify that H3' targets on-demand decomposition of arbitrary input claims. |
+| 5 | Symbai | symbai.ai | NOT-A-COUNTEREXAMPLE | Deployed debate-training product; maps reasoning into claims, evidence, objections and assumptions. AI argues a selected position against the user (adversarial), not symmetric neutral inspection. Verdict-adjacent (practice debate tool). |
+| 6 | TruthSplit | arxiv.org/abs/2606.09251 | NOT-A-COUNTEREXAMPLE | arxiv preprint (June 2026): research system extracting claims/premises and assessing conditional validity through worldview-specific NLI. Not a deployed product. |
+
+**H3' Verdict:** No counterexample found. Three NEAR-MISS-FORCES-QUALIFIER candidates collectively force two qualifiers into the hypothesis for it to survive: (1) "automated" — Society Library and Kialo do decomposed symmetric inspection but only via human curation; (2) "of a user-submitted composite claim" — ARGUMEND does AI-automated symmetric inspection with evidence but only over its own pre-selected topic positions, not arbitrary user-submitted claims decomposed on-the-fly. Revised H3' (committee recommendation): "No automated system offers symmetric transparency-only inspection at the decomposed-premise level of a user-submitted composite claim." Tanner to adjudicate qualifier wording.
+
+---
+
+### H5' — "The belief-updating line is productized only as persuasion — verdict-shaped counterarguments — not as self-serve symmetric inspection."
+
+**Queries (verbatim):**
+1. `belief updating self-serve inspection symmetric AI product 2026`
+2. `street epistemology chatbot AI app productized 2025 2026`
+3. `AI help examine your beliefs Socratic questioning app critical thinking 2025 2026`
+4. `reflective thinking coach AI belief examination app product 2025 2026`
+5. `Socratic AI app "examine your beliefs" misinformation reflection product launch 2024 2025`
+6. `"open mind" OR "mindset" OR "epistemics" AI app belief examination self-serve product 2024 2025 productized`
+7. `productized Socratic questioning conspiracy belief reflection app iOS Android 2024 2025`
+
+| # | Candidate | URL | Judgment | Reason |
+|---|---|---|---|---|
+| 1 | debunkbot.com | debunkbot.com | NOT-A-COUNTEREXAMPLE | Confirms the hypothesis's "persuasion" pole: fine-tuned to issue "calm, cool, collected" counterarguments against the user's conspiracy belief; rated as more credible than debunking alternatives; achieved 20% belief reduction. Explicitly verdict-shaped. The pivot's origin point. |
+| 2 | Meyer et al. 2024 "street epistemologist" chatbot | misinforeview.hks.harvard.edu/article/using-an-ai-powered-street-epistemologist-chatbot-and-reflection-tasks-to-diminish-conspiracy-theory-beliefs/ | NOT-A-COUNTEREXAMPLE | Research study (HKS Misinformation Review, DOI 10.37016/mr-2020-164), N=2000+. Chatbot prompts reflection on uncertainty underlying beliefs; not a deployed self-serve product. Constrains H5' phrasing: any productized version of this paradigm (reflection, not counterargument) would be a counterexample. |
+| 3 | Belief Explorer (CHI 2026) | dl.acm.org/doi/10.1145/3772363.3799391 | NOT-A-COUNTEREXAMPLE | Research prototype evaluated in CHI 2026 Extended Abstracts. Three-component AI system: Socratic Dialogue Interface, multi-perspective analysis, analytical feedback. Recruited via Prolific; not a deployed public product. Closest in design to the H5' counterexample pattern — symmetric, reflection-oriented, non-verdict. If productized, would be a counterexample. |
+| 4 | Reflection.app | reflection.app | NOT-A-COUNTEREXAMPLE | Deployed AI journaling and coaching app (iOS/Android/macOS/Web, updated June 2026). AI coach prompts self-reflection via journal entries. General emotional/goal reflection; not designed to examine a specific claim or belief against evidence symmetrically. Fails "symmetric inspection" and "belief-against-evidence" terms. |
+| 5 | Socra (hisocra.com) | hisocra.com | NOT-A-COUNTEREXAMPLE | Deployed AI learning platform using Socratic questioning and Feynman method. Purpose is tutoring/knowledge acquisition, not symmetric inspection of a user's held belief against evidence. Fails the "belief-updating" and "symmetric inspection" terms. |
+| 6 | Socratic AI Against Disinformation (TITAN prototype) | dl.acm.org/doi/10.1145/3639701.3663640 | NOT-A-COUNTEREXAMPLE | Research prototype (ACM IMX 2024). Socratic dialogue to increase users' awareness of reasoning processes and detect misinformation. Not a deployed product. |
+
+**H5' Verdict:** No counterexample found. The hypothesis holds as stated. The belief-updating product space remains cleanly bifurcated: persuasion products (DebunkBot) dominate; the symmetric Socratic-reflection paradigm (Meyer et al. 2024, Belief Explorer CHI 2026) exists only as research prototypes. No productized self-serve symmetric inspection tool in the belief-updating line was found as of 2026-08-13. Note: Belief Explorer (CHI 2026 Extended Abstracts) is the highest-risk future threat — it is the closest design match and may be commercialized. Recommend monitoring.
+
+---
+
 ## Deferred — not cited by proposal
 
 The following `verify_before_proposal: true` sources do not support claims in the proposal skeleton or the two red-team pre-emptions. Deferred to post-submission or pre-proposal-revision pass:
