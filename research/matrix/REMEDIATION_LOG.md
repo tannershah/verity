@@ -225,3 +225,72 @@ Verified: Artificial Intelligence 12(3):231–272, doi:10.1016/0004-3702(79)9000
 
 ### J.4 — lit-027 (de Kleer 1986, ATMS) — page-number correction
 Verified via ACM DL journal record: "An assumption-based TMS," Artificial Intelligence 28(2):**127–162**, doi:10.1016/0004-3702(86)90080-9. The row's prior span 127–262 conflated the three-paper ATMS series with the ATMS paper proper; `paper` field corrected. DOI replaces the 403-walled academia.edu URL, as recommended in STRESS_SEARCH.md §E.
+
+---
+
+# REMEDIATION_LOG.md — Pass 7
+
+**Date:** 2026-08-13
+**Pass:** 7 — Committee-adjudicated remediation, chair-executed (see prompts/pass7_prompt.md for provenance). Committee record: 15 critical / 32 major / 17 minor findings, zero refuted under adversarial verification; defense responses (CONCEDE/HOLD/FIX) adjudicated; defense-introduced evidence independently verified by committee sweep before entering this log.
+
+## K. Pass-6 §F chair corrections (STRESS_SEARCH.md)
+
+### K.1 — ARGUMEND row corrected
+**Finding answered:** chair re-verification (direct browser-UA fetch of argumend.org home/analyze/about, 2026-08-13) against the battery's single-pass judgment.
+**Before:** judgment NEAR-MISS-FORCES-QUALIFIER; "operates over pre-selected topic positions, not... user-submitted composite claim"; described as no-verdict.
+**After:** judgment NOT-A-COUNTEREXAMPLE (chair correction, pass 7): curated maps carry root-level Balance/Weight evidence-direction verdicts ("Balance shows which way the evidence tips") → excluded on the transparency-only term (same axis as Loki); the Analyze mode accepts user-pasted text but performs local document argument-mining without external evidence retrieval. "Crux Identification" recorded as prior art + demand evidence for the localization framing.
+
+### K.2 — H3' verdict line amended; H3″ adopted
+**Before:** two qualifiers recommended ("automated" + "user-submitted composite claim").
+**After:** one qualifier ("automated", forced by Society Library + Kialo); second qualifier withdrawn per K.1. **H3″: "No automated system offers symmetric transparency-only inspection at the decomposed-premise level of a composite claim."** Qualifier accretion resisted per red-team 1a.
+
+## L. Matrix additions (committee findings Q8, battery §F, verification sweep)
+
+- **product-025 Consensus** (sweep-verified: Meter, Study Snapshots, tiers) — strongest consumer near-neighbor; fast-follower #2; excluded from H3″ on transparency-only (root stance aggregate), from H1 on decomposition.
+- **product-026 The Society Library** (single-pass; forces "automated" qualifier jointly with Kialo).
+- **product-027 ARGUMEND** (chair-verified; root Balance/Weight verdicts; crux prior art).
+- **product-028 Elicit** (single-pass; production N/study-design extraction — validates text-mining plan).
+- **product-029 Community Notes** (single-pass; landscape honesty; touches no hypothesis).
+- **lit-031 VITALITY Study I** (sweep-verified: direction reversed 8.4%, significance changed 16.0% of contaminated meta-analyses) — moat IMPACT evidence; linkage-eval seed corpus.
+- **lit-032 Meyer et al. 2024** (sweep-verified: n=2,036, zero author overlap) — independent CONCEPTUAL replication, reflection paradigm.
+- **lit-033 RetractoBot RCT** (sweep-verified: null, −0.007 [−0.055, 0.041]; 15,921 papers; 15,667 respondents, 80.6% unaware) — moat UPTAKE boundary condition.
+- **lit-034 Belief Explorer** (single-pass; CHI 2026 prototype; H5′ watch item).
+
+## M. Literature corrections
+
+### M.1 — lit-005 (NLProofS) baseline attribution
+**Finding answered:** committee Q9 (verified by sweep against arXiv:2205.12443).
+**Before:** "...35.6% → 58.8% vs. T5-11B EntailmentWriter using only T5-large."
+**After:** 20.9/35.6 attributed to EntailmentWriter **T5-large**; strongest baseline T5-11B at 25.6% named; released-checkpoint README 34.4% noted; SEER/NLDR/Task-1 successor figures EMBARGOED pending PDF verification (CLAIMS.md).
+
+### M.2 — lit-020 (Costello et al.) EoC quoted, not characterized
+**Finding answered:** committee Q10; new matrix rule "cells describing a source's status quote, never characterize."
+**Before:** "Effect sizes materially weakened by the June 2026 Editorial Expression of Concern — treat as upper-bound estimates pending correction."
+**After:** EoC quoted (reproducibility of specific values; screening-criteria inconsistencies); authors' corrected analyses reportedly match direction/significance/substantive size; under evaluation, no correction published as of 2026-08-13.
+
+### M.3 — lit-020 replication-record note corrected
+**Finding answered:** committee Q11.
+**Before:** "...should not be cited without pairing with independent replications (Boissin..., 'Just the facts'...)."
+**After:** replication record stated accurately: same-team (lit-021, lit-022) + independent-conceptual (Meyer, lit-032).
+
+### M.4 — lit-024 authorship completed
+**Before:** "Anonymous (2026)." **After:** Costello, Pelrine, Kowal, Timm, Arechar, Godbout, Gleave, Rand & Pennycook (recovered pass 4.5, §E).
+
+## N. SYNTHESIS.md edits
+
+- **N.1** H3 section: Pass 6/7 addendum — H3″ adopted, near-misses named, qualifier-withdrawal rationale.
+- **N.2** H5 section: Pass 6/7 addendum — H5′ holds; research-line concession (lit-032, lit-034); watch item.
+- **N.3** H4a paragraph: baseline attribution + embargo note.
+- **N.4** §2 positioning: Pass 7 addendum — near-miss landscape named; conjunction-and-moat-first framing adopted; near-misses recast as demand evidence; impact/uptake split (VITALITY vs RetractoBot null) with conflation ban.
+- **N.5** §3.4: arXiv:2509.18403 marked verified (was stale "verify_before_proposal=true").
+- **N.6** §4 Problem: retraction count refreshed to 66,000+ (as-of-2026-08-13 citation; end-2024 figure retained parenthetically).
+- **N.7** Verification-debts paragraph: discharged items marked; remaining debts restated (RedacTek single-secondary; marketing-claims; embargoed figures; reported-unpublished replications; single-pass pass-7 rows).
+
+## O. New governance files
+
+- **O.1** CLAIMS.md — banned-phrase lint (defense Q6 mechanism), scoped to application/ (red-team quotes preserved per I.3).
+- **O.2** EVAL_PREREG.md — Q20 floors (grounding ≥50% depth-3 with the exact-key coherence rule; step-validity ≥80% with the 0.8⁵ display consequence; false-flag ≤5%), Q22 localization falsification line (<40% at κ≥0.6), standing eval rules (Q18/Q19/Q21).
+- **O.3** SCHEMA_GAPS.md gap 8 — provenance tiers documented as gap (schema frozen); single-secondary/single-pass carried in extraction notes.
+- **O.4** prompts/pass7_prompt.md — pass provenance record.
+
+**Not done in this pass (deliberately):** application/ untouched (Tanner drafts application copy); CLAUDE.md untouched; D1 spec items (conflicted-state semantics, binarization intermediates, annotator roster) deferred to the build; RedacTek vendor-primary documentation still outstanding.

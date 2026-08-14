@@ -41,3 +41,7 @@ Both Factiverse and Originality.ai perform automatic claim detection but NOT dec
 ## Gap 7 — `symmetric_contrasting_evidence` binary can't capture partial symmetry
 
 Enum: ["yes", "no"]. Penn Media Bias Detector compares publishers across ideological spectrum but not supporting/contrasting evidence per claim — "partial" is the most accurate characterization. Logically shows support/contradict/partial per source breakdown. Mapped to "yes" with extraction_note noting partial applicability.
+
+## Gap 8 — provenance `confidence` enum lacks tier granularity (added pass 7)
+
+Enum: verified | inferred | marketing-claim. The RedacTek episode (committee Q7: cells upgraded to "verified" by re-reading the same single secondary review they were inferred from) showed "verified" conflates verified-against-primary with corroborated-by-one-secondary. Adopted tier vocabulary — **verified-primary / corroborated-multi-secondary / single-secondary / inferred / marketing-claim** — cannot be encoded because the schema is frozen. Carried instead in extraction_notes ("single-secondary", "single-pass characterization — verify before proposal use") per this gap. product-024 (RedacTek) is single-secondary throughout; pass-7 rows added from unreplicated committee findings (product-026, -028, -029; lit-034) are single-pass.
