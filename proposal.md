@@ -1,7 +1,5 @@
 # Verity — Epistemic Transparency Engine
 
-*Wharton Generative AI Studio — Tanner Shah, August 2026*
-
 ## Problem
 
 Composite claims travel as take-it-or-leave-it units. A reader confronting "X causes Y" cannot see which premises the claim stands on, how strong the evidence under each is, or whether a load-bearing source has been retracted. Nearly 55,000 retractions are machine-readable via Retraction Watch and Crossref as of end-2024, yet no claim downstream of a retracted paper gets flagged. Verdict issuers (PolitiFact, Originality.ai) demand trust transfer that fails exactly on contested claims; transparency tools stop at the article, source, or citation level, leaving the claim itself opaque.
@@ -24,7 +22,7 @@ Established benchmarks first, with comparable numbers: leaf-level premise verifi
 
 ## Build Plan & Status
 
-Eight build days will take v0 from harness to packaged demo. The first four will stand up the core loop: decomposition with verifier-checked joint sufficiency, the alethiology schema, retrieval agents over OpenAlex, Crossref, PubMed, and Semantic Scholar, and the evidence-quality layer. The next three will add JTMS invalidation with a live retraction-injection demo, the inspectable Streamlit claim graph rendering per-premise confidence only, and the eval harness with two demo claims — a viral statistic and a retracted-but-still-cited finding. The final day packages run logs and prompt history. `[TODO-16th: flip to present tense + live repo/demo link]`
+Eight build days will take v0 from harness to packaged demo. The first four will stand up the core loop: decomposition with verifier-checked joint sufficiency, the alethiology schema, retrieval agents over OpenAlex, Crossref, PubMed, and Semantic Scholar, and the evidence-quality layer. The next three will add JTMS invalidation with a live retraction-injection demo, the inspectable Streamlit claim graph rendering per-premise confidence only, and the eval harness with two demo claims — a viral statistic and a retracted-but-still-cited finding. The final day packages run logs and prompt history.
 
 ## Why This Team
 

@@ -19,12 +19,7 @@ grounding rate, depth, and budget-exit rate measured and reported), non-redundan
 (every premise load-bearing: removing it breaks the entailment).
 
 ## Deadline & deliverables
-- Wharton Generative AI Studio application DUE 2026-08-17: cover letter, <=2pp
-  proposal, 1-3 gen-AI work samples WITH prompt history.
-- **This repo's commit history and prompts are themselves a work sample.** Write
-  informative commit messages; never delete prompt files; keep prompts in
-  `prompts/`, run logs in `research/`.
-- v0 prototype after the application: claim -> 3-7 premises -> evidence ->
+- v0 prototype: claim -> 3-7 premises -> evidence ->
   per-premise confidence (Streamlit or CLI).
 
 ## Repo layout
@@ -34,23 +29,18 @@ grounding rate, depth, and budget-exit rate measured and reported), non-redundan
 - `research/matrix/` — Pass 2 outputs (products.jsonl, literature.jsonl, notes)
 - `research/SYNTHESIS.md` — Pass 3+4 output (hypothesis verdicts, positioning,
   eval plan, proposal skeleton, red team)
-- `prompts/` — pass prompts (part of work-sample history)
-- `docs/pass0-scoping.md` — claude.ai scoping-session record
 
 ## Working rules (from Tanner)
-- Raise a risk only if it has measurable impact on the objective, state it once
-  in one sentence, never revisit after Tanner rules on it. No unsolicited ethics
-  commentary.
-- Demo/example claims use verifiable, low-valence cases (viral statistics,
-  retracted-but-still-cited papers, manipulated charts). Contested
-  scientific/political claims are roadmap stress tests only.
+- Be questioning, curious, and skeptical. If something seems off, explore and alert. This is a fully agent-driven project, so drifting, assumptions, and random garbage can become ingrained in the codebase. We want to prevent this as much as possible. The research, planning, and theory of this system is also agent-generated, so do NOT see this as golden truth but as something that must be iterated on and constantly reimagined.
+- Raise a risk only if it is directly relevant to Verity or your current task.
 - Lean, decision-oriented outputs. No filler.
+- Do not set arbitrary deadlines or timeframes. 
+- Do not set arbitrary rules for yourself or the project without directly consulting Tanner beforehand, especially absolute ones with universal quantifiers
+- After completing the task you tackle, review this file and README.md for changes, so they are kept up to date. Changes to these two files should keep them fresh, lean, and agnostic to the modifications you just made, meaning do not make any references in a corrective/risk-averse way. These are CLAUDE.md and README.md files built to be production-grade, not change logs, version histories, or positioning statements. Also, unless otherwise instructed, do not modify any sections of these files unless your task was directly related to them.
 
 ## Model/effort conventions
 - Extraction / transcription / boilerplate: Sonnet 4.6, low-medium effort.
-- Synthesis, adjudication, red-teaming, proposal drafting: strongest available
-  model, max effort, single context (no subagents for synthesis).
-- Parallel subagents only for independent, schema-bound extraction tasks.
+- Synthesis, adjudication, red-teaming, proposal drafting: strongest available model, max effort.
 
 ## Stack
 Python/PyTorch/scikit-learn. Beachhead domain: scientific/health claims (news is
