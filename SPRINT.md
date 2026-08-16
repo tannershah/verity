@@ -40,7 +40,7 @@ merged only in Phase 3. One tier per session; honor its exit criterion.
 
 | Phase | When | Model | Work |
 |---|---|---|---|
-| **0 — human setup** | Sat night | Tanner | Remaining: register OpenAlex key (mandatory) + NCBI key; `cp .env.example .env` and fill all three vars; skip S2 (out of sprint scope). Everything else in Phase 0 is done — see status below |
+| **0 — human setup** | Sat night | Tanner | ✅ **COMPLETE.** Keys registered and live-verified; secrets in gitignored `.env` (never in `.env.example`). See status below |
 | **1 — spine** | Sun early | Opus | M1-T1 (sequential, alone) |
 | **2A — core loop** | Sun | Opus | M3-T1 (serviceable decomposition prompt — do **not** polish; Fable rewrites it Monday) → M4-T1 → M9-T1 |
 | **2B — grounding** | Sun, parallel | Opus | M5-T1 (seed facts for the two demo claims) → M6-T1a |
@@ -50,7 +50,11 @@ merged only in Phase 3. One tier per session; honor its exit criterion.
 | **5 — quality pass** | Mon 00:00–12:00 | **Fable** (fresh reset) | Rewrite the decomposition prompt, re-run demo claims until trees pass eyeball review against the three validity criteria. Optional Streamlit strip only if ahead. **Code freeze 12:00** |
 | **6 — ship** | Mon 12:00–17:00 | Fable | Finalize proposal + cover letter + work-sample self-assessments; screenshots; README quickstart so a reviewer can run the demo; GitHub cleanup. Reserve ≥1h for the submission portal |
 
-**Phase 0 status (automated 2026-08-15, live-verified):** RW CSV at
+**Phase 0 status (complete; live-verified):** OpenAlex and NCBI keys work —
+keyed OpenAlex GET returned 200 with rate headers (limit 10,000 shown for this
+key tier; ample for the sprint), keyed E-utilities esummary returned 200. Load
+both from `.env` (with `CROSSREF_MAILTO` for the polite pool) — never hardcode.
+RW CSV at
 `data/retraction_watch.csv` (71,799 records; `data/` gitignored). Chocolate-hoax
 trail confirmed as a **three-source agreement** on DOI `10.3823/1654`: RW record
 17524 (`RetractionNature: Retraction`), Crossref `update-to`/`updated-by`
@@ -59,7 +63,7 @@ trail confirmed as a **three-source agreement** on DOI `10.3823/1654`: RW record
 live: CT.gov v2 `enrollmentInfo {count, type: ACTUAL}` and the PubMed
 DataBank/`AccessionNumber` NCT linkage (PMID 32445440 → NCT04280705). OpenAlex
 answered one keyless singleton GET (demo tier, 100 credits/day) — do not rely on
-keyless access for Sunday sessions.
+keyless access for Sunday sessions. **Phase 1 (M1-T1) is clear to launch.**
 
 **Model rules for this sprint:** Opus = infrastructure, clients, integration, doc
 drafts (Sonnet fine for pure transcription chores). Fable = decomposition-prompt
