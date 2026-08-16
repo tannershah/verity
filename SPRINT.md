@@ -7,9 +7,11 @@ after submission.** For this window only, this doc scopes and re-orders
 uncalibrated labels, no silent caps). Tier definitions and exit criteria come from
 build-plan.md; this doc only selects, sequences, and assigns them.
 
-**Objective:** an application-ready prototype + application documents — not v0.
-Deliverables: résumé (Tanner), cover letter, ≤2-page project proposal, 2 work
-samples (the Verity repo itself; the prototype with a recorded demo run).
+**Objective:** an application-ready prototype — not v0. **Application materials
+(résumé, cover letter, proposal, work-sample writeups) are Tanner's lane,
+handled by him in parallel — agents do not draft, edit, or plan for them.**
+The agent deliverable is the prototype plus its repo presentation: README
+quickstart, recorded demo run, screenshots.
 
 ---
 
@@ -21,8 +23,8 @@ Build-plan sessions 1–8 complete, plus two **demo-cuts** (partial tiers, label
 > confidence → one premise grounded in a seeded alethiology fact → that fact's
 > source flagged retracted.*
 
-- **Floor** (integration goes badly): sessions 1–4 only + documents. Stop building
-  by Mon 10:00 and write.
+- **Floor** (integration goes badly): sessions 1–4 only. Stop building by
+  Mon 10:00 and shift to repo presentation (README, screenshots, demo recording).
 - **Ceiling** (ahead of schedule): add M1-T3 + full M10-T1, and only then a
   stripped Streamlit tree view (confidence bars only, no evidence panels).
 
@@ -44,11 +46,10 @@ merged only in Phase 3. One tier per session; honor its exit criterion.
 | **1 — spine** | Sun early | Opus | M1-T1 (sequential, alone) |
 | **2A — core loop** | Sun | Opus | M3-T1 (serviceable decomposition prompt — do **not** polish; Fable rewrites it Monday) → M4-T1 → M9-T1 |
 | **2B — grounding** | Sun, parallel | Opus | M5-T1 (seed facts for the two demo claims) → M6-T1a |
-| **2C — documents** | Sun, parallel | Opus | Draft proposal skeleton from positioning.md (conjunction argument, §5 objections) + hypotheses.md + open-questions.md §4 ("open questions / issues raised" sections). Draft cover-letter structure — flag every spot needing Tanner's personal input. Collate prompt history / git history for both work samples |
 | **3 — integrate** | Sun night | Opus | Single session: merge lanes, M1-T2, M3-T2 |
 | **4 — demo-cuts** | Sun night / Mon early | Opus | (i) Retraction flag: RW-table + Crossref/OpenAlex check on the demo claim's DOIs — a labeled partial of M7-T1 (no full disagreement policy). (ii) Metrics logger over a 5–10 claim mini-set — a labeled partial of M10-T1 |
 | **5 — quality pass** | Mon 00:00–12:00 | **Fable** (fresh reset) | Rewrite the decomposition prompt, re-run demo claims until trees pass eyeball review against the three validity criteria. Optional Streamlit strip only if ahead. **Code freeze 12:00** |
-| **6 — ship** | Mon 12:00–17:00 | Fable | Finalize proposal + cover letter + work-sample self-assessments; screenshots; README quickstart so a reviewer can run the demo; GitHub cleanup. Reserve ≥1h for the submission portal |
+| **6 — repo presentation** | Mon 12:00–17:00 | Fable | Screenshots; recorded demo run; README quickstart so a reviewer can run the demo; GitHub cleanup. (Tanner handles application materials and submission in parallel — not agent work) |
 
 **Phase 0 status (complete; live-verified):** OpenAlex and NCBI keys work —
 keyed OpenAlex GET returned 200 with rate headers (limit 10,000 shown for this
@@ -65,10 +66,10 @@ DataBank/`AccessionNumber` NCT linkage (PMID 32445440 → NCT04280705). OpenAlex
 answered one keyless singleton GET (demo tier, 100 credits/day) — do not rely on
 keyless access for Sunday sessions. **Phase 1 (M1-T1) is clear to launch.**
 
-**Model rules for this sprint:** Opus = infrastructure, clients, integration, doc
-drafts (Sonnet fine for pure transcription chores). Fable = decomposition-prompt
-quality, demo re-runs, final application prose — nothing else. At least half of
-Monday's Fable goes to documents; the noon freeze is hard.
+**Model rules for this sprint:** Opus = infrastructure, clients, integration
+(Sonnet fine for pure transcription chores). Fable = decomposition-prompt
+quality, demo re-runs, repo presentation — nothing else. The noon code freeze
+is hard.
 
 ---
 
@@ -88,8 +89,10 @@ Monday's Fable goes to documents; the noon freeze is hard.
   build-plan.md.
 - Don't edit `docs/` during the sprint except where code makes a factual line
   stale; SPRINT.md is the only sprint-state file.
-- Work-sample self-assessments state the honest limitations (verifier
-  uncalibrated, thresholds unmeasured, grounding rate not yet judged) — the
-  pre-registration posture is the self-assessment.
+- The README/demo writeup states the honest limitations (verifier uncalibrated,
+  thresholds unmeasured, grounding rate not yet judged) — the pre-registration
+  posture is the presentation.
+- Application materials (résumé, cover letter, proposal, work-sample writeups)
+  are Tanner's lane — out of scope for every agent session.
 - After submission: delete SPRINT.md, remove the CLAUDE.md sprint pointer, and
   resume the build-plan.md ordering at the next incomplete tier.
