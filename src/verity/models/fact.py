@@ -20,7 +20,7 @@ from typing import Protocol, runtime_checkable
 from pydantic import Field, model_validator
 
 from verity.base import VerityModel
-from verity.ids import FactId, check_id, make_id, statement_hash
+from verity.ids import FactId, derive_id, statement_hash
 from verity.keys import ExternalKey
 from verity.models.common import ConfidenceTier, Provenance, TmsStatus, utc_now
 from verity.models.evidence import EvidenceQuality
@@ -32,6 +32,19 @@ from verity.models.evidence import EvidenceQuality
 GROUNDING_ELIGIBLE_TIERS = frozenset(
     {ConfidenceTier.VERIFIED_PRIMARY, ConfidenceTier.CORROBORATED_MULTI_SECONDARY}
 )
+
+
+def fact_identity(key: ExternalKey, statement: str) -> tuple[str, str]:
+    """The pair a fact's id is derived from — the one definition of what a fact *is*.
+
+    Exported because producers need to ask "would this be the same fact?" before they can
+    build one, and a producer that answers by comparing raw text asks a different question
+    than the store does: `statement_hash` folds case and collapses whitespace, so two
+    statements differing only in capitalization are one fact here and two strings there.
+    A second, informal derivation is how a duplicate slips past a caller's own check and
+    then silently overwrites its twin.
+    """
+    return (str(key), statement_hash(statement))
 
 
 class Fact(VerityModel):
@@ -59,6 +72,14 @@ class Fact(VerityModel):
     key: ExternalKey
     tier: ConfidenceTier
     provenance: list[Provenance] = Field(default_factory=list)
+    #: The verbatim text from the source that the statement was written against, where one
+    #: exists. It travels on the record rather than only in the file that produced it: the
+    #: statement is attributive ("X reports that …"), a tier is a claim about how well that
+    #: attribution is supported, and a reader inspecting a `verified-primary` fact should
+    #: find the words it rests on without following a provenance URL out to another file.
+    #: `None` for facts from sources that quote nothing — M5-T2 promotion from an evidence
+    #: bundle among them.
+    supporting_quote: str | None = None
     evidence_quality: EvidenceQuality = Field(default_factory=EvidenceQuality)
     status: TmsStatus = TmsStatus.IN
     justification_ids: list[str] = Field(default_factory=list)
@@ -84,15 +105,12 @@ class Fact(VerityModel):
             raise ValueError(
                 f"a {self.tier.value} fact must carry the provenance it was verified against"
             )
-        derived = make_id("fact", str(self.key), self.statement_hash)
-        if not self.id:
-            self.id = derived
-        elif self.id != derived:
-            raise ValueError(
-                f"fact id {self.id!r} does not match the id derived from its key and "
-                f"statement ({derived!r}); a fact's identity is that pair"
-            )
-        check_id("fact", self.id)
+        self.id = derive_id(
+            "fact",
+            *fact_identity(self.key, self.statement),
+            supplied=self.id,
+            identity="its key and statement",
+        )
         return self
 
 
@@ -113,24 +131,37 @@ class Justification(VerityModel):
 
     @model_validator(mode="after")
     def _assign_id(self) -> Justification:
-        if not self.id:
-            self.id = make_id(
-                "just", self.consequent_fact_id, sorted(self.antecedent_fact_ids), self.type
-            )
-        check_id("just", self.id)
+        self.id = derive_id(
+            "just",
+            self.consequent_fact_id,
+            sorted(self.antecedent_fact_ids),
+            self.type,
+            supplied=self.id,
+            identity="its consequent, antecedents, and type",
+        )
         return self
 
 
 @runtime_checkable
 class FactLookup(Protocol):
-    """Read-only access to the alethiology, by fact id.
+    """Read-only access to the alethiology: by fact id, and by exact external key.
 
-    Deliberately minimal: the render boundary needs to ask one question — "is the fact
-    this premise stands on still what it was?" — and giving it anything wider would let a
-    renderer reach past the projection.
+    Two questions, and the projection needs both. `get` answers "is the fact this premise
+    stands on still what it was?" — the non-monotonic-grounding question. `facts_for`
+    answers "what does the alethiology know about the work this premise cites?", which is
+    a different question because **a retraction warning is not contingent on grounding**.
+    A premise bound to a retracted DOI deserves the flag whether or not the fact under
+    that DOI reached a grounding-eligible tier; tying the warning to eligibility would
+    hide exactly the citations most worth flagging.
+
+    Still deliberately narrow: both take an identifier, neither takes text, so a caller
+    cannot search the alethiology for a topic. And the consumer is `to_render_payload`,
+    which is the boundary itself — a renderer sees `RenderPayload` and never this.
     """
 
     def get(self, fact_id: str) -> Fact | None: ...
+
+    def facts_for(self, key: ExternalKey) -> list[Fact]: ...
 
 
 class InMemoryFacts:
@@ -141,6 +172,9 @@ class InMemoryFacts:
 
     def get(self, fact_id: str) -> Fact | None:
         return self._by_id.get(fact_id)
+
+    def facts_for(self, key: ExternalKey) -> list[Fact]:
+        return [fact for fact in self._by_id.values() if fact.key.matches(key)]
 
     def add(self, fact: Fact) -> None:
         self._by_id[fact.id] = fact

@@ -29,6 +29,13 @@ class DecompositionConfig(BaseModel):
     max_nodes_per_tree: int = 60
     #: Sampled candidate decompositions per step (M3-T3 verifier-in-the-loop).
     candidates_per_step: int = 1
+    #: How the decomposer was told to write premises relative to their ancestors.
+    #: `standalone` = the model sees the ancestor chain and must still write every premise
+    #: so it stands without it. DnDScore (`lit-014`) shows the strategy moves downstream
+    #: scores, so it travels in the config snapshot and the config hash rather than living
+    #: unrecorded in prompt text. Distinct from `Claim.decontextualization`, which records
+    #: what M2 did to the claim before the decomposer ever saw it.
+    decontextualization: str = "standalone"
 
 
 class VerifierConfig(BaseModel):
@@ -69,7 +76,11 @@ class LLMConfig(BaseModel):
 class PathsConfig(BaseModel):
     db_path: Path = Path("data/verity.db")
     runs_dir: Path = Path("data/runs")
-    alethiology_seed: Path = Path("data/seed/alethiology.jsonl")
+    #: Tracked in git, not under `data/`: the curated seed and the key-resolution record
+    #: it is checked against are source the demo's reproducibility depends on, while
+    #: `data/` holds the derived and the bulky (the database, the Retraction Watch table).
+    alethiology_seed: Path = Path("seed/alethiology.jsonl")
+    key_resolution: Path = Path("seed/key_resolution.json")
 
 
 class VerityConfig(BaseSettings):

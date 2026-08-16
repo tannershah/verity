@@ -13,6 +13,14 @@ a fact store to read.
 
 The claim is the spinach-iron decimal myth; the retraction trail is the
 chocolate-weight-loss hoax DOI, both low-valence per the demo-claim valence rule.
+
+Both identifiers are real and resolve. The alethiology statement is **attributive** —
+"Hamblin (1981) reports that …" rather than the bare proposition — because that is what a
+quote from a work's own abstract can establish, and because grounding is exact-key match
+and never compares statements: a fact asserting an object-level proposition would ground a
+premise as `verified` on the strength of a shared identifier alone. The premise it grounds
+is object-level, so the fixture exercises the gap the render row's
+`grounding_fact_statement` exists to show.
 """
 
 from __future__ import annotations
@@ -59,7 +67,9 @@ from verity.models.fact import Fact, InMemoryFacts
 
 ACCESSED = datetime(2026, 8, 16, 12, 0, tzinfo=UTC)
 
-SPINACH_KEY = ExternalKey(type=KeyType.DOI, value="10.1080/00071668108416780")
+#: Hamblin, "Fake." BMJ 1981 — the origin of the spinach decimal-error story.
+SPINACH_KEY = ExternalKey(type=KeyType.DOI, value="10.1136/bmj.283.6307.1671")
+#: Bohannon et al., Int Arch Med 2015 — retracted; RW record 17524.
 CHOCOLATE_KEY = ExternalKey(type=KeyType.DOI, value="10.3823/1654")
 
 
@@ -77,7 +87,7 @@ def three_source_agreement(
 def provenance() -> Provenance:
     return Provenance(
         source="openalex",
-        source_url="https://api.openalex.org/works/doi:10.1080/00071668108416780",
+        source_url="https://api.openalex.org/works/doi:10.1136/bmj.283.6307.1671",
         accessed_at=ACCESSED,
         confidence_tier=ConfidenceTier.VERIFIED_PRIMARY,
     )
@@ -86,7 +96,11 @@ def provenance() -> Provenance:
 @pytest.fixture
 def seeded_fact(provenance: Provenance) -> Fact:
     return Fact(
-        statement=("Published iron content for raw spinach is approximately 2.7 mg per 100 g."),
+        statement=(
+            "Hamblin (1981) reports that German chemists re-investigating the iron content "
+            "of spinach in the 1930s showed the original workers had misplaced the decimal "
+            "point and overestimated the value tenfold."
+        ),
         key=SPINACH_KEY,
         tier=ConfidenceTier.VERIFIED_PRIMARY,
         provenance=[provenance],
@@ -110,7 +124,7 @@ def hand_built_graph(provenance: Provenance, seeded_fact: Fact) -> ClaimGraph:
     )
 
     p_measurement = Premise(
-        text="Published iron content for raw spinach is approximately 2.7 mg per 100 g.",
+        text="The published iron figure for spinach was overstated by a factor of ten.",
         premise_type=PremiseType.EMPIRICAL_CITABLE,
         termination_reason=TerminationReason.GROUNDED,
         bound_key=SPINACH_KEY,

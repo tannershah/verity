@@ -51,7 +51,16 @@ _DOI_PREFIXES = (
     "doi:",
     "doi ",
 )
-_PMID_PREFIXES = ("pmid:", "pmid ", "pubmed:", "pubmed ")
+_PMID_PREFIXES = (
+    "https://pubmed.ncbi.nlm.nih.gov/",
+    "http://pubmed.ncbi.nlm.nih.gov/",
+    "https://www.ncbi.nlm.nih.gov/pubmed/",
+    "http://www.ncbi.nlm.nih.gov/pubmed/",
+    "pmid:",
+    "pmid ",
+    "pubmed:",
+    "pubmed ",
+)
 _NCT_PREFIXES = (
     "https://clinicaltrials.gov/study/",
     "https://clinicaltrials.gov/ct2/show/",
@@ -162,23 +171,40 @@ class ExternalKey(FrozenModel):
     def parse(cls, raw: str) -> ExternalKey:
         """Infer the key type from `raw` and canonicalize.
 
+        The type is inferred by *running* `canonicalize` for each type and keeping the one
+        that accepts, rather than by a separate test on the raw string. An independent
+        inference rule is a second, partial copy of the normalization rules that drifts
+        from them silently: the earlier version keyed DOIs on `"10."` appearing anywhere —
+        which needs no prefix handling and so never noticed — while PMIDs, which have no
+        such content signal, depended entirely on a prefix strip that omitted the URL
+        trailing-slash and query handling `canonicalize` performs. The result was that
+        `canonicalize(PMID, "https://pubmed.ncbi.nlm.nih.gov/6797607/")` succeeded and
+        `parse` of the same string failed. Deriving the type from the transform itself
+        makes that divergence unrepresentable.
+
+        The three patterns are mutually exclusive, so exactly one type accepts a
+        well-formed identifier. More than one would be an ambiguity, and it is raised
+        rather than resolved by declaration order.
+
         Always raises `InvalidKeyError` on bad input — never a pydantic
         `ValidationError` — so callers handling untrusted strings catch one thing.
         """
-        candidate = _strip_debris(raw)
-        lowered = candidate.lower()
-        if lowered.startswith(("nct", *(p.lower() for p in _NCT_PREFIXES))):
-            key_type = KeyType.NCT
-        elif "10." in candidate or lowered.startswith(_DOI_PREFIXES):
-            key_type = KeyType.DOI
-        elif _PMID_RE.match(_strip_trailing(_strip_prefixes(candidate, _PMID_PREFIXES)[0])):
-            key_type = KeyType.PMID
-        else:
-            raise InvalidKeyError(f"cannot infer key type from {raw!r}")
+        accepted = []
+        for key_type in KeyType:
+            try:
+                canonicalize(key_type, raw)
+            except InvalidKeyError:
+                continue
+            accepted.append(key_type)
 
-        # Surface the canonicalization failure directly rather than wrapped by pydantic.
-        canonicalize(key_type, candidate)
-        return cls(type=key_type, value=candidate)
+        if not accepted:
+            raise InvalidKeyError(f"cannot infer key type from {raw!r}")
+        if len(accepted) > 1:
+            raise InvalidKeyError(
+                f"{raw!r} canonicalizes as more than one key type "
+                f"({', '.join(t.value for t in accepted)}); it is ambiguous, not inferable"
+            )
+        return cls(type=accepted[0], value=raw)
 
     def matches(self, other: ExternalKey) -> bool:
         """Exact-key match — the only grounding predicate. No fuzziness, ever."""

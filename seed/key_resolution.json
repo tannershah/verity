@@ -1,0 +1,963 @@
+{
+  "generated_at": "2026-08-16T20:04:11.506633Z",
+  "resolutions": {
+    "doi:10.1002/14651858.cd008893.pub3": {
+      "aliases": [
+        {
+          "type": "pmid",
+          "value": "28439881"
+        }
+      ],
+      "key": {
+        "type": "doi",
+        "value": "10.1002/14651858.cd008893.pub3"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:04:01.005277Z",
+          "detail": {
+            "update_to": "new_version"
+          },
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "Effect of cocoa on blood pressure",
+          "url": "https://doi.org/10.1002/14651858.cd008893.pub3",
+          "year": 2017
+        },
+        "openalex": {
+          "abstract": "BACKGROUND: High blood pressure is an important risk factor for cardiovascular disease, contributing to about 50% of cardiovascular events worldwide and 37% of cardiovascular-related deaths in Western populations. Epidemiological studies suggest that cocoa-rich products reduce the risk of cardiovascular disease. Flavanols found in cocoa have been shown to increase the formation of endothelial nitric oxide which promotes vasodilation and therefore blood pressure reduction. Here we update previous meta-analyses on the effect of cocoa on blood pressure. OBJECTIVES: To assess the effects on blood pressure of chocolate or cocoa products versus low-flavanol products or placebo in adults with or without hypertension when consumed for two weeks or longer. SEARCH METHODS: This is an updated version of the review initially published in 2012. In this updated version, we searched the following electronic databases from inception to November 2016: Cochrane Hypertension Group Specialised Register, CENTRAL, MEDLINE and Embase. We also searched international trial registries, and the reference lists of review articles and included trials. SELECTION CRITERIA: Randomised controlled trials (RCTs) investigating the effects of chocolate or cocoa products on systolic and diastolic blood pressure in adults for a minimum of two weeks duration. DATA COLLECTION AND ANALYSIS: Two review authors independently extracted data and assessed the risks of bias in each trial. We conducted random-effects meta-analyses on the included studies using Review Manager 5. We explored heterogeneity with subgroup analyses by baseline blood pressure, flavanol content of control group, blinding, age and duration. Sensitivity analyses explored the influence of unusual study design. MAIN RESULTS: = 60%), requiring further research to confirm the findings.Subgroup meta-analysis by blinding suggested a trend towards greater blood pressure reduction in unblinded trials compared to double-blinded trials, albeit statistically not significant. Further research is needed to confirm whether participant expectation may influence blood pressure results. Subgroup analysis by type of control (flavanol-free versus low-flavanol control) did not reveal a significant difference.Whether the age of participants plays a role in the effect of cocoa on blood pressure, with younger participants responding with greater blood pressure reduction, needs to be further investigated.Sensitivity analysis excluding trials with authors employed by trials sponsoring industry (33 trials, 1482 participants) revealed a small reduction in effect size, indicating some reporting bias.Due to the remaining heterogeneity, which we could not explain in terms of blinding, flavanol content of the control groups, age of participants, or study duration, we downgraded the quality of the evidence from high to moderate.Results of subgroup analyses should be interpreted with caution and need to be confirmed or refuted in trials using direct randomised comparisons.Generally, cocoa products were highly tolerable, with adverse effects including gastrointestinal complaints and nausea being reported by 1% of participants in the active cocoa intervention group and 0.4% of participants in the control groups (moderate-quality evidence). AUTHORS' CONCLUSIONS: This review provides moderate-quality evidence that flavanol-rich chocolate and cocoa products cause a small (2 mmHg) blood pressure-lowering effect in mainly healthy adults in the short term.These findings are limited by the heterogeneity between trials, which could not be explained by prespecified subgroup analyses, including blinding, flavanol content of the control groups, age of participants, or study duration. However, baseline blood pressure may play a role in the effect of cocoa on blood pressure; subgroup analysis of trials with (pre)hypertensive participants revealed a greater blood pressure-reducing effect of cocoa compared to normotensive participants with borderline significance.Long-term trials investigating the effect of cocoa on clinical outcomes are also needed to assess whether cocoa has an effect on cardiovascular events and to assess potential adverse effects associated with chronic ingestion of cocoa products.",
+          "checked_at": "2026-08-16T20:04:00.717191Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W1865499935"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "Effect of cocoa on blood pressure",
+          "url": "https://openalex.org/W1865499935",
+          "year": 2017
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:04:01.005587Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.1002/asi.23265": {
+      "aliases": [],
+      "key": {
+        "type": "doi",
+        "value": "10.1002/asi.23265"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": " Many open access journals have a reputation for being of low quality and being dishonest with regard to peer review and publishing costs. Such journals are labeled “predatory” journals. This study examines author profiles for some of these “predatory” journals as well as for groups of more well‐recognized open access journals. We collect and analyze the publication record, citation count, and geographic location of authors from the various groups of journals. Statistical analyses verify that each group of journals has a distinct author population. Those who publish in “predatory” journals are, for the most part, young and inexperienced researchers from developing countries. We believe that economic and sociocultural conditions in these developing countries have contributed to the differences found in authorship between “predatory” and “nonpredatory” journals. ",
+          "checked_at": "2026-08-16T20:04:04.735085Z",
+          "detail": {},
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "Who publishes in “predatory” journals?",
+          "url": "https://doi.org/10.1002/asi.23265",
+          "year": 2014
+        },
+        "openalex": {
+          "abstract": "Many open access journals have a reputation for being of low quality and being dishonest with regard to peer review and publishing costs. Such journals are labeled “predatory” journals. This study examines author profiles for some of these “predatory” journals as well as for groups of more well‐recognized open access journals. We collect and analyze the publication record, citation count, and geographic location of authors from the various groups of journals. Statistical analyses verify that each group of journals has a distinct author population. Those who publish in “predatory” journals are, for the most part, young and inexperienced researchers from developing countries. We believe that economic and sociocultural conditions in these developing countries have contributed to the differences found in authorship between “predatory” and “nonpredatory” journals.",
+          "checked_at": "2026-08-16T20:04:04.532366Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W1975947821"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "Who publishes in “predatory” journals?",
+          "url": "https://openalex.org/W1975947821",
+          "year": 2014
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:04:04.735301Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.1007/s11019-016-9740-3": {
+      "aliases": [
+        {
+          "type": "pmid",
+          "value": "27718131"
+        }
+      ],
+      "key": {
+        "type": "doi",
+        "value": "10.1007/s11019-016-9740-3"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:04:06.551257Z",
+          "detail": {},
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "The false academy: predatory publishing in science and bioethics",
+          "url": "https://doi.org/10.1007/s11019-016-9740-3",
+          "year": 2016
+        },
+        "openalex": {
+          "abstract": "This paper describes and discusses the phenomenon 'predatory publishing', in relation to both academic journals and books, and suggests a list of characteristics by which to identify predatory journals. It also raises the question whether traditional publishing houses have accompanied rogue publishers upon this path. It is noted that bioethics as a discipline does not stand unaffected by this trend. Towards the end of the paper it is discussed what can and should be done to eliminate or reduce the effects of this development. The paper concludes that predatory publishing is a growing phenomenon that has the potential to greatly affect both bioethics and science at large. Publishing papers and books for profit, without any genuine concern for content, but with the pretence of applying authentic academic procedures of critical scrutiny, brings about a worrying erosion of trust in scientific publishing.",
+          "checked_at": "2026-08-16T20:04:06.384311Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W2528469677"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "The false academy: predatory publishing in science and bioethics",
+          "url": "https://openalex.org/W2528469677",
+          "year": 2016
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:04:06.551462Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.1017/s0007114513002912": {
+      "aliases": [
+        {
+          "type": "pmid",
+          "value": "24274771"
+        }
+      ],
+      "key": {
+        "type": "doi",
+        "value": "10.1017/s0007114513002912"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": " The consumption of cocoa and dark chocolate is associated with a lower risk of CVD, and improvements in endothelial function may mediate this relationship. Less is known about the effects of cocoa/chocolate on the augmentation index (AI), a measure of vascular stiffness and vascular tone in the peripheral arterioles. We enrolled thirty middle-aged, overweight adults in a randomised, placebo-controlled, 4-week, cross-over study. During the active treatment (cocoa) period, the participants consumed 37 g/d of dark chocolate and a sugar-free cocoa beverage (total cocoa = 22 g/d, total flavanols (TF) = 814 mg/d). Colour-matched controls included a low-flavanol chocolate bar and a cocoa-free beverage with no added sugar (TF = 3 mg/d). Treatments were matched for total fat, saturated fat, carbohydrates and protein. The cocoa treatment significantly increased the basal diameter and peak diameter of the brachial artery by 6 % (+2 mm) and basal blood flow volume by 22 %. Substantial decreases in the AI, a measure of arterial stiffness, were observed in only women. Flow-mediated dilation and the reactive hyperaemia index remained unchanged. The consumption of cocoa had no effect on fasting blood measures, while the control treatment increased fasting insulin concentration and insulin resistance ( P = 0·01). Fasting blood pressure (BP) remained unchanged, although the acute consumption of cocoa increased resting BP by 4 mmHg. In summary, the high-flavanol cocoa and dark chocolate treatment was associated with enhanced vasodilation in both conduit and resistance arteries and was accompanied by significant reductions in arterial stiffness in women. ",
+          "checked_at": "2026-08-16T20:04:02.737579Z",
+          "detail": {},
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "Effects of dark chocolate and cocoa consumption on endothelial function and arterial stiffness in overweight adults",
+          "url": "https://doi.org/10.1017/s0007114513002912",
+          "year": 2013
+        },
+        "openalex": {
+          "abstract": "The consumption of cocoa and dark chocolate is associated with a lower risk of CVD, and improvements in endothelial function may mediate this relationship. Less is known about the effects of cocoa/chocolate on the augmentation index (AI), a measure of vascular stiffness and vascular tone in the peripheral arterioles. We enrolled thirty middle-aged, overweight adults in a randomised, placebo-controlled, 4-week, cross-over study. During the active treatment (cocoa) period, the participants consumed 37 g/d of dark chocolate and a sugar-free cocoa beverage (total cocoa = 22 g/d, total flavanols (TF) = 814 mg/d). Colour-matched controls included a low-flavanol chocolate bar and a cocoa-free beverage with no added sugar (TF = 3 mg/d). Treatments were matched for total fat, saturated fat, carbohydrates and protein. The cocoa treatment significantly increased the basal diameter and peak diameter of the brachial artery by 6% (+2 mm) and basal blood flow volume by 22%. Substantial decreases in the AI, a measure of arterial stiffness, were observed in only women. Flow-mediated dilation and the reactive hyperaemia index remained unchanged. The consumption of cocoa had no effect on fasting blood measures, while the control treatment increased fasting insulin concentration and insulin resistance (P= 0·01). Fasting blood pressure (BP) remained unchanged, although the acute consumption of cocoa increased resting BP by 4 mmHg. In summary, the high-flavanol cocoa and dark chocolate treatment was associated with enhanced vasodilation in both conduit and resistance arteries and was accompanied by significant reductions in arterial stiffness in women.",
+          "checked_at": "2026-08-16T20:04:02.579536Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W2149213972"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "Effects of dark chocolate and cocoa consumption on endothelial function and arterial stiffness in overweight adults",
+          "url": "https://openalex.org/W2149213972",
+          "year": 2013
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:04:02.737846Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.1021/acsomega.2c01833": {
+      "aliases": [
+        {
+          "type": "pmid",
+          "value": "35755397"
+        }
+      ],
+      "key": {
+        "type": "doi",
+        "value": "10.1021/acsomega.2c01833"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:50.366918Z",
+          "detail": {},
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "Iron Absorption: Factors, Limitations, and Improvement Methods",
+          "url": "https://doi.org/10.1021/acsomega.2c01833",
+          "year": 2022
+        },
+        "openalex": {
+          "abstract": "Iron is an essential element for human life since it participates in many functions in the human body, including oxygen transport, immunity, cell division and differentiation, and energy metabolism. Iron homeostasis is mainly controlled by intestinal absorption because iron does not have active excretory mechanisms for humans. Thus, efficient intestinal iron bioavailability is essential to reduce the risk of iron deficiency anemia. There are two forms of iron, heme and nonheme, found in foods. The average daily dietary iron intake is 10 to 15 mg in humans since only 1 to 2 mg is absorbed through the intestinal system. Nutrient-nutrient interactions may play a role in dietary intestinal iron absorption. Dietary inhibitors such as calcium, phytates, polyphenols and enhancers such as ascorbic acid and proteins mainly influence iron bioavailability. Numerous studies have been carried out for years to enhance iron bioavailability and combat iron deficiency. In addition to traditional methods, innovative techniques are being developed day by day to enhance iron bioavailability. This review will provide information about iron bioavailability, factors affecting absorption, iron deficiency, and recent studies on improving iron bioavailability.",
+          "checked_at": "2026-08-16T20:03:50.194211Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W4281635968"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "Iron Absorption: Factors, Limitations, and Improvement Methods",
+          "url": "https://openalex.org/W4281635968",
+          "year": 2022
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:50.367239Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.1046/j.1440-6047.1999.00038.x": {
+      "aliases": [
+        {
+          "type": "pmid",
+          "value": "24393738"
+        }
+      ],
+      "key": {
+        "type": "doi",
+        "value": "10.1046/j.1440-6047.1999.00038.x"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": " Oxalic acid and its salts occur as end products of metabolism in a number of plant tissues. When these plants are eaten they may have an adverse effect because oxalates bind calcium and other minerals. While oxalic acid is a normal end product of mammalian metabolism, the consumption of additional oxalic acid may cause stone formation in the urinary tract when the acid is excreted in the urine. Soaking and cooking of foodstuffs high in oxalate will reduce the oxalate content by leaching. The mean daily intake of oxalate in English diets has been calculated to be 70–150 mg, with tea appearing to contribute the greatest proportion of oxalate in these diets; rhubarb, spinach and beet are other common high oxalate‐content foods. Vegetarians who consume greater amounts of vegetables will have a higher intake of oxalates, which may reduce calcium availability. This may be an increased risk factor for women, who require greater amounts of calcium in the diet. In humans, diets low in calcium and high in oxalates are not recommended but the occasional consumption of high oxalate foods as part of a nuritious diet does not pose any particular problem. ",
+          "checked_at": "2026-08-16T20:03:46.837961Z",
+          "detail": {},
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "Oxalate content of foods and its effect on humans",
+          "url": "https://doi.org/10.1046/j.1440-6047.1999.00038.x",
+          "year": 1999
+        },
+        "openalex": {
+          "abstract": "Oxalic acid and its salts occur as end products of metabolism in a number of plant tissues. When these plants are eaten they may have an adverse effect because oxalates bind calcium and other minerals. While oxalic acid is a normal end product of mammalian metabolism, the consumption of additional oxalic acid may cause stone formation in the urinary tract when the acid is excreted in the urine. Soaking and cooking of foodstuffs high in oxalate will reduce the oxalate content by leaching. The mean daily intake of oxalate in English diets has been calculated to be 70-150 mg, with tea appearing to contribute the greatest proportion of oxalate in these diets; rhubarb, spinach and beet are other common high oxalate-content foods. Vegetarians who consume greater amounts of vegetables will have a higher intake of oxalates, which may reduce calcium availability. This may be an increased risk factor for women, who require greater amounts of calcium in the diet. In humans, diets low in calcium and high in oxalates are not recommended but the occasional consumption of high oxalate foods as part of a nuritious diet does not pose any particular problem.",
+          "checked_at": "2026-08-16T20:03:46.618662Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W2056908338"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "Oxalate content of foods and its effect on humans",
+          "url": "https://openalex.org/W2056908338",
+          "year": 1999
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:46.838143Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.1079/bjn19830042": {
+      "aliases": [
+        {
+          "type": "pmid",
+          "value": "6860621"
+        }
+      ],
+      "key": {
+        "type": "doi",
+        "value": "10.1079/bjn19830042"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": " 1. Non-haem iron absorption from a variety of vegetable meals was studied in parous Indian Women, using the erythrocyte utilization of radioactive Fe method.  2. The studies were undertaken to establish whether Fe absorption could be correlatedwith the chemical composition of the foodstuff.  3. Addition of the following organic acids commonly found in vegetables, improved the geometric mean Fe absorption from a basic rice meal as follows: from 0·028 to 0·085 with 1 g citric acid, from 0·031 to 0·081 with 15 mg ascorbic acid, from 0·048 to 0·095 with 1 g L-malic acid, from 0·041 to 0·096 with 1 g tartaric acid. The only exception was oxalic acid; the addition of 1 g calciumoxalate to cabbage ( Brassica oleraceae ) was associated with some depression in Fe absorption from 0·320 to 0·195.  4. There was a marked inhibition of the geometric mean absorption when 500 mg tannic acid was added to a broccoli ( Brassica oleraceae ) meal (0·015 v . 0·297). Sodium phytate (2 g) caused a similar, though less profound inhibition (0·035 to 0·152).  5. When 3 mg ferrous sulphate was added to different vegetables the geometric mean absorption varied widely. Vegetables of low Fe bioavailability were wheat germ ( Triticum aestivum ) 0·007, aubergine ( Solanum melongena ) 0·007, butter beans ( Phaseolus lunatus ) 0·012, spinach ( Spinacea oleraceae ) 0·014, brown lentils ( Lens culinaris ) 0·024, beetroot greens ( Beta vulgaris ) 0·024 and green lentils ( Lens culinaris ) 0·032. In contrast, bioavailability was moderate or good with carrot ( Daucus carota ) 0·098, potato ( Solanum tuberosum ) 0·115, beetroot ( Beta vulgaris ) 0·185, pumpkin ( Cucurbita mixta ) 0·206, broccoli 0·260, tomato ( Lycopersicon esculentum ) 0·224, cauliflower ( Brassica oleraceae ) 0·263, cabbage 0·320, turnip ( Brassica rapa ) 0·327 and sauerkraut 0·327.  6. All the vegetables associated with moderate or good Fe bioavailability contained appreciable amounts of one or more of the organic acids, malic, citric and ascorbic acids.  7. Poor Fe bioavailability was noted in vegetables with high phytate contents (e.g. wheat germ 0·007, butter beans 0·012, brown lentils 0·024 and green lentils 0·032).  8. The fact that a number of vegetables associated with low Fe-absorption turned bluish-black when Fe was added to them, suggested that the total polyphenol content in them was high. The vegetables included aubergine spinach, brown lentils, green lentils and beetroot greens. When the total polyphenol content in all the vegetables tested was formally measured, there was a significant inverse correlation (r 0·859, P &lt; 0·001) between it and Fe absorption. The inverse correlation between the non-hydrolysable polyphenol content and Fe absorption was r 0·901 (P &lt; 0·001).  9. The major relevance of these findings is the fact that the total absorption of non-haem-Fe from a mixed diet may be profoundly influenced by the presence of single vegetables with either marked enhancing or inhibiting effects on Fe bioavailability. ",
+          "checked_at": "2026-08-16T20:03:48.518707Z",
+          "detail": {},
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "The effects of organic acids, phytates and polyphenols on the absorption of iron from vegetables",
+          "url": "https://doi.org/10.1079/bjn19830042",
+          "year": 1983
+        },
+        "openalex": {
+          "abstract": "1. Non-haem iron absorption from a variety of vegetable meals was studied in parous Indian Women, using the erythrocyte utilization of radioactive Fe method. 2. The studies were undertaken to establish whether Fe absorption could be correlatedwith the chemical composition of the foodstuff. 3. Addition of the following organic acids commonly found in vegetables, improved the geometric mean Fe absorption from a basic rice meal as follows: from 0·028 to 0·085 with 1 g citric acid, from 0·031 to 0·081 with 15 mg ascorbic acid, from 0·048 to 0·095 with 1 g L-malic acid, from 0·041 to 0·096 with 1 g tartaric acid. The only exception was oxalic acid; the addition of 1 g calciumoxalate to cabbage ( Brassica oleraceae ) was associated with some depression in Fe absorption from 0·320 to 0·195. 4. There was a marked inhibition of the geometric mean absorption when 500 mg tannic acid was added to a broccoli ( Brassica oleraceae ) meal (0·015 v . 0·297). Sodium phytate (2 g) caused a similar, though less profound inhibition (0·035 to 0·152). 5. When 3 mg ferrous sulphate was added to different vegetables the geometric mean absorption varied widely. Vegetables of low Fe bioavailability were wheat germ ( Triticum aestivum ) 0·007, aubergine ( Solanum melongena ) 0·007, butter beans ( Phaseolus lunatus ) 0·012, spinach ( Spinacea oleraceae ) 0·014, brown lentils ( Lens culinaris ) 0·024, beetroot greens ( Beta vulgaris ) 0·024 and green lentils ( Lens culinaris ) 0·032. In contrast, bioavailability was moderate or good with carrot ( Daucus carota ) 0·098, potato ( Solanum tuberosum ) 0·115, beetroot ( Beta vulgaris ) 0·185, pumpkin ( Cucurbita mixta ) 0·206, broccoli 0·260, tomato ( Lycopersicon esculentum ) 0·224, cauliflower ( Brassica oleraceae ) 0·263, cabbage 0·320, turnip ( Brassica rapa ) 0·327 and sauerkraut 0·327. 6. All the vegetables associated with moderate or good Fe bioavailability contained appreciable amounts of one or more of the organic acids, malic, citric and ascorbic acids. 7. Poor Fe bioavailability was noted in vegetables with high phytate contents (e.g. wheat germ 0·007, butter beans 0·012, brown lentils 0·024 and green lentils 0·032). 8. The fact that a number of vegetables associated with low Fe-absorption turned bluish-black when Fe was added to them, suggested that the total polyphenol content in them was high. The vegetables included aubergine spinach, brown lentils, green lentils and beetroot greens. When the total polyphenol content in all the vegetables tested was formally measured, there was a significant inverse correlation (r 0·859, P &lt; 0·001) between it and Fe absorption. The inverse correlation between the non-hydrolysable polyphenol content and Fe absorption was r 0·901 (P &lt; 0·001). 9. The major relevance of these findings is the fact that the total absorption of non-haem-Fe from a mixed diet may be profoundly influenced by the presence of single vegetables with either marked enhancing or inhibiting effects on Fe bioavailability.",
+          "checked_at": "2026-08-16T20:03:48.384911Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W2117345138"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "The effects of organic acids, phytates and polyphenols on the absorption of iron from vegetables",
+          "url": "https://openalex.org/W2117345138",
+          "year": 1983
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:48.519907Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.1108/jpbm-12-2018-2180": {
+      "aliases": [],
+      "key": {
+        "type": "doi",
+        "value": "10.1108/jpbm-12-2018-2180"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": " \n Purpose \n Diffusion of fake news and pseudo-facts is becoming increasingly fast-paced and widespread, making it more difficult for the general public to separate reliable information from misleading content. The purpose of this article is to provide a more advanced understanding of the underlying processes that contribute to the spread of health- and beauty-related rumors and of the mechanisms that can mitigate the risks associated with the diffusion of fake news. \n \n \n Design/methodology/approach \n By adopting denialism as a conceptual lens, this article introduces a framework that aims to explain the mechanisms through which fake news and pseudo-facts propagate within the health and beauty industry. Three exemplary case studies situated within the context of the health and beauty industry reveal the persuasiveness of these principles and shed light on the diffusion of false and misleading information. \n \n \n Findings \n The following seven denialistic marketing tactics that contribute to diffusion of fake news can be identified: (1) promoting a socially accepted image; (2) associating brands with a healthy lifestyle; (3) use of experts; (4) working with celebrity influencers; (5) selectively using and omitting facts; (6) sponsoring research and pseudo-science; and (7)exploiting regulatory loopholes. Through a better understanding of how fake news spreads, brand managers can simultaneously improve the optics that surround their firms, promote sales organically and reinforce consumers’ trust toward the brand. \n \n \n Originality/value \n Within the wider context of the health and beauty industry, this article sets to explore the mechanisms through which fake news and pseudo-facts propagate and influence brands and consumers. The article offers several contributions not only to the emergent literature on fake news but also to the wider marketing and consumer behavior literature. \n ",
+          "checked_at": "2026-08-16T20:03:55.725533Z",
+          "detail": {},
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "A false image of health: how fake news and pseudo-facts spread in the health and beauty industry",
+          "url": "https://doi.org/10.1108/jpbm-12-2018-2180",
+          "year": 2019
+        },
+        "openalex": {
+          "abstract": "Purpose Diffusion of fake news and pseudo-facts is becoming increasingly fast-paced and widespread, making it more difficult for the general public to separate reliable information from misleading content. The purpose of this article is to provide a more advanced understanding of the underlying processes that contribute to the spread of health- and beauty-related rumors and of the mechanisms that can mitigate the risks associated with the diffusion of fake news. Design/methodology/approach By adopting denialism as a conceptual lens, this article introduces a framework that aims to explain the mechanisms through which fake news and pseudo-facts propagate within the health and beauty industry. Three exemplary case studies situated within the context of the health and beauty industry reveal the persuasiveness of these principles and shed light on the diffusion of false and misleading information. Findings The following seven denialistic marketing tactics that contribute to diffusion of fake news can be identified: (1) promoting a socially accepted image; (2) associating brands with a healthy lifestyle; (3) use of experts; (4) working with celebrity influencers; (5) selectively using and omitting facts; (6) sponsoring research and pseudo-science; and (7)exploiting regulatory loopholes. Through a better understanding of how fake news spreads, brand managers can simultaneously improve the optics that surround their firms, promote sales organically and reinforce consumers’ trust toward the brand. Originality/value Within the wider context of the health and beauty industry, this article sets to explore the mechanisms through which fake news and pseudo-facts propagate and influence brands and consumers. The article offers several contributions not only to the emergent literature on fake news but also to the wider marketing and consumer behavior literature.",
+          "checked_at": "2026-08-16T20:03:55.492044Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W2970888631"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "A false image of health: how fake news and pseudo-facts spread in the health and beauty industry",
+          "url": "https://openalex.org/W2970888631",
+          "year": 2019
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:55.725740Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.1136/bmj.283.6307.1671": {
+      "aliases": [
+        {
+          "type": "pmid",
+          "value": "6797607"
+        }
+      ],
+      "key": {
+        "type": "doi",
+        "value": "10.1136/bmj.283.6307.1671"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:40.653323Z",
+          "detail": {},
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "Fake.",
+          "url": "https://doi.org/10.1136/bmj.283.6307.1671",
+          "year": 1981
+        },
+        "openalex": {
+          "abstract": "The Latest Decalogue In the year that Popeye became once again a major movie star it is salutary to recall that his claims for spinach are spurious. Popeye's superhuman strength for deeds of derring-do comes from consuming a can of the stuff. The discovery that spinach was as valuable a source of iron as red meat was made in the 1890s, and it proved a useful propaganda weapon for the meatless days of the second world war. A statue of Popeye in Crystal City, Texas, commemorates the fact that single-handedly he raised the consumption of spinach by 33 7,. America was \"strong to finish 'cos they ate their spinach\" and duly defeated the Hun. Unfortunately, the propaganda was fraudulent; German chemists reinvestigating the iron content of spinach had shown in the 1930s that the original workers had put the decimal point in the wrong place and made a tenfold overestimate of its value. Spinach is no better for you than cabbage, Brussels sprouts, or broccoli. For a source of iron Popeye would have been better off chewing the cans (fig",
+          "checked_at": "2026-08-16T20:03:40.516958Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W4240878996"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "Fake.",
+          "url": "https://openalex.org/W4240878996",
+          "year": 1981
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:40.653465Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.1177/0306312714535679": {
+      "aliases": [
+        {
+          "type": "pmid",
+          "value": "25272616"
+        }
+      ],
+      "key": {
+        "type": "doi",
+        "value": "10.1177/0306312714535679"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": " Many of the messages presented in respectable scientific publications are, in fact, based on various forms of rumors. Some of these rumors appear so frequently, and in such complex, colorful, and entertaining ways that we can think of them as academic urban legends. The explanation for this phenomenon is usually that authors have lazily, sloppily, or fraudulently employed sources, and peer reviewers and editors have not discovered these weaknesses in the manuscripts during evaluation. To illustrate this phenomenon, I draw upon a remarkable case in which a decimal point error appears to have misled millions into believing that spinach is a good nutritional source of iron. Through this example, I demonstrate how an academic urban legend can be conceived and born, and can continue to grow and reproduce within academia and beyond. ",
+          "checked_at": "2026-08-16T20:03:43.774126Z",
+          "detail": {},
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "Academic urban legends",
+          "url": "https://doi.org/10.1177/0306312714535679",
+          "year": 2014
+        },
+        "openalex": {
+          "abstract": "Many of the messages presented in respectable scientific publications are, in fact, based on various forms of rumors. Some of these rumors appear so frequently, and in such complex, colorful, and entertaining ways that we can think of them as academic urban legends. The explanation for this phenomenon is usually that authors have lazily, sloppily, or fraudulently employed sources, and peer reviewers and editors have not discovered these weaknesses in the manuscripts during evaluation. To illustrate this phenomenon, I draw upon a remarkable case in which a decimal point error appears to have misled millions into believing that spinach is a good nutritional source of iron. Through this example, I demonstrate how an academic urban legend can be conceived and born, and can continue to grow and reproduce within academia and beyond.",
+          "checked_at": "2026-08-16T20:03:43.663058Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W2128057199"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "Academic urban legends",
+          "url": "https://openalex.org/W2128057199",
+          "year": 2014
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:43.774286Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.1177/0956797611417632": {
+      "aliases": [
+        {
+          "type": "pmid",
+          "value": "22006061"
+        }
+      ],
+      "key": {
+        "type": "doi",
+        "value": "10.1177/0956797611417632"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": " In this article, we accomplish two things. First, we show that despite empirical psychologists’ nominal endorsement of a low rate of false-positive findings (≤ .05), flexibility in data collection, analysis, and reporting dramatically increases actual false-positive rates. In many cases, a researcher is more likely to falsely find evidence that an effect exists than to correctly find evidence that it does not. We present computer simulations and a pair of actual experiments that demonstrate how unacceptably easy it is to accumulate (and report) statistically significant evidence for a false hypothesis. Second, we suggest a simple, low-cost, and straightforwardly effective disclosure-based solution to this problem. The solution involves six concrete requirements for authors and four guidelines for reviewers, all of which impose a minimal burden on the publication process. ",
+          "checked_at": "2026-08-16T20:04:10.157650Z",
+          "detail": {},
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "False-Positive Psychology",
+          "url": "https://doi.org/10.1177/0956797611417632",
+          "year": 2011
+        },
+        "openalex": {
+          "abstract": "In this article, we accomplish two things. First, we show that despite empirical psychologists' nominal endorsement of a low rate of false-positive findings (≤ .05), flexibility in data collection, analysis, and reporting dramatically increases actual false-positive rates. In many cases, a researcher is more likely to falsely find evidence that an effect exists than to correctly find evidence that it does not. We present computer simulations and a pair of actual experiments that demonstrate how unacceptably easy it is to accumulate (and report) statistically significant evidence for a false hypothesis. Second, we suggest a simple, low-cost, and straightforwardly effective disclosure-based solution to this problem. The solution involves six concrete requirements for authors and four guidelines for reviewers, all of which impose a minimal burden on the publication process.",
+          "checked_at": "2026-08-16T20:04:10.057422Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W2161498332"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "False-Positive Psychology",
+          "url": "https://openalex.org/W2161498332",
+          "year": 2011
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:04:10.157774Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.1186/1741-7015-8-39": {
+      "aliases": [
+        {
+          "type": "pmid",
+          "value": "20584271"
+        }
+      ],
+      "key": {
+        "type": "doi",
+        "value": "10.1186/1741-7015-8-39"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:59.026354Z",
+          "detail": {},
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "Does chocolate reduce blood pressure? A meta-analysis",
+          "url": "https://doi.org/10.1186/1741-7015-8-39",
+          "year": 2010
+        },
+        "openalex": {
+          "abstract": "BACKGROUND: Dark chocolate and flavanol-rich cocoa products have attracted interest as an alternative treatment option for hypertension, a known risk factor for cardiovascular disease. Previous meta-analyses concluded that cocoa-rich foods may reduce blood pressure. Recently, several additional trials have been conducted with conflicting results. Our study summarises current evidence on the effect of flavanol-rich cocoa products on blood pressure in hypertensive and normotensive individuals. METHODS: We searched Medline, Cochrane and international trial registries between 1955 and 2009 for randomised controlled trials investigating the effect of cocoa as food or drink compared with placebo on systolic and diastolic blood pressure (SBP/DBP) for a minimum duration of 2 weeks. We conducted random effects meta-analysis of all studies fitting the inclusion criteria, as well as subgroup analysis by baseline blood pressure (hypertensive/normotensive). Meta-regression analysis explored the association between type of treatment, dosage, duration or baseline blood pressure and blood pressure outcome. Statistical significance was set at P < 0.05. RESULTS: Fifteen trial arms of 13 assessed studies met the inclusion criteria. Pooled meta-analysis of all trials revealed a significant blood pressure-reducing effect of cocoa-chocolate compared with control (mean BP change +/- SE: SBP: -3.2 +/- 1.9 mmHg, P = 0.001; DBP: -2.0 +/- 1.3 mmHg, P = 0.003). However, subgroup meta-analysis was significant only for the hypertensive or prehypertensive subgroups (SBP: -5.0 +/- 3.0 mmHg; P = 0.0009; DBP: -2.7 +/- 2.2 mm Hg, P = 0.01), while BP was not significantly reduced in the normotensive subgroups (SBP: -1.6 +/- 2.3 mmHg, P = 0.17; DBP: -1.3 +/- 1.6 mmHg, P = 0.12). Nine trials used chocolate containing 50% to 70% cocoa compared with white chocolate or other cocoa-free controls, while six trials compared high- with low-flavanol cocoa products. Daily flavanol dosages ranged from 30 mg to 1000 mg in the active treatment groups, and interventions ran for 2 to 18 weeks. Meta-regression analysis found study design and type of control to be borderline significant but possibly indirect predictors for blood pressure outcome. CONCLUSION: Our meta-analysis suggests that dark chocolate is superior to placebo in reducing systolic hypertension or diastolic prehypertension. Flavanol-rich chocolate did not significantly reduce mean blood pressure below 140 mmHg systolic or 80 mmHg diastolic.",
+          "checked_at": "2026-08-16T20:03:58.874928Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W2005734649"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "Does chocolate reduce blood pressure? A meta-analysis",
+          "url": "https://openalex.org/W2005734649",
+          "year": 2010
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:59.026566Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.1186/s41073-016-0008-5": {
+      "aliases": [
+        {
+          "type": "pmid",
+          "value": "29451542"
+        }
+      ],
+      "key": {
+        "type": "doi",
+        "value": "10.1186/s41073-016-0008-5"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": " Abstract  \n                 Background \n                 In about one in 10,000 cases, a published article is retracted. This very often means that the results it reports are flawed. Several authors have voiced concerns about the presence of retracted research in the memory of science. In particular, a retracted result is propagated by citing it. In the published literature, many instances are given of retracted articles that are cited both before and after their retraction. Even worse is the possibility that these articles in turn are cited in such a way that the retracted result is propagated further. \n                \n                 Methods \n                 We have conducted a case study to find out how a retracted article is cited and whether retracted results are propagated through indirect citations. We have constructed the entire citation network for this case. \n                \n                 Results \n                 We show that directly citing articles is an important source of propagation of retracted research results. In contrast, in our case study, indirect citations do not contribute to the propagation of the retracted result. \n                \n                 Conclusions \n                 While admitting the limitations of a study involving a single case, we think there are reasons for the non-contribution of indirect citations that hold beyond our case study. \n               ",
+          "checked_at": "2026-08-16T20:03:52.212041Z",
+          "detail": {
+            "updated_by_source": "publisher"
+          },
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "Propagation of errors in citation networks: a study involving the entire citation network of a widely cited paper published in, and later retracted from, the journal Nature",
+          "url": "https://doi.org/10.1186/s41073-016-0008-5",
+          "year": 2016
+        },
+        "openalex": {
+          "abstract": "BACKGROUND: In about one in 10,000 cases, a published article is retracted. This very often means that the results it reports are flawed. Several authors have voiced concerns about the presence of retracted research in the memory of science. In particular, a retracted result is propagated by citing it. In the published literature, many instances are given of retracted articles that are cited both before and after their retraction. Even worse is the possibility that these articles in turn are cited in such a way that the retracted result is propagated further. METHODS: We have conducted a case study to find out how a retracted article is cited and whether retracted results are propagated through indirect citations. We have constructed the entire citation network for this case. RESULTS: We show that directly citing articles is an important source of propagation of retracted research results. In contrast, in our case study, indirect citations do not contribute to the propagation of the retracted result. CONCLUSIONS: While admitting the limitations of a study involving a single case, we think there are reasons for the non-contribution of indirect citations that hold beyond our case study.",
+          "checked_at": "2026-08-16T20:03:52.054761Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W2343758449"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "Propagation of errors in citation networks: a study involving the entire citation network of a widely cited paper published in, and later retracted from, the journal Nature",
+          "url": "https://openalex.org/W2343758449",
+          "year": 2016
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:52.212157Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.1371/journal.pmed.0020124": {
+      "aliases": [
+        {
+          "type": "pmid",
+          "value": "16060722"
+        }
+      ],
+      "key": {
+        "type": "doi",
+        "value": "10.1371/journal.pmed.0020124"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:04:08.314300Z",
+          "detail": {
+            "updated_by_source": "publisher"
+          },
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "Why Most Published Research Findings Are False",
+          "url": "https://doi.org/10.1371/journal.pmed.0020124",
+          "year": 2005
+        },
+        "openalex": {
+          "abstract": "There is increasing concern that most current published research findings are false. The probability that a research claim is true may depend on study power and bias, the number of other studies on the same question, and, importantly, the ratio of true to no relationships among the relationships probed in each scientific field. In this framework, a research finding is less likely to be true when the studies conducted in a field are smaller; when effect sizes are smaller; when there is a greater number and lesser preselection of tested relationships; where there is greater flexibility in designs, definitions, outcomes, and analytical modes; when there is greater financial and other interest and prejudice; and when more teams are involved in a scientific field in chase of statistical significance. Simulations show that for most study designs and settings, it is more likely for a research claim to be false than true. Moreover, for many current scientific fields, claimed research findings may often be simply accurate measures of the prevailing bias. In this essay, I discuss the implications of these problems for the conduct and interpretation of research.",
+          "checked_at": "2026-08-16T20:04:08.092120Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W2144981148"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "Why Most Published Research Findings Are False",
+          "url": "https://openalex.org/W2144981148",
+          "year": 2005
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:04:08.314369Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.1579/0044-7447(2008)37[114:ecitbs]2.0.co;2": {
+      "aliases": [
+        {
+          "type": "pmid",
+          "value": "18488554"
+        }
+      ],
+      "key": {
+        "type": "doi",
+        "value": "10.1579/0044-7447(2008)37[114:ecitbs]2.0.co;2"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:53.941402Z",
+          "detail": {},
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "Error Cascades in the Biological Sciences: The Unwanted Consequences of Using Bad Taxonomy in Ecology",
+          "url": "https://doi.org/10.1579/0044-7447(2008)37[114:ecitbs]2.0.co;2",
+          "year": 2008
+        },
+        "openalex": {
+          "abstract": "Why do ecologists seem to underestimate the consequences of using bad taxonomy? Is it because the consequences of doing so have not been yet scrutinized well enough? Is it because these consequences are irrelevant? In this paper I examine and discuss these questions, focusing on the fact that because ecological works provide baseline information for many other biological disciplines, they play a key role in spreading and magnifying the abundance of a variety of conceptual and methodological errors. Although overlooked and underestimated, this cascade-like process originates from trivial taxonomical problems that affect hypotheses and ideas, but it soon shifts into a profound practical problem affecting our knowledge about nature, as well as the ecosystem structure and functioning and the efficiency of human health care programs. In order to improve the intercommunication among disciplines, I propose a set of specific requirements that peer reviewed journals should request from all authors, and I also advocate for urgent institutional and financial support directed at reinvigorating the formation of scientific collections that integrate taxonomy and ecology.",
+          "checked_at": "2026-08-16T20:03:53.810425Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W2158833271"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "Error Cascades in the Biological Sciences: The Unwanted Consequences of Using Bad Taxonomy in Ecology",
+          "url": "https://openalex.org/W2158833271",
+          "year": 2008
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:53.941574Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "doi:10.3823/1654": {
+      "aliases": [],
+      "key": {
+        "type": "doi",
+        "value": "10.3823/1654"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:57.429681Z",
+          "detail": {
+            "update_to": "retraction",
+            "updated_by_source": "retraction-watch"
+          },
+          "found": true,
+          "record": null,
+          "source": "crossref",
+          "title": "The comparison of resilience and spirituality in addicted and non-addicted women",
+          "url": "https://doi.org/10.3823/1654",
+          "year": 2015
+        },
+        "openalex": {
+          "abstract": "The extent and nature of addiction among women ofÂ our country has been less known. For this reason, their requirementsÂ and needs are not addressed in planning process for control addiction. The present study was designed to compare the resilience withÂ spirituality among addicted and non- addicted women.",
+          "checked_at": "2026-08-16T20:03:57.297647Z",
+          "detail": {
+            "is_retracted": "true",
+            "openalex_id": "https://openalex.org/W209123019"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "The comparison of resilience and spirituality in addicted and non-addicted women",
+          "url": "https://openalex.org/W209123019",
+          "year": 2015
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:57.429894Z",
+          "detail": {
+            "author": "Johannes Bohannon;Diana Koch;Peter Homm;Alexander Driehaus",
+            "journal": "International Archives of Medicine (IAM)",
+            "nature": "Retraction",
+            "reasons": "Falsification/Fabrication of Data;Falsification/Fabrication of Results;False/Forged Authorship;Bias Issues or Lack of Balance;",
+            "record_id": "17524",
+            "retraction_date": "6/10/2015 0:00"
+          },
+          "found": true,
+          "record": "record_id: 17524 nature: Retraction retraction_date: 6/10/2015 0:00 reasons: Falsification/Fabrication of Data;Falsification/Fabrication of Results;False/Forged Authorship;Bias Issues or Lack of Balance; journal: International Archives of Medicine (IAM) author: Johannes Bohannon;Diana Koch;Peter Homm;Alexander Driehaus",
+          "source": "retraction-watch",
+          "title": "Chocolate with high Cocoa content as a weight-loss accelerator",
+          "url": "https://gitlab.com/crossref/retraction-watch-data",
+          "year": null
+        }
+      }
+    },
+    "pmid:25272616": {
+      "aliases": [
+        {
+          "type": "doi",
+          "value": "10.1177/0306312714535679"
+        }
+      ],
+      "key": {
+        "type": "pmid",
+        "value": "25272616"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:45.328752Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "crossref",
+          "title": null,
+          "url": null,
+          "year": null
+        },
+        "openalex": {
+          "abstract": "Many of the messages presented in respectable scientific publications are, in fact, based on various forms of rumors. Some of these rumors appear so frequently, and in such complex, colorful, and entertaining ways that we can think of them as academic urban legends. The explanation for this phenomenon is usually that authors have lazily, sloppily, or fraudulently employed sources, and peer reviewers and editors have not discovered these weaknesses in the manuscripts during evaluation. To illustrate this phenomenon, I draw upon a remarkable case in which a decimal point error appears to have misled millions into believing that spinach is a good nutritional source of iron. Through this example, I demonstrate how an academic urban legend can be conceived and born, and can continue to grow and reproduce within academia and beyond.",
+          "checked_at": "2026-08-16T20:03:45.328579Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W2128057199"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "Academic urban legends",
+          "url": "https://openalex.org/W2128057199",
+          "year": 2014
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:45.328795Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    },
+    "pmid:31844967": {
+      "aliases": [
+        {
+          "type": "doi",
+          "value": "10.1007/s00394-019-02105-2"
+        }
+      ],
+      "key": {
+        "type": "pmid",
+        "value": "31844967"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:58.653604Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "crossref",
+          "title": null,
+          "url": null,
+          "year": null
+        },
+        "openalex": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:58.653473Z",
+          "detail": {
+            "is_retracted": "true",
+            "openalex_id": "https://openalex.org/W2996048012"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "RETRACTED ARTICLE: The effect of hesperidin supplementation on metabolic profiles in patients with metabolic syndrome: a randomized, double-blind, placebo-controlled clinical trial",
+          "url": "https://openalex.org/W2996048012",
+          "year": 2019
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:58.653642Z",
+          "detail": {
+            "author": "Zahra Yari;Mina Movahedian;Hossein Imani;Seyed Moayed Alavian;Mehdi Hedayati;Azita Hekmatdoost",
+            "journal": "European Journal of Nutrition",
+            "nature": "Retraction",
+            "reasons": "Concerns/Issues about Data;Investigation by Journal/Publisher;Investigation by Third Party;Objections by Author(s);Unreliable Results and/or Conclusions;",
+            "record_id": "71483",
+            "retraction_date": "6/10/2026 0:00"
+          },
+          "found": true,
+          "record": "record_id: 71483 nature: Retraction retraction_date: 6/10/2026 0:00 reasons: Concerns/Issues about Data;Investigation by Journal/Publisher;Investigation by Third Party;Objections by Author(s);Unreliable Results and/or Conclusions; journal: European Journal of Nutrition author: Zahra Yari;Mina Movahedian;Hossein Imani;Seyed Moayed Alavian;Mehdi Hedayati;Azita Hekmatdoost",
+          "source": "retraction-watch",
+          "title": "The effect of hesperidin supplementation on metabolic profiles in patients with metabolic syndrome: a randomized, double-blind, placebo-controlled clinical trial",
+          "url": "https://gitlab.com/crossref/retraction-watch-data",
+          "year": null
+        }
+      }
+    },
+    "pmid:6797607": {
+      "aliases": [
+        {
+          "type": "doi",
+          "value": "10.1136/bmj.283.6307.1671"
+        }
+      ],
+      "key": {
+        "type": "pmid",
+        "value": "6797607"
+      },
+      "readings": {
+        "crossref": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:42.342233Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "crossref",
+          "title": null,
+          "url": null,
+          "year": null
+        },
+        "openalex": {
+          "abstract": "The Latest Decalogue In the year that Popeye became once again a major movie star it is salutary to recall that his claims for spinach are spurious. Popeye's superhuman strength for deeds of derring-do comes from consuming a can of the stuff. The discovery that spinach was as valuable a source of iron as red meat was made in the 1890s, and it proved a useful propaganda weapon for the meatless days of the second world war. A statue of Popeye in Crystal City, Texas, commemorates the fact that single-handedly he raised the consumption of spinach by 33 7,. America was \"strong to finish 'cos they ate their spinach\" and duly defeated the Hun. Unfortunately, the propaganda was fraudulent; German chemists reinvestigating the iron content of spinach had shown in the 1930s that the original workers had put the decimal point in the wrong place and made a tenfold overestimate of its value. Spinach is no better for you than cabbage, Brussels sprouts, or broccoli. For a source of iron Popeye would have been better off chewing the cans (fig",
+          "checked_at": "2026-08-16T20:03:42.341946Z",
+          "detail": {
+            "is_retracted": "false",
+            "openalex_id": "https://openalex.org/W4240878996"
+          },
+          "found": true,
+          "record": null,
+          "source": "openalex",
+          "title": "Fake.",
+          "url": "https://openalex.org/W4240878996",
+          "year": 1981
+        },
+        "retraction-watch": {
+          "abstract": null,
+          "checked_at": "2026-08-16T20:03:42.342290Z",
+          "detail": {},
+          "found": false,
+          "record": null,
+          "source": "retraction-watch",
+          "title": null,
+          "url": null,
+          "year": null
+        }
+      }
+    }
+  }
+}

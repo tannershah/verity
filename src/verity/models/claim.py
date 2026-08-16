@@ -36,7 +36,14 @@ from datetime import datetime
 from pydantic import Field, model_validator
 
 from verity.base import VerityModel
-from verity.ids import ConclusionId, FactId, PremiseId, StepId, check_id, make_id
+from verity.ids import (
+    ConclusionId,
+    FactId,
+    PremiseId,
+    StepId,
+    derive_id,
+    normalize_text,
+)
 from verity.keys import ExternalKey
 from verity.models.common import (
     AblationDelta,
@@ -67,9 +74,7 @@ class Claim(VerityModel):
 
     @model_validator(mode="after")
     def _assign_id(self) -> Claim:
-        if not self.id:
-            self.id = make_id("claim", self.text)
-        check_id("claim", self.id)
+        self.id = derive_id("claim", self.text, supplied=self.id, identity="its text")
         return self
 
 
@@ -99,9 +104,7 @@ class Premise(VerityModel):
 
     @model_validator(mode="after")
     def _assign_id(self) -> Premise:
-        if not self.id:
-            self.id = make_id("prem", self.text)
-        check_id("prem", self.id)
+        self.id = derive_id("prem", self.text, supplied=self.id, identity="its text")
         return self
 
 
@@ -162,9 +165,13 @@ class EntailmentStep(VerityModel):
         stray = set(self.ablation_deltas) - set(self.premise_ids)
         if stray:
             raise ValueError(f"ablation deltas for premises not in this step: {sorted(stray)}")
-        if not self.id:
-            self.id = make_id("step", self.conclusion_id, sorted(self.premise_ids))
-        check_id("step", self.id)
+        self.id = derive_id(
+            "step",
+            self.conclusion_id,
+            sorted(self.premise_ids),
+            supplied=self.id,
+            identity="its conclusion and premise set",
+        )
         return self
 
 
@@ -258,6 +265,11 @@ class ClaimGraph(VerityModel):
         Producers that bound coverage — a beam cap, a node budget — can orphan a subtree
         by dropping its parent. This removes the orphans and returns a `CapRecord` for
         them, so evaluation.md §6's "no silent caps" holds for a drop nobody asked for.
+
+        The record is written onto `metadata.caps` here rather than handed back for the
+        caller to file. A returned-only cap is reported exactly as often as producers
+        remember to fold it in, which is the silent cap this method exists to prevent; the
+        list is still returned so a caller can act on the drop it just made.
         """
         premises = dict(premises or {})
         steps = list(steps or [])
@@ -283,13 +295,17 @@ class ClaimGraph(VerityModel):
                 )
             )
 
+        metadata = metadata or GraphMetadata()
+        if caps:
+            metadata = metadata.model_copy(update={"caps": [*metadata.caps, *caps]})
+
         graph = cls(
             root_claim=root_claim,
             premises=premises,
             steps=steps,
             groundings=list(groundings or []),
             bundles=dict(bundles or {}),
-            metadata=metadata or GraphMetadata(),
+            metadata=metadata,
         )
         return graph, caps
 
@@ -370,9 +386,9 @@ class ClaimGraph(VerityModel):
             ):
                 raise ValueError(f"premise {premise.id} claims `verified` with no grounding")
 
-        if not self.id:
-            self.id = make_id("graph", self.root_claim.id)
-        check_id("graph", self.id)
+        self.id = derive_id(
+            "graph", self.root_claim.id, supplied=self.id, identity="its root claim"
+        )
         return self
 
     # -- traversal ---------------------------------------------------------------
@@ -388,6 +404,18 @@ class ClaimGraph(VerityModel):
         one step's score to a premise being displayed under another.
         """
         return [s for s in self.steps if premise_id in s.premise_ids]
+
+    def conclusion_of(self, step: EntailmentStep) -> Claim | Premise:
+        """The node a step concludes: the root claim, or a premise.
+
+        `ConclusionId` admits both prefixes — that is what makes recursion work, and it is
+        what makes `graph.premises[step.conclusion_id]` a `KeyError` on every root step.
+        The verifier scores one pair per step, this node's text against its premises', so
+        this is the half of that pair traversal does not already hand back.
+        """
+        if step.conclusion_id == self.root_claim.id:
+            return self.root_claim
+        return self.premises[step.conclusion_id]
 
     def children_of(self, node_id: str) -> list[Premise]:
         step = self.step_concluding(node_id)
@@ -444,6 +472,28 @@ class ClaimGraph(VerityModel):
 
     def grounding_for(self, premise_id: str) -> Grounding | None:
         return next((g for g in self.groundings if g.premise_id == premise_id), None)
+
+    def restating_premise_ids(self) -> list[str]:
+        """Premises whose statement is the root claim's own.
+
+        Structurally legal — `Claim` and `Premise` ids differ by prefix, so this closes no
+        cycle — and the highest-confidence worthless step the system can produce, since an
+        entailment scorer rates it near 1.0. It is a decomposition failure the
+        pre-registered step validity is measuring, so it has to survive to the artifact.
+
+        Derived rather than stored, for two reasons. It holds for every graph including
+        ones assembled by a producer that never thought to set a flag, which is the failure
+        mode a boolean field has; and a premise several levels down that reproduces the
+        claim is the same failure as one directly beneath it, which a step-local flag
+        cannot see. Compared through `normalize_text` because that is where this codebase
+        draws the line on two spellings being one statement.
+        """
+        target = normalize_text(self.root_claim.text)
+        return sorted(
+            pid
+            for pid, premise in self.premises.items()
+            if normalize_text(premise.text) == target
+        )
 
     def max_depth(self) -> int:
         """Deepest edge in the graph as it stands — the number the renderer displays.

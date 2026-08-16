@@ -31,7 +31,7 @@ from verity.models.common import (
 from verity.models.evidence import EvidenceBundle, EvidenceQuality, IssuedQuery
 from verity.models.fact import Fact, Justification
 
-KEY = ExternalKey(type=KeyType.DOI, value="10.1080/00071668108416780")
+KEY = ExternalKey(type=KeyType.DOI, value="10.1136/bmj.283.6307.1671")
 ACCESSED = datetime(2026, 8, 16, tzinfo=UTC)
 
 

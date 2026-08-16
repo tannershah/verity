@@ -21,9 +21,18 @@ from pydantic import BaseModel, ConfigDict
 
 
 class VerityModel(BaseModel):
-    """Base for records. Rejects fields it does not declare."""
+    """Base for records. Rejects fields it does not declare, and re-checks what it holds.
 
-    model_config = ConfigDict(extra="forbid")
+    `revalidate_instances="always"` is the same argument as `extra="forbid"`, applied to
+    composition. Several models here derive a field from their own content — an id from a
+    conclusion and its premise set, most consequentially — and `model_copy(update=...)`
+    returns an object with the new content and the old derivation, having run no validator
+    at all. Revalidating nested instances means such an object cannot be *held* by a record
+    that would then be scored, stored, or rendered: it fails at the boundary it crosses
+    rather than reading as a step it is not.
+    """
+
+    model_config = ConfigDict(extra="forbid", revalidate_instances="always")
 
 
 class FrozenModel(VerityModel):

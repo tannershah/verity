@@ -108,13 +108,16 @@ def test_statement_dedup_survives_unicode_normalization():
 
 
 def test_export_is_byte_stable_across_processes():
-    claim = Claim(id="claim_fixed", text="x", created_at=datetime(2026, 1, 1, tzinfo=UTC))
+    """The id is left to derivation rather than pinned: PYTHONHASHSEED moves between
+    processes, so a derived id reproducing across one is the property under test and a
+    supplied one would assert nothing."""
+    claim = Claim(text="x", created_at=datetime(2026, 1, 1, tzinfo=UTC))
     here = to_json(claim)
     there = _in_subprocess(
         "from datetime import UTC, datetime\n"
         "from verity.models.claim import Claim\n"
         "from verity.export import to_json\n"
-        "print(to_json(Claim(id='claim_fixed', text='x',"
+        "print(to_json(Claim(text='x',"
         " created_at=datetime(2026, 1, 1, tzinfo=UTC))))"
     )
     assert here == there

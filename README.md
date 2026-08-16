@@ -15,7 +15,7 @@ claim
         └─▶ render: per-premise confidence · symmetric evidence · no root aggregate
 ```
 
-**Status:** spine in place — typed data model, SQLite persistence with forward migration, config and secrets handling, LLM adapter, run manifests. The hard constraints are enforced by the types rather than by convention, so a violation is a build failure: see [tests/](tests/). Decomposition, retrieval, and rendering are in progress. Beachhead is scientific and health claims; news is roadmap.
+**Status:** spine in place — typed data model, SQLite persistence with forward migration, config and secrets handling, LLM adapter, run manifests. The alethiology is seeded and grounding works: a premise carrying an exact DOI or PMID resolves to a verified fact, and when it doesn't, the store says which of the reasons it was. The hard constraints are enforced by the types rather than by convention, so a violation is a build failure: see [tests/](tests/). Decomposition, retrieval, and rendering are in progress. Beachhead is scientific and health claims; news is roadmap.
 
 ---
 
@@ -39,7 +39,10 @@ claim
 src/verity/models/    the claim graph, facts, evidence, run manifests, and the render projection
 src/verity/store/     SQLite persistence — JSON payload authoritative, columns derived, schema versioned
 src/verity/llm/       provider-agnostic adapter (Claude default) and a scripted stub
+src/verity/decomposition/  backward chaining — one step, recursion-shaped; the prompt is one file
+src/verity/alethiology/  fact-store policy: exact-key grounding, the curated seed and its gate
 src/verity/           keys, ids, config, secrets, thresholds, and one package per unbuilt module
+seed/                 the curated facts and the key-resolution record they were checked against
 tests/                enforcement tests for the hard constraints, plus the round-trip suite
 docs/                 current thinking — design, hypotheses, positioning, evaluation, open questions
 research/raw/         the two deep-research reports and their source lists
@@ -48,7 +51,7 @@ research/matrix/      structured extraction: 29 products · 34 papers · 98 sour
 
 `docs/` is where decisions live. `research/` is the evidence they rest on — every claim in `docs/` cites a row by ID (`product-009`, `lit-005`).
 
-Setup: `uv venv --python 3.12 && uv pip install -e ".[dev]"`, then `cp .env.example .env` and fill in the keys. `pytest` runs the suite.
+Setup: `uv venv --python 3.12 && uv pip install -e ".[dev]"`, then `cp .env.example .env` and fill in the keys. `pytest` runs the suite. `python -m verity.alethiology seed` loads the curated facts into the store — offline and deterministic, against a committed record of what each registry returned. What that gate refuses, and why, is in [seed/README.md](seed/README.md).
 
 ---
 

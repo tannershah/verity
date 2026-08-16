@@ -36,7 +36,7 @@ from verity.store.facts import (
 )
 from verity.store.graphs import load_graph, save_graph
 
-KEY = ExternalKey(type=KeyType.DOI, value="10.1080/00071668108416780")
+KEY = ExternalKey(type=KeyType.DOI, value="10.1136/bmj.283.6307.1671")
 NEAR_MISS = ExternalKey(type=KeyType.DOI, value="10.1080/00071668108416781")
 ACCESSED = datetime(2026, 8, 16, 12, 34, 56, 789123, tzinfo=UTC)
 PROVENANCE = Provenance(
@@ -46,7 +46,7 @@ PROVENANCE = Provenance(
 
 def _fact(**overrides) -> Fact:
     defaults = dict(
-        statement="Published iron content for raw spinach is approximately 2.7 mg per 100 g.",
+        statement="Hamblin (1981) reports that the spinach iron figure was overstated tenfold.",
         key=KEY,
         tier=ConfidenceTier.VERIFIED_PRIMARY,
         provenance=[PROVENANCE],
@@ -185,10 +185,10 @@ def test_key_lookup_is_exact_and_reaches_through_canonicalization(tmp_path):
     save_fact(conn, fact)
 
     for spelling in (
-        "10.1080/00071668108416780",
-        "https://doi.org/10.1080/00071668108416780",
-        "DOI: 10.1080/00071668108416780",
-        "10.1080/00071668108416780 ",
+        "10.1136/bmj.283.6307.1671",
+        "https://doi.org/10.1136/bmj.283.6307.1671",
+        "DOI: 10.1136/bmj.283.6307.1671",
+        "10.1136/bmj.283.6307.1671 ",
     ):
         assert [f.id for f in facts_by_key(conn, ExternalKey.parse(spelling))] == [fact.id]
 

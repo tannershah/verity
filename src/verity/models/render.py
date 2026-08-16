@@ -120,6 +120,15 @@ class RenderPremise(VerityModel):
     grounding_recorded: bool = False
     grounding_status: GroundingLiveness = GroundingLiveness.NOT_GROUNDED
     grounding_fact_id: str | None = None
+    #: The statement of the fact this premise grounded in, shown beside the premise.
+    #: Grounding is exact-key match (evaluation.md §2) and never compares statements, so
+    #: `verified` on its own says a work with this identifier sits in the alethiology at
+    #: an eligible tier — not that the premise's own content was checked. Alethiology
+    #: statements are attributive by construction ("Rekdal (2014) reports that …"), so
+    #: printing the grounded statement next to the premise is what makes the difference
+    #: between the two visible instead of collapsed into one word. Present whenever the
+    #: fact was found, including when it is OUT or below the eligible tier.
+    grounding_fact_statement: str | None = None
     bound_key: ExternalKey | None = None
 
     #: supporting / contradicting / neutral / rejected counts, or None if no bundle yet.
@@ -209,10 +218,19 @@ def to_render_payload(
         if bundle is not None:
             for item in (*bundle.supporting, *bundle.contradicting, *bundle.neutral):
                 flags.extend(_retraction_flags(item.quality, str(item.key or item.id)))
-        if fact is not None:
-            # The demo narrative's last beat: a retraction reachable only through the
-            # alethiology, not through anything retrieval returned.
+        # Every fact the alethiology holds under the key this premise cites — not only the
+        # one it grounded in. A retraction warning is not contingent on grounding: a fact
+        # below the eligible tier grounds nothing, and a premise citing a retracted work is
+        # exactly the case most worth flagging. Keying the warning to the grounding row
+        # would have made the seeded chocolate trail — single-secondary by the tier gate,
+        # therefore never a grounding — render clean.
+        for known in facts.facts_for(premise.bound_key) if premise.bound_key else ():
+            flags.extend(_retraction_flags(known.evidence_quality, str(known.key)))
+        if fact is not None and (
+            premise.bound_key is None or not fact.key.matches(premise.bound_key)
+        ):
             flags.extend(_retraction_flags(fact.evidence_quality, str(fact.key)))
+        flags = list(dict.fromkeys(flags))
 
         rows.append(
             RenderPremise(
@@ -236,6 +254,7 @@ def to_render_payload(
                 grounding_recorded=grounding is not None,
                 grounding_status=status,
                 grounding_fact_id=grounding.fact_id if grounding else None,
+                grounding_fact_statement=fact.statement if fact else None,
                 bound_key=premise.bound_key,
                 evidence_counts=bundle.counts if bundle else None,
                 retraction_flags=flags,

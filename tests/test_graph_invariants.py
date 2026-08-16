@@ -320,6 +320,34 @@ def test_a_shared_premise_carries_the_depth_of_the_edge_it_renders_under():
     assert depths == {2}
 
 
+# -- content-addressed identity ------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("build", "mutation"),
+    [
+        (lambda: Claim(text="Original."), {"text": "A completely different statement."}),
+        (lambda: Premise(text="Original."), {"text": "A completely different statement."}),
+        (
+            lambda: EntailmentStep(conclusion_id="claim_x", premise_ids=["prem_a"]),
+            {"premise_ids": ["prem_a", "prem_b"]},
+        ),
+    ],
+)
+def test_an_id_that_disagrees_with_its_content_is_refused(build, mutation):
+    """Ids here are derived from content, so an id naming content it was not derived from
+    is the one way these records can be silently wrong: the node is found by an identity it
+    does not have, and `Premise` is what DAG dedup keys on, so one statement splits across
+    two nodes or two statements share one. `model_copy(update=...)` writes exactly that,
+    having run no validator — which is why the check is on the way back in."""
+    original = build()
+    tampered = original.model_copy(update=mutation)
+    assert tampered.id == original.id, "the copy kept an id derived from the old content"
+
+    with pytest.raises(ValidationError, match="does not match the id derived from"):
+        type(original)(**tampered.model_dump())
+
+
 # -- step identity and arity --------------------------------------------------------
 
 

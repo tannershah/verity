@@ -10,6 +10,7 @@ grounding path exposed, and no fuzzy or similarity lookup exists here by design
 from __future__ import annotations
 
 import sqlite3
+from collections.abc import Iterable
 
 from verity.export import from_json, to_json
 from verity.keys import ExternalKey
@@ -26,43 +27,64 @@ class StoreConflictError(RuntimeError):
 
 
 def save_fact(conn: sqlite3.Connection, fact: Fact) -> str:
+    """Write one fact in its own transaction."""
     try:
-        return _save_fact(conn, fact)
+        with conn:
+            _write_fact(conn, fact)
     except sqlite3.IntegrityError as exc:  # pragma: no cover - digest collision only
         raise StoreConflictError(
             f"fact {fact.id} conflicts with a stored row on ({fact.key}, statement): {exc}"
         ) from exc
-
-
-def _save_fact(conn: sqlite3.Connection, fact: Fact) -> str:
-    with conn:
-        conn.execute(
-            """
-            INSERT INTO facts
-                (id, key_type, key_value, statement_hash, tier, status,
-                 revalidated_at, payload)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET
-                key_type = excluded.key_type,
-                key_value = excluded.key_value,
-                statement_hash = excluded.statement_hash,
-                tier = excluded.tier,
-                status = excluded.status,
-                revalidated_at = excluded.revalidated_at,
-                payload = excluded.payload
-            """,
-            (
-                fact.id,
-                fact.key.type.value,
-                fact.key.value,
-                fact.statement_hash,
-                fact.tier.value,
-                fact.status.value,
-                fact.revalidated_at.isoformat() if fact.revalidated_at else None,
-                to_json(fact),
-            ),
-        )
     return fact.id
+
+
+def save_facts(conn: sqlite3.Connection, facts: Iterable[Fact]) -> list[str]:
+    """Write many facts in **one** transaction — all of them land, or none do.
+
+    A caller that has already decided the whole batch is writable needs the write to be
+    as atomic as the decision was. Looping over `save_fact` commits per row, so a failure
+    partway leaves a store that is neither the old one nor the new one; M5-T1's seed
+    loader validates every row before writing any, and that guarantee would end at the
+    first `INSERT` without this.
+    """
+    written = list(facts)
+    try:
+        with conn:
+            for fact in written:
+                _write_fact(conn, fact)
+    except sqlite3.IntegrityError as exc:  # pragma: no cover - digest collision only
+        raise StoreConflictError(f"batch write rolled back: {exc}") from exc
+    return [fact.id for fact in written]
+
+
+def _write_fact(conn: sqlite3.Connection, fact: Fact) -> None:
+    """The statement itself. Transaction-free, so callers compose one around a batch."""
+    conn.execute(
+        """
+        INSERT INTO facts
+            (id, key_type, key_value, statement_hash, tier, status,
+             revalidated_at, payload)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+            key_type = excluded.key_type,
+            key_value = excluded.key_value,
+            statement_hash = excluded.statement_hash,
+            tier = excluded.tier,
+            status = excluded.status,
+            revalidated_at = excluded.revalidated_at,
+            payload = excluded.payload
+        """,
+        (
+            fact.id,
+            fact.key.type.value,
+            fact.key.value,
+            fact.statement_hash,
+            fact.tier.value,
+            fact.status.value,
+            fact.revalidated_at.isoformat() if fact.revalidated_at else None,
+            to_json(fact),
+        ),
+    )
 
 
 def load_fact(conn: sqlite3.Connection, fact_id: str) -> Fact | None:
@@ -129,6 +151,9 @@ class SqliteFacts:
 
     def get(self, fact_id: str) -> Fact | None:
         return load_fact(self._conn, fact_id)
+
+    def facts_for(self, key: ExternalKey) -> list[Fact]:
+        return facts_by_key(self._conn, key)
 
 
 def justifications_depending_on(conn: sqlite3.Connection, fact_id: str) -> list[Justification]:

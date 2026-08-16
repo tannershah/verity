@@ -13,4 +13,6 @@ venv/
 *.egg-info/
 
 .cache/
-data/
+# Bulk downloads, the database, and run logs stay out; versioned claim sets do not.
+data/*
+!data/claimsets/
