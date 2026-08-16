@@ -1,5 +1,10 @@
 # Verity — CLAUDE.md
 
+**⏱ ACTIVE SPRINT (temporary — remove this block after the 2026-08-17 submission):**
+read `SPRINT.md` before starting any work. It scopes, re-orders, and assigns
+`docs/build-plan.md` tiers for this window; where they differ, SPRINT.md wins until
+it is deleted.
+
 Epistemic transparency engine. Input: text containing claims. Pipeline: recursively
 decompose each claim into load-bearing premises (backward chaining — premises
 jointly entail the claim, each easier to verify), check premises against the
