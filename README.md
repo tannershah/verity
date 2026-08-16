@@ -15,7 +15,7 @@ claim
         └─▶ render: per-premise confidence · symmetric evidence · no root aggregate
 ```
 
-**Status:** research and design complete; implementation not started. Beachhead is scientific and health claims; news is roadmap.
+**Status:** spine in place — typed data model, SQLite persistence with forward migration, config and secrets handling, LLM adapter, run manifests. The hard constraints are enforced by the types rather than by convention, so a violation is a build failure: see [tests/](tests/). Decomposition, retrieval, and rendering are in progress. Beachhead is scientific and health claims; news is roadmap.
 
 ---
 
@@ -36,12 +36,19 @@ claim
 ## Layout
 
 ```
-docs/              current thinking — design, hypotheses, positioning, evaluation, open questions
-research/raw/      the two deep-research reports and their source lists
-research/matrix/   structured extraction: 29 products · 34 papers · 98 sources, with per-cell provenance
+src/verity/models/    the claim graph, facts, evidence, run manifests, and the render projection
+src/verity/store/     SQLite persistence — JSON payload authoritative, columns derived, schema versioned
+src/verity/llm/       provider-agnostic adapter (Claude default) and a scripted stub
+src/verity/           keys, ids, config, secrets, thresholds, and one package per unbuilt module
+tests/                enforcement tests for the hard constraints, plus the round-trip suite
+docs/                 current thinking — design, hypotheses, positioning, evaluation, open questions
+research/raw/         the two deep-research reports and their source lists
+research/matrix/      structured extraction: 29 products · 34 papers · 98 sources, with per-cell provenance
 ```
 
 `docs/` is where decisions live. `research/` is the evidence they rest on — every claim in `docs/` cites a row by ID (`product-009`, `lit-005`).
+
+Setup: `uv venv --python 3.12 && uv pip install -e ".[dev]"`, then `cp .env.example .env` and fill in the keys. `pytest` runs the suite.
 
 ---
 

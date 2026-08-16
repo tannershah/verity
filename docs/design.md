@@ -67,9 +67,9 @@ Demo and example claims use **verifiable, low-valence cases**: viral statistics,
 
 ---
 
-## 4. Data model — PROPOSED (schema) / SETTLED (semantics)
+## 4. Data model — SETTLED
 
-⚠ **The fact-record schema (§4.1) is a starting sketch for D2, not a decision** — the alethiology schema is the single most consequential unbuilt thing in the project. The conflicted-state semantics and step shape (§4.2–4.3) are settled.
+The record shapes below are the ones the spine implements. What remains consequential and unbuilt is not the fact record's fields but the **policy governing what enters it** — promotion, tier assignment, dedup, and the drift audit, all owned by M5.
 
 ### 4.1 Alethiology fact record
 
@@ -87,6 +87,8 @@ fact
 ```
 
 **The `key` field is load-bearing.** The grounding-rate threshold defines "grounds" as descent to a citation-shaped premise matched to an alethiology fact **by exact key only** (DOI / PMID / NCT). Fuzzy matching would silently inflate the headline metric. Keep exact-key matching separate from any later similarity layer.
+
+Keys are stored canonicalized, and canonicalization is the boundary of what exact-key matching tolerates: case-folding, whitespace, a closed set of known URI and label prefixes, and the debris an identifier collects in transit — sentence punctuation, unmatched wrapping brackets, zero-width characters, and the query or fragment of a URL it was lifted from. So `10.3823/1654`, `https://doi.org/10.3823/1654`, and `(10.3823/1654).` are one key, while a DOI that legitimately contains balanced brackets keeps them. The transform is total, deterministic, and syntactic — it contains no edit distance or token overlap, and admits none. Without it the grounding rate is silently *deflated* and retraction linkage misses; with anything fuzzier both move the other way.
 
 **Confidence tiers.** The research matrix used `verified | inferred | marketing-claim`, which proved too coarse — it conflates verified-against-primary with corroborated-by-one-secondary. The alethiology should encode the finer vocabulary natively: **verified-primary / corroborated-multi-secondary / single-secondary / inferred / marketing-claim**.
 
@@ -110,19 +112,31 @@ Contested premises **never enter the JTMS as justifications** and render symmetr
 
 **JTMS suffices for v0 — SETTLED.** Contested states never enter the TMS, so multi-context maintenance is not required. ATMS (`lit-027`) is revisited only if a later need forces holding incompatible evidential contexts simultaneously.
 
-**Non-monotonic grounding is a real consequence, not an edge case.** Every terminating system in the matrix grounds in a fixed curated corpus. Ours can flip: a tree that terminated yesterday can be un-grounded today. Grounding results must therefore be timestamped and re-validated, not cached as permanent.
+**Non-monotonic grounding is a real consequence, not an edge case.** Every terminating system in the matrix grounds in a fixed curated corpus. Ours can flip: a tree that terminated yesterday can be un-grounded today. Grounding results must therefore be timestamped and re-validated, not cached as permanent — which is why the render projection reads the alethiology rather than the graph's stored grounding row (§4.3).
+
+**A fact's (key, statement) pair is immutable.** Identity is that pair, so editing a statement in place would change what the fact *is* while every justification that named it kept pointing at the old identity. A correction is therefore a new fact asserted and the old one flipped OUT — which is the JTMS's own idiom for a belief that stopped holding, and keeps the invalidation record intact instead of erasing it.
 
 ### 4.3 Claim graph
 
 ```
-node    claim | premise | fact
-edge    entails (premise → parent), justified-by (fact → premise)
-per-node: verifier confidence, evidence-quality summary, status, depth
+node      claim | premise | fact
+edge      entails (premise → parent), justified-by (fact → premise)
+per-step  verifier confidence, leave-one-out ablation delta per premise,
+          descent depth
+per-node  evidence-quality summary, evidence state, termination reason,
+          grounding key (premises)
+derived   traversal depth
 ```
 
-Entailment steps are **native n-ary — SETTLED**: 3–7 premises per step, no binarization into 2-premise intermediates. The verifier scores the n-ary step and leave-one-out ablation operates on it, matching EntailmentBank's step convention.
+Entailment steps are **native n-ary — SETTLED**: 3–7 premises per step, no binarization into 2-premise intermediates. The verifier scores the n-ary step and leave-one-out ablation operates on it, matching EntailmentBank's step convention. A step's identity is its conclusion and the *set* of its premises, so re-ordering a decomposition does not produce a second step.
 
-Rendering reads confidence per node. **There is no root-aggregate field** — the absence is the enforcement.
+**Confidence attaches to the step, not the node — SETTLED**, and so does everything else the verifier measures. The verifier answers "do these premises jointly entail this conclusion", so that is the only place a verifier score exists. Neither a claim nor a premise carries a confidence field, because nothing computes one. What §3.4 requires the UI to render *per premise* is assembled from three parts, each read against one step: the step's score, the premise's leave-one-out ablation delta within that step, and its evidence state. A step score is scoped to its own step and is never composed with another — which is what keeps the root step's score an entailment measurement rather than a verdict on the claim.
+
+**The graph is a DAG, and the display is over edges.** Two branches that reach the same premise reach the same node: identity is the statement. Such a premise carries a score and an ablation delta per step it belongs to, and renders once under each — a value stored on the node would belong to whichever producer ran last, and would be shown beside a step the reader is not looking at.
+
+**Depth is two numbers, and they are not interchangeable.** *Traversal depth* is where a node sits in the graph as it stands; it is derived, never stored, which is what keeps the reported depth and the rendered depth the same number. *Descent depth* is how far the decomposer had gone when it built a step, and it is recorded on the step because nothing can recover it afterwards: deduplicating premises by statement can leave a node reachable by a shorter route than the one that reached it. The budget is enforced along the descent and `budget-exit` fires there, so **the depth reported beside the budget-exit rate is the recorded one** — measuring depth off the shortened graph would put the two metrics over two different objects. A run that recorded no descent depth reports that it has none.
+
+**There is no root-aggregate field** — the absence is the enforcement. Renderers consume a projection of the graph that exposes per-premise rows and the claim's text, and nothing above them. That projection reads the alethiology as well as the graph: a recorded grounding is what a run concluded, and whether it still holds is a question only the fact store can answer (§4.2). Both readings reach the row, because the difference between them is the invalidation result.
 
 ---
 
@@ -169,7 +183,7 @@ and the build ordering — is in [build-plan.md](build-plan.md).
 
 ## 7. Stack — SETTLED
 
-Python / PyTorch / scikit-learn. v0 surface: CLI first, then Streamlit ([build-plan.md](build-plan.md) M9). Claim-side LLM calls go through a provider-agnostic adapter with the Claude API as the default backend; NLI and embedding models run locally (Hugging Face checkpoints). Invalidation: JTMS over the alethiology.
+Python 3.12 / PyTorch / scikit-learn. v0 surface: CLI first, then Streamlit ([build-plan.md](build-plan.md) M9). Claim-side LLM calls go through a provider-agnostic adapter with the Claude API as the default backend; NLI and embedding models run locally (Hugging Face checkpoints). Invalidation: JTMS over the alethiology.
 
 ---
 

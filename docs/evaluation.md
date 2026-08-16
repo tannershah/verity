@@ -20,11 +20,15 @@ Grounding rate, depth, and budget-exit rate are **reported metrics, not internal
 
 Pass/fail lines, set before the build starts so they can't be moved to fit results. Failing one is a result to report, not a problem to hide. Revising one requires stating what was learned that justifies the change.
 
+They are frozen constants in the codebase rather than configuration: moving one takes a commit that this document has to justify, not an environment variable. Operational knobs that *are* meant to be tuned — depth budget, beam caps, stance floor, the inference-time entailment gate — are configuration, and are not thresholds.
+
 ### Grounding rate ≥ 50%
 
 Of branches grounding within a depth-3 budget on the 20-claim beachhead set.
 
-**"Grounds" means** the branch descends to a citation-shaped premise matched to an alethiology fact by **exact key only** — DOI, PMID, or NCT. Fuzzy matching would silently inflate this number; keep exact-key matching separate from any later similarity layer.
+**"Grounds" means** the branch descends to a citation-shaped premise matched by **exact key only** — DOI, PMID, or NCT — to an alethiology fact that is **IN** and in a **grounding-eligible tier**: `verified-primary` or `corroborated-multi-secondary`. Fuzzy matching would silently inflate this number; keep exact-key matching separate from any later similarity layer.
+
+Corroboration by multiple secondary sources counts because the alternative — primary-verified only — measures the seeding effort rather than the retrieval, and the finer tier vocabulary (design.md §4.1) exists precisely so the two can be told apart. Because grounding is non-monotonic, the tier and status are read at the time the rate is computed, not when the branch terminated.
 
 **If it fails:** verifiability descent doesn't work for current retrieval, and the approach pivots to curated-domain alethiologies.
 

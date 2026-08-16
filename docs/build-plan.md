@@ -455,7 +455,9 @@ evaluation §2 — levers do not reopen a recorded fail.
 **Mechanism note.** "Grounds" requires a key on both sides: the premise side gets its
 key from M6-T3's key attribution (top supporting evidence item above the stance
 floor), or in M3-T4 mode from injected alethiology facts; the fact side from M5-T2
-promotion. Exact-key match of a premise's bound key to a `verified-*` fact = grounded.
+promotion. Exact-key match of a premise's bound key to a fact that is IN and in a
+grounding-eligible tier — `verified-primary` or `corroborated-multi-secondary`
+([evaluation.md](evaluation.md) §2) — = grounded.
 
 **Denominator note.** `unverifiable-by-design` terminals (definitional/background
 premises — no paper-shaped key can verify them) **count in the pre-registered

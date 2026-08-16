@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "verity"
+version = "0.0.1"
+description = "Epistemic transparency engine: claim -> load-bearing premises -> evidence -> per-premise confidence"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "pydantic>=2.7",
+    "pydantic-settings>=2.2",
+    "anthropic>=0.40",
+    "rich>=13.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/verity"]
+
+[tool.ruff]
+line-length = 96
+target-version = "py312"
+src = ["src", "tests"]
+# Prose is not ours to reformat; ruff will otherwise rewrite fenced code blocks.
+extend-exclude = ["docs", "research"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"

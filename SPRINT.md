@@ -43,7 +43,7 @@ merged only in Phase 3. One tier per session; honor its exit criterion.
 | Phase | When | Model | Work |
 |---|---|---|---|
 | **0 — human setup** | Sat night | Tanner | ✅ **COMPLETE.** Keys registered and live-verified; secrets in gitignored `.env` (never in `.env.example`). See status below |
-| **1 — spine** | Sun early | Opus | M1-T1 (sequential, alone) |
+| **1 — spine** | Sun early | Opus | ✅ **COMPLETE.** M1-T1 done: package layout, typed model, SQLite store, config/secrets, LLM adapter, run manifest, enforcement tests. See status below |
 | **2A — core loop** | Sun | Opus | M3-T1 (serviceable decomposition prompt — do **not** polish; Fable rewrites it Monday) → M4-T1 → M9-T1 |
 | **2B — grounding** | Sun, parallel | Opus | M5-T1 (seed facts for the two demo claims) → M6-T1a |
 | **3 — integrate** | Sun night | Opus | Single session: merge lanes, M1-T2, M3-T2 |
@@ -64,7 +64,60 @@ trail confirmed as a **three-source agreement** on DOI `10.3823/1654`: RW record
 live: CT.gov v2 `enrollmentInfo {count, type: ACTUAL}` and the PubMed
 DataBank/`AccessionNumber` NCT linkage (PMID 32445440 → NCT04280705). OpenAlex
 answered one keyless singleton GET (demo tier, 100 credits/day) — do not rely on
-keyless access for Sunday sessions. **Phase 1 (M1-T1) is clear to launch.**
+keyless access for Sunday sessions.
+
+**Gate 0 complete.** `ANTHROPIC_API_KEY` is in `.env` and the adapter is live-verified on
+both paths: `complete()` and `messages.parse` structured extraction each returned
+`stop_reason: end_turn`, with the configured effort echoed back on the response and cost
+priced against the recorded table. The structured path carries `output_config` alongside
+`output_format`, so decomposition runs at the configured effort rather than the API
+default — the one request shape that unit tests against a stub could not confirm.
+
+**Phase 1 status (complete):** `uv` venv on **Python 3.12** — pinned deliberately, since
+Phase 2A's local NLI checkpoints need `torch`/`transformers` wheels and the system
+default is 3.14. 158 tests green, ruff clean, no `xfail`. Three rulings were taken and
+recorded in their owning docs: verifier confidence lives on the entailment step, not the
+node (design §4.3); pre-registered thresholds are frozen constants, not configuration
+(evaluation §2); external keys are stored canonicalized, with canonicalization bounded
+to syntax (design §4.1). Lane-2A and lane-2B package directories exist with ownership
+docstrings so Phase 3 merges additively.
+
+**What the spine records beyond the obvious**, because each is a rule that cannot be
+checked from results alone: retraction is a per-source map of what each of the three
+sources *returned* — checked-and-clean, retracted, or not-indexed — so M7-T1's cut and its
+disagreement log both have inputs; an `EvidenceBundle` records the queries issued, so
+M6-T2's mandatory contrasting branch is distinguishable from one that found nothing; a
+`StageRecord` carries the input digest, cache key, and resolved LLM settings that M1-T2's
+cache-hit criterion has to verify against; a step records the **descent depth** it was
+built at, since dedup can leave the graph shorter than the path that built it and the
+budget was spent along the path; and a fact's identity is its (key, statement) pair, with
+a supplied id checked against that derivation rather than trusted. The schema is versioned
+forward: a newer database is refused rather than re-stamped, an older one is migrated.
+
+### Reading in for Phase 2
+
+Start with `src/verity/models/claim.py` — its module docstring states where confidence
+lives, why traversal is over edges, and why nothing step-scoped sits on a node. Then
+`models/render.py` for the renderer boundary, and `tests/test_downstream_contracts.py`,
+which is an executable stub of what M10-T1, M9-T1, M7-T1 and M8-T3 each need from the
+model.
+
+Four obligations the spine places on the tiers that come next:
+
+- **M3-T1 must set `EntailmentStep.depth`** as it descends. A graph records descent depth
+  on every step or on none — a half-recorded descent is refused, so this cannot be
+  half-done, but it does have to be done.
+- **M3/M6 build graphs through `ClaimGraph.build()`** when a cap can orphan a subtree. It
+  prunes what the root cannot reach and returns a `CapRecord`; direct construction refuses
+  an unreachable premise rather than hiding it.
+- **M9 calls `to_render_payload(graph, facts)`** — the fact store is required, because
+  whether a recorded grounding still holds is a question only the alethiology can answer.
+- **M4 writes ablation to `EntailmentStep.ablation_deltas`**, keyed by the premise removed,
+  not to the premise.
+
+Unknown fields are rejected everywhere (`verity.base`), so a renamed field fails at the
+call site instead of vanishing. Take that as the house style rather than an obstacle: when
+a constructor call errors, the field name is stale, not the guard.
 
 **Model rules for this sprint:** Opus = infrastructure, clients, integration
 (Sonnet fine for pure transcription chores). Fable = decomposition-prompt
@@ -93,6 +146,6 @@ is hard.
   thresholds unmeasured, grounding rate not yet judged) — the pre-registration
   posture is the presentation.
 - Application materials (résumé, cover letter, proposal, work-sample writeups)
-  are Tanner's lane — out of scope for every agent session.
+  are Tanner's lane — out of scope for every agent session unless otherwise directed.
 - After submission: delete SPRINT.md, remove the CLAUDE.md sprint pointer, and
   resume the build-plan.md ordering at the next incomplete tier.

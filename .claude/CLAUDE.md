@@ -69,6 +69,7 @@ narration to the repository.
 - Do not set arbitrary deadlines, timeframes, or gates unless specifically told to do so. 
 - Do not set arbitrary rules for yourself or the project without directly consulting Tanner beforehand, especially absolute ones with universal quantifiers
 - Report and Remove any vestigial artifacts serving no purpose you come across during your work
+- Build for production-level design, organization, and maintainability. 
 - After completing the task you were given, review this file, README.md, and the files in /docs for changes, so they are kept up to date. Changes to these files should keep them fresh, lean, and agnostic to the modifications you just made, meaning do not make any references in a corrective/risk-averse way that would signify some sort of patch. These are CLAUDE.md, README.md, and documentation files built to be production-grade, not change logs, version histories, or record books. Also, unless otherwise instructed, do not modify areas of the files that your task did not pertain to.
 
 ## Model/effort conventions
