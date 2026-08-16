@@ -19,6 +19,7 @@ from verity.models.common import (
     RetractionFinding,
     RetractionSource,
     RetractionStatus,
+    Score,
     TerminationReason,
 )
 from verity.models.evidence import EvidenceQuality, RetractionCheck
@@ -92,6 +93,40 @@ def test_the_grounding_numerator_consults_the_facts_it_claims(
 
     rate = len(grounded) / len(hand_built_graph.leaves())
     assert 0.0 <= rate <= 1.0
+
+
+# -- M4-T1: every step in a stored graph gets a score ---------------------------------
+
+
+def test_every_step_yields_the_pair_a_scorer_takes_and_holds_the_score_it_returns(
+    hand_built_graph: ClaimGraph,
+):
+    """M4-T1's exit is "every step in every stored graph carries a score", so its whole
+    contract with M3-T1 is two things: recover (conclusion text, premise texts) for each
+    step, and put a `Score` back. The conclusion is the root claim on the root step and a
+    premise everywhere below it — `ConclusionId` admits both prefixes, which is what makes
+    recursion work and what makes indexing `premises` alone wrong on the root step.
+    """
+    scored = []
+    for step in hand_built_graph.steps:
+        conclusion = hand_built_graph.conclusion_of(step)
+        premises = [hand_built_graph.premises[pid].text for pid in step.premise_ids]
+        assert conclusion.text and all(premises), "the scorer input is text on both sides"
+        scored.append(
+            step.model_copy(
+                update={"score": Score(value=0.87, scorer="MiniCheck-Flan-T5-Large")}
+            )
+        )
+
+    assert {s.conclusion_id for s in scored} > {hand_built_graph.root_claim.id}, (
+        "the fixture must exercise a premise conclusion, not only the root"
+    )
+
+    graph = hand_built_graph.model_copy(update={"steps": scored})
+    assert [s.id for s in graph.steps] == [s.id for s in hand_built_graph.steps], (
+        "a score is not part of step identity, so scoring must not re-key the graph"
+    )
+    assert all(s.score is not None and s.score.is_uncalibrated for s in graph.steps)
 
 
 # -- M9-T1: the CLI render needs four columns per premise ----------------------------

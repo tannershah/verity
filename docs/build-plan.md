@@ -99,6 +99,22 @@ tier's slot in the §3 ordering, with the artifacts that exist by then.
   (DOI/PMID/NCT) — usually empty; the authoritative binding happens in M6-T3.
   Steps are native n-ary — no binarization (design §4.3).
   Premise typing: empirical-citable / statistical / definitional / background.
+  **A drop must be entailment-preserving; anything else is a refusal.** Deduplication
+  (`P ∧ P ≡ P`), an empty premise, and a malformed candidate key are recorded and the
+  run continues; a cycle-closing premise, a truncated response, and an empty proposal
+  refuse, because repairing them would hand M4 our edit to score instead of the
+  decomposer's proposal. The same reasoning forbids truncating to `max_premises`:
+  **out-of-range arity is stored and measured, never corrected** — structured outputs
+  cannot enforce array length, so 3–7 is prompt text plus a number M10-T1 reads off
+  `EntailmentStep.arity`. A refusal carries the usage of the call that produced it, so a
+  branch that costs money and yields no step is still counted against the run.
+  **Termination reasons are M3-T2's alone.** A single step is not a descent, so T1
+  records none rather than asserting a decision nothing made.
+  **Everything a pre-registered number is read off must survive to the artifact.** The
+  assembled graph records the depth budget its steps were spent against, and a premise
+  reproducing the claim is kept and derived back off the stored graph rather than
+  repaired. Where two steps reach one premise, assembly merges their annotations under
+  design §4.3 and reports what it discards.
   *Exit:* decompositions for 5 pilot claims pass eyeball review against the criteria.
 - **T2 — Recursive descent.** Recurse on premises that are neither citation-shaped
   nor grounded; **depth budget** (default 3) with per-branch termination reason
