@@ -205,8 +205,7 @@ tier's slot in the §3 ordering, with the artifacts that exist by then.
 - **T1b — Remaining clients + deterministic search.**
   - **PubMed E-utilities** — free key raises 3 → 10 req/s; `PublicationType` for
     MeSH design labels; NCT linkage via the DataBank/`AccessionNumber` field
-    (*unconfirmed* against live XML — smoke-test a known NCT-linked PMID in this
-    session).
+    (confirmed against live efetch XML, 2026-08-15).
   - **ClinicalTrials.gov v2** — no key; `GET /api/v2/studies/{NCTid}`;
     `enrollmentInfo.count` + `enrollmentInfo.type` (`ACTUAL` | `ESTIMATED`).
   - **Semantic Scholar** — free key is 1 req/s introductory (oddly *below* the
@@ -215,7 +214,7 @@ tier's slot in the §3 ordering, with the artifacts that exist by then.
     this session.
   Deterministic search: premise → keyword query → top-k candidate works with
   external keys; **k and every retry bound reported per run** (no silent caps).
-  *Exit:* all five clients live + fixtures; the two unconfirmed contracts resolved
+  *Exit:* all five clients live + fixtures; the S2 field-name contract resolved
   in code and noted.
 - **T2 — Agentic retrieval.** LLM-generated query reformulations per premise across
   sources; relevance filter (embedding + LLM pass); DOI-level dedup; the
