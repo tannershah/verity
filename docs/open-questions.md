@@ -8,14 +8,11 @@ Everything undecided or unverified. Close an item by editing it out and recordin
 
 | # | Question | Why it matters | Blocks |
 |---|---|---|---|
-| **D-1** | **Conflicted-state semantics.** What does a premise's status mean when evidence genuinely conflicts? JTMS gives IN/OUT; contested premises are neither | This is the core product state — the verdict boundary is defined on it. Getting it wrong makes the transparency-only posture incoherent in code | D5, D6 |
-| **D-2** | **Binarization intermediates.** Are n-premise entailment steps (n > 2) represented natively, or decomposed into 2-premise steps? | Determines the tree shape the verifier scores and the leave-one-out ablation operates on | D1, D7 |
-| **D-3** | **Annotator roster** for the human step-validity protocol — two named annotators, pilot N | The ≥80% threshold is measured by this protocol. If the builder self-annotates, that must be disclosed as a bias | D7 |
-| **D-4** | **JTMS or ATMS?** JTMS maintains one consistent belief set; ATMS holds multiple incompatible contexts simultaneously | Contested claims are naturally multi-context, which is the ATMS case. Start with JTMS; D-1 is what would force the question | D5 |
-| **D-5** | **Cold-start policy for the alethiology.** It starts empty and is seeded with demo-domain facts. What qualifies a retrieved fact for promotion into the KB? | NELL's failure mode is semantic drift from self-population. Promotion thresholds and provenance tagging are the known mitigation, not a solution | D2, D3 |
-| **D-6** | **Re-validation under non-monotonic grounding.** A branch that grounded yesterday can be un-grounded today | Grounding rate is a headline metric; if results are cached without timestamps it silently decays | D2, D5 |
+| **D-3** | **The second annotator** for the human step-validity protocol. Pilot N=5 is committed; the builder annotates with self-annotation disclosed as a bias ([evaluation.md](evaluation.md) §2); the second seat is unfilled | The ≥80% threshold is measured by this protocol and cannot run one-handed | D7 |
 
-D-1 is the one to settle first.
+Resolved and recorded elsewhere: conflicted-state semantics and JTMS-vs-ATMS in
+[design.md](design.md) §4.2, step shape (native n-ary) in §4.3, promotion policy and
+re-validation as the M5 mechanisms in [build-plan.md](build-plan.md).
 
 ---
 

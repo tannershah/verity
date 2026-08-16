@@ -24,6 +24,7 @@ claim
 | Question | Document |
 |---|---|
 | What are we building? Data model, constraints, build plan | [docs/design.md](docs/design.md) |
+| How do we build it? Modules, tiers, session ordering | [docs/build-plan.md](docs/build-plan.md) |
 | What do we claim is missing from the landscape, and why? | [docs/hypotheses.md](docs/hypotheses.md) |
 | How do we position and cite? | [docs/positioning.md](docs/positioning.md) |
 | How do we evaluate it, and against what thresholds? | [docs/evaluation.md](docs/evaluation.md) |
@@ -66,4 +67,4 @@ Every ingredient ships somewhere today; the conjunction does not. Automatic deco
 
 ## Stack
 
-Python / PyTorch / scikit-learn. v0 surface: Streamlit or CLI. Invalidation layer: JTMS (Doyle 1979) over the alethiology. Evidence metadata from free APIs — OpenAlex cross-checked against Crossref for retraction, PubMed MeSH for study design, Semantic Scholar for citation intent, ClinicalTrials.gov for registered-trial enrollment.
+Python / PyTorch / scikit-learn. v0 surface: CLI first, then Streamlit. Claim-side LLM calls go through a provider-agnostic adapter (Claude API default); NLI and embedding models run locally. Invalidation layer: JTMS (Doyle 1979) over the alethiology. Evidence metadata from free APIs — OpenAlex cross-checked against Crossref for retraction, PubMed MeSH for study design, Semantic Scholar for citation intent, ClinicalTrials.gov for registered-trial enrollment.

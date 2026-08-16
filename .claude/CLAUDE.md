@@ -28,7 +28,7 @@ polish alone.
 scientific/political claims are roadmap stress tests only.
 
 - v0 prototype: claim -> 3-7 premises -> evidence -> per-premise confidence
-  (Streamlit or CLI).
+  (CLI first, then Streamlit).
 
 ## Where to look
 
@@ -38,6 +38,7 @@ over the owning document.
 | Question | File |
 |---|---|
 | What are we building? Data model, build plan | `docs/design.md` |
+| How do we build it? Modules, tiers, ordering | `docs/build-plan.md` |
 | What do we claim is missing from the landscape? | `docs/hypotheses.md` |
 | How do we position and cite? | `docs/positioning.md` |
 | How do we evaluate, and against what thresholds? | `docs/evaluation.md` |
@@ -60,9 +61,10 @@ narration to the repository.
 - Be questioning, curious, and skeptical. If something seems off, explore and alert. This is a fully agent-driven project, so drifting, assumptions, and random garbage can become ingrained in the codebase. We want to prevent this as much as possible. The research, planning, and theory of this system is also agent-generated, so do NOT see this as golden truth but as something that must be iterated on and constantly reimagined.
 - Raise a risk only if it is directly relevant to Verity or your current task.
 - Lean, decision-oriented outputs. No filler.
-- Do not set arbitrary deadlines or timeframes. 
+- Do not set arbitrary deadlines, timeframes, or gates unless specifically told to do so. 
 - Do not set arbitrary rules for yourself or the project without directly consulting Tanner beforehand, especially absolute ones with universal quantifiers
-- After completing the task you tackle, review this file and README.md for changes, so they are kept up to date. Changes to these two files should keep them fresh, lean, and agnostic to the modifications you just made, meaning do not make any references in a corrective/risk-averse way. These are CLAUDE.md and README.md files built to be production-grade, not change logs, version histories, or positioning statements. Also, unless otherwise instructed, do not modify any sections of these files unless your task was directly related to them.
+- Report and Remove any vestigial artifacts serving no purpose you come across during your work
+- After completing the task you were given, review this file, README.md, and the files in /docs for changes, so they are kept up to date. Changes to these files should keep them fresh, lean, and agnostic to the modifications you just made, meaning do not make any references in a corrective/risk-averse way that would signify some sort of patch. These are CLAUDE.md, README.md, and documentation files built to be production-grade, not change logs, version histories, or record books. Also, unless otherwise instructed, do not modify areas of the files that your task did not pertain to.
 
 ## Model/effort conventions
 - Extraction / transcription / boilerplate: Sonnet 4.6, low-medium effort.
@@ -77,4 +79,6 @@ MeSH publication types (study design), Semantic Scholar citation intent (coarse)
 sample size is structured only for registered trials (ClinicalTrials.gov
 enrollment, linked from PubMed) — text-mine elsewhere and label model-extracted.
 OpenAlex needs a free registered key; Crossref and ClinicalTrials.gov need none.
-Invalidation layer: JTMS (Doyle 1979) over the alethiology.
+Claim-side LLM calls: provider-agnostic adapter, Claude API default; NLI and
+embedding models run locally. Invalidation layer: JTMS (Doyle 1979) over the
+alethiology.

@@ -67,9 +67,9 @@ Demo and example claims use **verifiable, low-valence cases**: viral statistics,
 
 ---
 
-## 4. Data model — PROPOSED
+## 4. Data model — PROPOSED (schema) / SETTLED (semantics)
 
-⚠ **Not ruled on. This is a starting sketch for D2, not a decision.** The alethiology schema is the single most consequential unbuilt thing in the project.
+⚠ **The fact-record schema (§4.1) is a starting sketch for D2, not a decision** — the alethiology schema is the single most consequential unbuilt thing in the project. The conflicted-state semantics and step shape (§4.2–4.3) are settled.
 
 ### 4.1 Alethiology fact record
 
@@ -100,7 +100,15 @@ node status      IN if some justification has all antecedents IN; else OUT
 retract(fact)    mark OUT → propagate → re-render every affected claim graph flagged
 ```
 
-ATMS (`lit-027`) is the model **if** we need to hold multiple incompatible evidential contexts simultaneously without committing to one — the natural fit for contested claims. **OPEN:** whether v0 needs ATMS or JTMS suffices. Start with JTMS; the eval that would force the question is contested-claim rendering.
+**Conflicted-state semantics — SETTLED.** Two orthogonal axes. The JTMS carries structural support only (IN/OUT). A per-premise **evidence state** — `verified | contested | unverified` — is computed alongside it:
+
+- `verified` requires exact-key grounding in an alethiology fact that is IN — never derived from retrieved-evidence bundles;
+- `contested` is cut mechanically: at least one evidence item on each side above a pre-registered stance-score floor — no judgment call in the cut;
+- `unverified` covers everything else, including bundle-supported-but-ungrounded premises (rendered *with* their evidence) and budget exits.
+
+Contested premises **never enter the JTMS as justifications** and render symmetrically, verdict-free — the verdict boundary as a type distinction, not a convention.
+
+**JTMS suffices for v0 — SETTLED.** Contested states never enter the TMS, so multi-context maintenance is not required. ATMS (`lit-027`) is revisited only if a later need forces holding incompatible evidential contexts simultaneously.
 
 **Non-monotonic grounding is a real consequence, not an edge case.** Every terminating system in the matrix grounds in a fixed curated corpus. Ours can flip: a tree that terminated yesterday can be un-grounded today. Grounding results must therefore be timestamped and re-validated, not cached as permanent.
 
@@ -111,6 +119,8 @@ node    claim | premise | fact
 edge    entails (premise → parent), justified-by (fact → premise)
 per-node: verifier confidence, evidence-quality summary, status, depth
 ```
+
+Entailment steps are **native n-ary — SETTLED**: 3–7 premises per step, no binarization into 2-premise intermediates. The verifier scores the n-ary step and leave-one-out ablation operates on it, matching EntailmentBank's step convention.
 
 Rendering reads confidence per node. **There is no root-aggregate field** — the absence is the enforcement.
 
@@ -146,7 +156,10 @@ Eight work packages. Target: `claim → 3–7 premises → evidence → per-prem
 | **D7** | Eval harness — EntailmentBank step-metric sample, leave-one-out ablation, termination stats; two demo claims | Bucket 1/2 numbers |
 | **D8** | Polish; run logs | — |
 
-**Unresolved before D1:** conflicted-state semantics, binarization intermediates, annotator roster. Tracked in [open-questions.md](open-questions.md); conflicted-state semantics is the one to settle first.
+The engineering decomposition of these packages — ten modules, session-sized tiers,
+and the build ordering — is in [build-plan.md](build-plan.md).
+
+**Unresolved before D7:** the second annotator for the step-validity protocol. Tracked in [open-questions.md](open-questions.md).
 
 **Two design pressures to hold in mind from D2 onward:**
 1. The alethiology **starts empty** and is populated by the system's own least-validated outputs (agentic retrieval + free-API metadata). NELL (`lit-025`) is the cautionary tale: semantic drift, "mitigated but not solved."
@@ -156,7 +169,7 @@ Eight work packages. Target: `claim → 3–7 premises → evidence → per-prem
 
 ## 7. Stack — SETTLED
 
-Python / PyTorch / scikit-learn. v0 surface: Streamlit or CLI. Invalidation: JTMS over the alethiology.
+Python / PyTorch / scikit-learn. v0 surface: CLI first, then Streamlit ([build-plan.md](build-plan.md) M9). Claim-side LLM calls go through a provider-agnostic adapter with the Claude API as the default backend; NLI and embedding models run locally (Hugging Face checkpoints). Invalidation: JTMS over the alethiology.
 
 ---
 
@@ -164,6 +177,7 @@ Python / PyTorch / scikit-learn. v0 surface: Streamlit or CLI. Invalidation: JTM
 
 | Question | Document |
 |---|---|
+| How do we build it, session by session? | [build-plan.md](build-plan.md) |
 | What do we believe about the competitive landscape? | [hypotheses.md](hypotheses.md) |
 | How do we position and cite? | [positioning.md](positioning.md) |
 | How do we measure it? | [evaluation.md](evaluation.md) |

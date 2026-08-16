@@ -34,7 +34,7 @@ Of branches grounding within a depth-3 budget on the 20-claim beachhead set.
 
 **Below this floor, no public demo.** A visible structural error in one step of five is disqualifying for a tool whose only product is trust.
 
-**Open:** annotator roster and pilot N. If the builder self-annotates, the protocol must disclose it as a bias.
+**Protocol commitments:** pilot N=5 trees before the N=30 run; the builder annotates and the protocol discloses it as a bias; the second annotator is recruited before the run (tracked in [open-questions.md](open-questions.md)).
 
 ### Retraction false-flag rate ≤ 5%
 
@@ -53,6 +53,8 @@ Of contested items localizing to ≤ 2 premises. The annotation task must includ
 The 40% / κ 0.6 numbers are stipulative. Their value is being fixed in advance, not their precision.
 
 **Study design** (to be committed before the study runs): N=40 reader pairs; within-item, between-pairs; Verity tree vs. the same evidence as a flat list; pair-level κ on disagreement locus; mixed-effects with item random effects; pilot before locking power.
+
+**Roadmap, not v0:** the study requires contested-claim material that the demo valence rule keeps out of v0. The threshold, labels, and design above stand as pre-registered and travel with the deferral.
 
 ---
 
