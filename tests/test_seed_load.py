@@ -566,3 +566,59 @@ def test_the_report_row_count_equals_what_the_store_holds(conn, report):
     stored = conn.execute("SELECT COUNT(*) FROM facts").fetchone()[0]
     assert stored == len(report.rows)
     assert len({row.fact_id for row in report.rows}) == len(report.rows)
+
+
+def test_a_short_expected_title_cannot_claim_a_work_it_does_not_name():
+    """The work-identity gate accepted containment, which has no substantiality floor.
+
+    `expected_title="e"` matched all three sources for the chocolate DOI: the row went
+    `verified-primary`, and — worse — the work-identity mismatch vanished from the load
+    report, erasing the demo's centerpiece finding on a typo. Equality is the whole rule
+    now; no corpus row ever needed containment.
+    """
+    resolution = _resolution_for(CHOCOLATE)
+    for probe in ("e", "the", "comparison of resilience", "Chocolate with high Cocoa"):
+        assert resolution.titles_matching(probe) == [], probe
+
+    assert resolution.titles_matching(
+        "The comparison of resilience and spirituality in addicted and non-addicted women"
+    ) == ["crossref", "openalex"]
+    assert resolution.titles_matching(
+        "Chocolate with high Cocoa content as a weight-loss accelerator"
+    ) == ["retraction-watch"]
+
+
+def test_a_registry_that_spells_a_title_differently_is_declared_not_inferred():
+    """OpenAlex prefixes retracted works with `RETRACTED ARTICLE:`. That is a real variant,
+    and with containment gone it has to be recorded explicitly — which is the point: a
+    curation decision in the file, not a rule that also admits `"e"`."""
+    hesperidin = ExternalKey(type=KeyType.PMID, value="31844967")
+    resolution = _resolution_for(hesperidin)
+    row = next(r for r in read_seed(SEED) if r.slug == "rw-71483-hesperidin")
+
+    assert row.expected_title_variants, "the variant must be declared, not inferred"
+    assert resolution.titles_matching(row.expected_title) == ["retraction-watch"]
+    assert resolution.titles_matching(row.expected_title, *row.expected_title_variants) == [
+        "openalex",
+        "retraction-watch",
+    ]
+
+
+def test_the_only_reported_identity_mismatch_is_the_real_one(report):
+    """A gate that flags legitimate rows costs the report its signal — the chocolate DOI is
+    the finding the demo rests on, and a spurious neighbour buries it."""
+    assert {row.key for row in report.identity_mismatches} == {CHOCOLATE}
+
+
+def test_the_quote_gate_establishes_quotation_not_warrant():
+    """What the gate proves, pinned so nothing later claims more.
+
+    A quote that is substantial and unique still says only that the curator quoted the work
+    accurately. It cannot say the assertion follows from it: a real sentence from Hamblin's
+    abstract will happily sit under an assertion Hamblin contradicts. That link is human
+    judgement recorded in `note`, and the natural closer is M4's entailment scorer applied
+    to (quote -> assertion) once it exists — an input to M5-T2, not a claim made here.
+    """
+    assessment = _probe("comes from consuming a can of the stuff")
+    assert assessment.effective_tier is ConfidenceTier.VERIFIED_PRIMARY
+    assert assessment.notes == []

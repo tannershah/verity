@@ -29,6 +29,13 @@ assertions can be checked mechanically, and the loader checks them:
 - **The key resolves, to the work the curator named.** An identifier absent from every
   source aborts the load. One that resolves to a *different* title loads with its tier
   capped and the conflict named in the report.
+
+  Titles are compared by **equality**, never containment. Containment has no substantiality
+  floor, so `expected_title: "e"` would match every source, promote the row, and erase the
+  identity mismatch from the report — the demo's centerpiece finding, lost to a typo. Where
+  a registry genuinely spells a title differently — OpenAlex prefixes retracted works with
+  `RETRACTED ARTICLE:` — the curator declares that spelling in `expected_title_variants`,
+  so a variant is a recorded decision rather than a hole.
 - **The quote is verbatim, and it is a quotation.** `verified-primary` requires a quote
   that appears in the work's own abstract as a registry served it, compared under
   whitespace-collapse and case-fold (`normalize_text`) because OpenAlex serves an inverted
@@ -55,9 +62,18 @@ object-level fact would ground any premise sharing its identifier as `verified`.
 from an abstract establishes what a work *says*, never that the proposition is true, and
 the statement says exactly that much.
 
-**What is not machine-checked:** that the assertion follows from the quote. That link is
-curator judgment, and it lives in each row's `note` so a reader can audit it. The gate
-narrows what may be claimed; it does not read for meaning.
+**What the gate establishes, exactly:** that the identifier resolves, that it resolves to
+the work the curator named, and that the curator quoted that work accurately and
+substantially.
+
+**What it does not establish is that the assertion is warranted.** A quote can be verbatim,
+substantial, and unique and still sit under an assertion the work contradicts — "comes from
+consuming a can of the stuff" is a real sentence in Hamblin's abstract and would back the
+claim that spinach is richly iron-bearing. No containment rule can close that; it is human
+judgement, recorded in each row's `note` for audit. The natural closer is M4's entailment
+scorer applied to (quote → assertion) once one exists, which is an input to M5-T2 rather
+than a claim made here. Read a tier as "this attribution is checkable in three respects,"
+not as "this proposition was verified."
 
 `corroborated-multi-secondary` is refused outright. Both it and `verified-primary` are
 grounding-eligible, and nothing in a seed establishes corroboration — that is M5-T2's

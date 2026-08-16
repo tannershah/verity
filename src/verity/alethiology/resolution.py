@@ -120,25 +120,31 @@ class KeyResolution(FrozenModel):
     def registry_readings(self) -> list[SourceReading]:
         return [r for s, r in self.readings.items() if s in REGISTRY_SOURCES and r.found]
 
-    def titles_matching(self, expected_title: str) -> list[str]:
-        """Sources whose returned title agrees with the curator's `expected_title`.
+    def titles_matching(self, *expected_titles: str) -> list[str]:
+        """Sources whose returned title equals one of the titles the curator declared.
 
-        Agreement is normalized equality or containment either way — a registry may carry
-        a subtitle the curator omitted, or a trailing full stop. This is a curation gate on
-        what a seed row may claim; it is never consulted by the grounding predicate, which
-        compares keys and nothing else.
+        **Equality only.** An earlier version also accepted containment in either
+        direction, to absorb a subtitle or a trailing full stop — and containment with no
+        substantiality floor accepts everything: `expected_title="e"` matched all three
+        sources for the chocolate DOI, promoting a row to `verified-primary` and erasing
+        the work-identity mismatch from the load report. That is the same defect the quote
+        gate had, in the more dangerous position, because it costs a curator nothing and it
+        raises the tier rather than merely permitting one. Measured against the corpus, no
+        row needed containment, so the branch is deleted rather than bounded: a rule with
+        no legitimate users and one catastrophic misuse is not worth tuning.
+
+        A registry that genuinely spells a title differently — OpenAlex prefixes retracted
+        works with `RETRACTED ARTICLE:` — is handled by the curator declaring that spelling
+        as a variant. Explicit and auditable, where containment was implicit and silent.
+
+        This is a curation gate on what a seed row may claim; it is never consulted by the
+        grounding predicate, which compares keys and nothing else.
         """
-        expected = normalize_text(expected_title)
+        expected = {normalize_text(title) for title in expected_titles}
         return sorted(
             source
             for source, reading in self.readings.items()
-            if reading.found
-            and reading.title
-            and (
-                (title := normalize_text(reading.title)) == expected
-                or expected in title
-                or title in expected
-            )
+            if reading.found and reading.title and normalize_text(reading.title) in expected
         )
 
 

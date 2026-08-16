@@ -26,10 +26,18 @@ decides how much of that claim survives:
   `corroborated-multi-secondary` is refused outright — the seed has no mechanism that
   could justify it, and both tiers feed the pre-registered rate.
 
-**What is machine-checked, stated plainly.** That the key resolves, that it resolves to
-the named work, and that the quote is verbatim from that work. That the *assertion*
-follows from the quote is curator judgment, recorded next to it in the seed file for
-audit. The gate narrows what can be claimed; it does not read for meaning.
+**What the gate establishes, stated exactly.** That the identifier resolves; that it
+resolves to the work the curator named; and that the curator quoted that work accurately
+and substantially. That is the whole of it.
+
+**What it does not establish is that the assertion is warranted.** A quote can be
+verbatim, five words or more, unique in the abstract, and still sit under an assertion the
+work contradicts — "comes from consuming a can of the stuff" is a real sentence in
+Hamblin's abstract and would back an assertion that spinach is richly iron-bearing. The
+gate makes a tier *falsifiable in three respects*; it does not read for meaning, and no
+containment rule can. That link is human judgement, recorded in each row's `note` so a
+reviewer can audit it, and the natural closer is M4's entailment scorer applied to
+(quote → assertion) once one exists — an input to M5-T2, not a claim made here.
 
 **Field ownership on re-load.** The seed owns `statement`, `key`, `tier`, provenance and
 `created_at`. The store owns `status`, `revalidated_at`, `justification_ids`, and any
@@ -127,8 +135,13 @@ class SeedFact(VerityModel):
     claim_scope: str
     #: Raw identifier; canonicalized on load. A fact without a key grounds nothing.
     key: str
-    #: What the curator believes `key` identifies. Compared to what the registries return.
+    #: What the curator believes `key` identifies. Compared, by equality, to what the
+    #: registries return.
     expected_title: str
+    #: Other exact spellings a source is known to use for the same work — OpenAlex prefixes
+    #: retracted works with `RETRACTED ARTICLE:`. Declared per row rather than absorbed by
+    #: a containment rule, so a variant is a recorded curation decision and not a hole.
+    expected_title_variants: list[str] = Field(default_factory=list)
     #: The attribution, e.g. `Hamblin (1981)`.
     attributed_to: str
     #: Closed set, singular and plural, so the composed statement agrees with a one-author
@@ -251,7 +264,7 @@ def assess(row: SeedFact, resolution: KeyResolution) -> TierAssessment:
             "exists nowhere cannot carry a fact; correct it or drop the row."
         )
 
-    identity = resolution.titles_matching(row.expected_title)
+    identity = resolution.titles_matching(row.expected_title, *row.expected_title_variants)
     registry_identity = any(source in REGISTRY_SOURCES for source in identity)
     returned = "; ".join(
         f"{source}={reading.title!r}"

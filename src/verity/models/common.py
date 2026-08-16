@@ -182,9 +182,21 @@ class Provenance(FrozenModel):
     source_url: str | None = None
     #: Mandatory, never defaulted to now(): a default would hand a seed record — or any
     #: row rebuilt from a file that omits the field — a freshness it never had, and the
-    #: M5-T3 TTL re-validation reads exactly this field to decide what is stale.
+    #: M5-T3 TTL re-validation reads exactly this field to decide what is stale. It must
+    #: also carry a zone: that re-validation compares this against a deadline, and a naive
+    #: reading is silently interpreted in whatever zone the comparison happens to use
+    #: rather than rejected, which turns "stale" into a function of where the process runs.
     accessed_at: datetime
     confidence_tier: ConfidenceTier = ConfidenceTier.INFERRED
+
+    @model_validator(mode="after")
+    def _access_time_carries_a_zone(self) -> Provenance:
+        if self.accessed_at.tzinfo is None:
+            raise ValueError(
+                f"provenance from {self.source!r} has a naive accessed_at "
+                f"({self.accessed_at.isoformat()}); an access is a time in a zone"
+            )
+        return self
 
 
 class Score(FrozenModel):

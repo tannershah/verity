@@ -53,6 +53,22 @@ class RetractionCheck(FrozenModel):
     #: `update-to` type, an OpenAlex work id. This is what a disagreement report cites.
     detail: str | None = None
 
+    @model_validator(mode="after")
+    def _check_time_carries_a_zone(self) -> RetractionCheck:
+        """Same rule as `Provenance.accessed_at`, for the same reason.
+
+        Stated on all three timestamp fields rather than the one that happened to be
+        exploited: a reading whose time cannot be compared across processes is what makes
+        an aged-out check indistinguishable from a fresh one, and leaving a sibling field
+        unguarded is how the hole returns.
+        """
+        if self.checked_at.tzinfo is None:
+            raise ValueError(
+                f"{self.source.value} check has a naive checked_at "
+                f"({self.checked_at.isoformat()}); a check is a reading at a time in a zone"
+            )
+        return self
+
 
 class EvidenceQuality(VerityModel):
     """Per-work quality metadata (M7). Every field carries its own provenance."""
@@ -113,6 +129,16 @@ class EvidenceQuality(VerityModel):
         — or marked clean while one does — is not a policy question.
         """
         if not self.retraction_checks:
+            # `UNKNOWN` is the only conclusion available before anything has been asked.
+            # `CLEAN` in particular asserts that a source looked and found nothing, so
+            # asserting it against an empty check map is the same "checked and clean"
+            # fabrication the enum's own docstring exists to prevent — one level up, at
+            # the conclusion rather than at a single source's finding.
+            if self.retraction is not RetractionStatus.UNKNOWN:
+                raise ValueError(
+                    f"retraction is {self.retraction.value} but no source was consulted; "
+                    "`unknown` is what a work nobody checked is entitled to"
+                )
             return self
         flagged = self.retraction in (
             RetractionStatus.RETRACTED,

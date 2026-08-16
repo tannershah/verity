@@ -26,9 +26,16 @@ from verity.models.common import (
     LabeledField,
     Provenance,
     QueryClass,
+    RetractionFinding,
+    RetractionSource,
     Score,
 )
-from verity.models.evidence import EvidenceBundle, EvidenceQuality, IssuedQuery
+from verity.models.evidence import (
+    EvidenceBundle,
+    EvidenceQuality,
+    IssuedQuery,
+    RetractionCheck,
+)
 from verity.models.fact import Fact, Justification
 
 KEY = ExternalKey(type=KeyType.DOI, value="10.1136/bmj.283.6307.1671")
@@ -290,3 +297,52 @@ def test_a_model_extracted_field_is_distinguishable_from_a_registry_one():
     assert not registry.is_model_extracted
     assert mined.is_model_extracted
     assert EvidenceQuality(sample_size=mined).has_model_extracted_fields
+
+
+# -- a reading with no time, and a conclusion with no reading ------------------------
+
+
+def test_a_conclusion_reached_without_consulting_anything_is_refused():
+    """`unknown` is what a work nobody checked is entitled to.
+
+    The validator used to return early on an empty check map, so `CLEAN` — which asserts a
+    source looked and found nothing — validated against no sources at all. That is the
+    "checked and clean" fabrication `RetractionStatus` exists to prevent, one level up from
+    where it was already guarded: at the conclusion rather than at a single source.
+    """
+    from verity.models.common import RetractionStatus
+
+    assert EvidenceQuality().retraction is RetractionStatus.UNKNOWN
+    for status in (
+        RetractionStatus.CLEAN,
+        RetractionStatus.RETRACTED,
+        RetractionStatus.FLAGGED_UNCONFIRMED,
+    ):
+        with pytest.raises(ValidationError, match="no source was consulted"):
+            EvidenceQuality(retraction=status)
+
+
+@pytest.mark.parametrize(
+    ("build", "match"),
+    [
+        (
+            lambda naive: Provenance(source="openalex", accessed_at=naive),
+            "naive accessed_at",
+        ),
+        (
+            lambda naive: RetractionCheck(
+                source=RetractionSource.CROSSREF,
+                result=RetractionFinding.CLEAN,
+                checked_at=naive,
+            ),
+            "naive checked_at",
+        ),
+    ],
+)
+def test_a_reading_without_a_timezone_is_refused(build, match):
+    """M5-T3's TTL re-validation compares these against a deadline. A naive value is not
+    rejected by that comparison, it is silently interpreted — so whether a fact counts as
+    stale would depend on where the process runs. Hand-written JSONL and JSON artifacts are
+    exactly where naive timestamps arrive."""
+    with pytest.raises(ValidationError, match=match):
+        build(datetime(2026, 8, 16, 12, 0))
