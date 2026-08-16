@@ -35,7 +35,9 @@ assertions can be checked mechanically, and the loader checks them:
   identity mismatch from the report — the demo's centerpiece finding, lost to a typo. Where
   a registry genuinely spells a title differently — OpenAlex prefixes retracted works with
   `RETRACTED ARTICLE:` — the curator declares that spelling in `expected_title_variants`,
-  so a variant is a recorded decision rather than a hole.
+  so a variant is a recorded decision rather than a hole. A variant must *contain* the
+  title the row declared, so it can only widen that claim, and the load report names which
+  declared title each source matched — auditing a variant does not mean opening this file.
 - **The quote is verbatim, and it is a quotation.** `verified-primary` requires a quote
   that appears in the work's own abstract as a registry served it, compared under
   whitespace-collapse and case-fold (`normalize_text`) because OpenAlex serves an inverted

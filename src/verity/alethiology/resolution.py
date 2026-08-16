@@ -120,6 +120,23 @@ class KeyResolution(FrozenModel):
     def registry_readings(self) -> list[SourceReading]:
         return [r for s, r in self.readings.items() if s in REGISTRY_SOURCES and r.found]
 
+    def title_matches(self, *expected_titles: str) -> dict[str, str]:
+        """Source → the declared title it returned, for every source that matched one.
+
+        Which declared title matched is recorded, not just that one did: a row may declare
+        a primary title and registry-specific variants, and an audit that cannot tell them
+        apart has to open the seed file to find out whether identity rested on the
+        curator's own claim or on a spelling they also supplied.
+        """
+        expected = {normalize_text(title): title for title in expected_titles}
+        return {
+            source: matched
+            for source, reading in self.readings.items()
+            if reading.found
+            and reading.title
+            and (matched := expected.get(normalize_text(reading.title))) is not None
+        }
+
     def titles_matching(self, *expected_titles: str) -> list[str]:
         """Sources whose returned title equals one of the titles the curator declared.
 
@@ -140,12 +157,7 @@ class KeyResolution(FrozenModel):
         This is a curation gate on what a seed row may claim; it is never consulted by the
         grounding predicate, which compares keys and nothing else.
         """
-        expected = {normalize_text(title) for title in expected_titles}
-        return sorted(
-            source
-            for source, reading in self.readings.items()
-            if reading.found and reading.title and normalize_text(reading.title) in expected
-        )
+        return sorted(self.title_matches(*expected_titles))
 
 
 class ResolutionArtifact(FrozenModel):

@@ -81,10 +81,17 @@ fact
   statement          natural-language proposition
   key                exact external key — DOI | PMID | NCT     ← grounding depends on this
   provenance[]       {source_url, accessed, confidence_tier}
+  supporting_quote   verbatim source text the statement was written against, if any
   evidence_quality   { retraction_status, study_design, citation_intent, sample_size }
   status             IN | OUT                                   ← maintained by the JTMS
   justifications[]   → justification ids
 ```
+
+**Statements are attributive, and the quote is what a tier rests on.** A fact says
+"Hamblin (1981) reports that X", never a bare "X": grounding is exact-key match and never
+compares statements, so an object-level fact would make any premise citing that identifier
+read as `verified`. A quote from the work establishes what it *says*, which is the most an
+attribution can be checked against — never that the proposition is true.
 
 **The `key` field is load-bearing.** The grounding-rate threshold defines "grounds" as descent to a citation-shaped premise matched to an alethiology fact **by exact key only** (DOI / PMID / NCT). Fuzzy matching would silently inflate the headline metric. Keep exact-key matching separate from any later similarity layer.
 

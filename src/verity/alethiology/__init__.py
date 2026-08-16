@@ -10,7 +10,10 @@ Storage lives in `verity.store.facts`; this package owns the rules over it. Thre
   build-plan.md §4's supplementary rate needs.
 - `seed` / `resolution` / `verify_keys` — the curated corpus and the gate it passes: keys
   resolved against the registries and recorded, statements attributive by construction, a
-  grounding-eligible tier earned from a verbatim quote or not granted.
+  grounding-eligible tier earned from a verbatim quote or not granted. `seed` is a package
+  along the pipeline a row travels — `_row` (as written) → `_gate` (what survives) →
+  `_project` (becomes a `Fact`) → `_report` / `_load`. Import from `verity.alethiology.seed`
+  rather than its submodules; M5-T2's promotion policy lands beside them as a sibling.
 
 **Blocker this tier hands forward to M8-T1.** No JTMS justifications are written for
 seeded facts. `Justification` models Doyle's IN-list only, so a premise justification with
@@ -29,6 +32,8 @@ M5-T2 needs it before it can promote to `corroborated-multi-secondary`.
 """
 
 from verity.alethiology.grounding import (
+    CandidateReason,
+    CandidateVerdict,
     GroundingAttempt,
     GroundingReason,
     attempt_grounding,
@@ -45,6 +50,8 @@ from verity.alethiology.service import Alethiology
 
 __all__ = [
     "Alethiology",
+    "CandidateReason",
+    "CandidateVerdict",
     "GroundingAttempt",
     "GroundingReason",
     "KeyResolution",

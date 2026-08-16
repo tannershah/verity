@@ -473,7 +473,7 @@ def test_a_non_retraction_notice_is_not_reported_as_clean():
     from datetime import datetime as dt
 
     from verity.alethiology.resolution import KeyResolution, SourceReading
-    from verity.alethiology.seed import _retraction_check
+    from verity.alethiology.seed._project import _retraction_check
 
     def check_for(nature: str) -> RetractionFinding:
         resolution = KeyResolution(
@@ -508,17 +508,17 @@ def test_the_nature_of_a_non_retraction_notice_survives_for_m7(conn, report):
 def test_the_write_is_as_atomic_as_the_gate(conn, monkeypatch):
     """The gate rules on every row before anything is written; the write has to match, or
     a failure partway leaves a store that is neither the old one nor the new one."""
-    import verity.alethiology.seed as seed_module
+    from verity.alethiology.seed import _load as loader
 
     calls = {"n": 0}
-    real = seed_module.save_facts
+    real = loader.save_facts
 
     def explode(connection, facts):
         calls["n"] += 1
         real(connection, list(facts)[:1])
         raise RuntimeError("simulated failure mid-write")
 
-    monkeypatch.setattr(seed_module, "save_facts", explode)
+    monkeypatch.setattr(loader, "save_facts", explode)
     with pytest.raises(RuntimeError):
         load_seed(conn, SEED, ARTIFACT)
 
@@ -622,3 +622,40 @@ def test_the_quote_gate_establishes_quotation_not_warrant():
     assessment = _probe("comes from consuming a can of the stuff")
     assert assessment.effective_tier is ConfidenceTier.VERIFIED_PRIMARY
     assert assessment.notes == []
+
+
+def test_a_variant_may_extend_the_declared_title_but_not_replace_it(conn, tmp_path):
+    """`expected_title_variants` is the one place the gate takes a curator's word.
+
+    Bounded so it can only widen the row's own claim: a variant must contain the title the
+    row declared, which admits `RETRACTED ARTICLE: <title>` and refuses substituting a
+    different work's. This is containment between two strings the same curator wrote in a
+    reviewed file, not between a curator's guess and whatever a registry returned — the
+    rule `titles_matching` deleted.
+    """
+    with pytest.raises(SeedError, match="does not contain the expected title"):
+        load_seed(
+            conn,
+            _write(
+                tmp_path,
+                _row(
+                    expected_title_variants=[
+                        "The comparison of resilience and spirituality in addicted "
+                        "and non-addicted women"
+                    ]
+                ),
+            ),
+            ARTIFACT,
+        )
+
+
+def test_the_report_says_which_declared_title_confirmed_identity(report):
+    """Auditing a variant should not mean opening the seed file and cross-referencing."""
+    hesperidin = next(row for row in report.rows if row.slug == "rw-71483-hesperidin")
+    assert hesperidin.identity_confirmed_by == ["openalex", "retraction-watch"]
+    assert any(
+        title.startswith("RETRACTED ARTICLE:") for title in hesperidin.identity_matched_titles
+    ), "the row's identity rests partly on a declared variant, and the report must show it"
+
+    plain = next(row for row in report.rows if row.slug == "hamblin-1981-spurious")
+    assert plain.identity_matched_titles == ["Fake."]
