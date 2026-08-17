@@ -105,7 +105,7 @@ are: the M4-T1 champion is near-binary and misses three of seven corruption fami
 lens and ships as the blind-spot case, and the demo graph's single grounding runs through a
 key the decomposer proposed rather than one retrieval bound.
 
-**Phase 3 status (complete):** M1-T2 and M3-T2 both land; 593 tests green, ruff clean. The
+**Phase 3 status (complete):** M1-T2 and M3-T2 both land; 596 tests green, ruff clean. The
 descent is breadth-first, bounded by depth and node budgets, and every leaf records why it
 stopped — see the rulings below. `recurse_on` moves `config_hash()`, so it belongs in the
 same commit as Phase 5's demo re-record and the `runs_dir` removal.
@@ -261,8 +261,9 @@ holds its manifest, so there is nothing to replay it *from*. The re-record has t
 `python -m verity run` against a **committed store** — graph plus manifest plus cassette —
 or the command a reviewer is told to try has no artifact to try it on.
 
-**Removed with Phase 5's demo re-record:** `PathsConfig.runs_dir` and the auto-write to
-`data/runs/`. The store is authoritative and `--out` covers the file case; the removal
+**Removed with Phase 5's demo re-record:** `PathsConfig.runs_dir`, which nothing has read
+since the driver that wrote `data/runs/` was deleted. The store is authoritative and `--out`
+covers the file case; the removal
 moves `config_hash()` and therefore every run id and stage-cache key, so it belongs in the
 commit that re-records the demo graph anyway. `DecompositionConfig.recurse_on` has already
 moved it, and `data/demo/spinach.json` carries both a hash no current config reproduces and
