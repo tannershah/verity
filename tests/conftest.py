@@ -25,6 +25,7 @@ is object-level, so the fixture exercises the gap the render row's
 
 from __future__ import annotations
 
+import socket
 from datetime import UTC, datetime
 
 import pytest
@@ -66,6 +67,26 @@ from verity.models.evidence import (
 from verity.models.fact import Fact, InMemoryFacts
 
 ACCESSED = datetime(2026, 8, 16, 12, 0, tzinfo=UTC)
+
+
+@pytest.fixture
+def poisoned_socket(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Make any socket open fail loudly. Opt in with `pytestmark = usefixtures(...)`.
+
+    Replay mode cannot be its own safety net — it is the thing under test. A bug in the
+    cache lookup, or a module that forgets to set the mode, would otherwise pass by quietly
+    going to the network and spending real OpenAlex credits. Requested per module rather
+    than autouse, because the M4 backends legitimately download checkpoints.
+    """
+
+    def refuse(*args: object, **kwargs: object) -> None:
+        raise AssertionError(
+            "a test opened a socket; retrieval tests run from committed fixtures and "
+            "replay mode must never reach the network"
+        )
+
+    monkeypatch.setattr(socket.socket, "connect", refuse)
+    monkeypatch.setattr(socket, "create_connection", refuse)
 
 #: Hamblin, "Fake." BMJ 1981 — the origin of the spinach decimal-error story.
 SPINACH_KEY = ExternalKey(type=KeyType.DOI, value="10.1136/bmj.283.6307.1671")

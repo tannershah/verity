@@ -168,8 +168,7 @@ def test_the_alethiology_package_imports_no_similarity_machinery():
     """A similarity assist is M5-T3, flagged non-grounding, and belongs in its own module.
 
     Scanned rather than assumed: an embedding import added to this package would make the
-    ban a comment. `verify_keys` uses `re` for JATS tag stripping, which is markup removal,
-    not matching.
+    ban a comment.
 
     Honest about its reach: this catches imported machinery, not a similarity function
     written by hand, and the review that would catch that is a human one. It walks the

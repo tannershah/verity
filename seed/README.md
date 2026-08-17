@@ -8,10 +8,19 @@ The curated facts the two demo claims stand on, and the record they were checked
 | `key_resolution.json` | What OpenAlex, Crossref, and the Retraction Watch table returned for every key in the seed, at one recorded time |
 
 ```
-python -m verity.alethiology verify-keys --from-seed   # refresh the resolution record
-python -m verity.alethiology seed --check              # gate the corpus, write nothing
-python -m verity.alethiology seed                      # gate it and load it
+python -m verity.retrieval record --from-seed           # record what the registries serve
+python -m verity.alethiology verify-keys --from-seed    # refresh the resolution record
+python -m verity.alethiology seed --check               # gate the corpus, write nothing
+python -m verity.alethiology seed                       # gate it and load it
 ```
+
+**Adding a row means running all four, in that order.** Recording comes first because the
+resolution record is built from committed fixtures and the parity suite replays them — a
+key with no fixture fails as a cache miss rather than quietly reaching the network.
+`verify-keys` refuses to record a key no source could actually check and says which,
+because the artifact stores `found` as a boolean and the gate reads a resolution with
+nothing found as grounds to delete the row: a network failure must not read as an
+identifier that does not exist.
 
 Loading is offline and deterministic: the gate reads `key_resolution.json`, never the
 network, so a clean checkout reproduces the same store without the gitignored 71,799-row

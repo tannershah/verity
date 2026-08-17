@@ -19,6 +19,7 @@ from verity.alethiology.seed import SeedError, load_seed, read_seed, report_to_j
 from verity.alethiology.verify_keys import verify
 from verity.config import load_config
 from verity.keys import ExternalKey
+from verity.retrieval import retraction_watch as rw
 from verity.store.db import open_db
 
 
@@ -56,17 +57,33 @@ def main(argv: list[str] | None = None) -> int:
                 keys += [row.external_key() for row in read_seed(args.seed)]
             if not keys:
                 parser.error("give at least one key, or --from-seed")
-            artifact = verify(keys, args.artifact, refresh=args.refresh)
-            found = sum(
-                1
-                for resolution in artifact.resolutions.values()
-                if any(reading.found for reading in resolution.readings.values())
-            )
+            report = verify(keys, args.artifact, refresh=args.refresh)
+            state = "rewritten" if report.written else "unchanged"
             print(
-                f"{args.artifact}: {len(artifact.resolutions)} key(s) recorded, "
-                f"{found} resolving in at least one source"
+                f"{args.artifact} ({state}): {len(report.artifact.resolutions)} key(s) "
+                f"recorded, {report.resolving} resolving in at least one source"
             )
-            return 0
+            if report.unrecordable:
+                # Not written, and said out loud. The artifact's `found` is a boolean and
+                # the gate reads a resolution with nothing found as grounds to delete the
+                # row — so a key nothing could check has to be reported as unchecked rather
+                # than recorded as nonexistent.
+                print(
+                    f"{len(report.unrecordable)} key(s) could not be checked and were not "
+                    "recorded:",
+                    file=sys.stderr,
+                )
+                for reading in report.unrecordable:
+                    print(f"  {reading.key}: {reading.why_not()}", file=sys.stderr)
+            if report.table_unconsulted:
+                # An absent table is a source that was never asked, and saying so is the
+                # difference between a recorded miss and a silent one.
+                print(
+                    f"warning: {rw.TABLE} is not on disk, so retraction-watch was not "
+                    f"consulted for {len(report.table_unconsulted)} key(s)",
+                    file=sys.stderr,
+                )
+            return 1 if report.unrecordable else 0
 
         with open_db(args.db) as conn:
             report = load_seed(conn, args.seed, args.artifact, apply=not args.check)

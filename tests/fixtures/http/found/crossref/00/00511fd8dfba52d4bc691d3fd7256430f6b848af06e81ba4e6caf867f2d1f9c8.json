@@ -1,0 +1,21 @@
+{
+  "request": {
+    "url": "https://api.crossref.org/works/10.3823/1654",
+    "source": "crossref",
+    "endpoint_class": "work",
+    "credit_cost_hint": 1
+  },
+  "status": 200,
+  "body": "{\"status\":\"ok\",\"message-type\":\"work\",\"message-version\":\"1.0.0\",\"message\":{\"indexed\":{\"date-parts\":[[2026,7,24]],\"date-time\":\"2026-07-24T04:53:35Z\",\"timestamp\":1784868815485,\"version\":\"3.55.0\"},\"update-to\":[{\"DOI\":\"10.3823\\/1654\",\"type\":\"retraction\",\"label\":\"Retraction\",\"source\":\"retraction-watch\",\"updated\":{\"date-parts\":[[2015,6,10]],\"date-time\":\"2015-06-10T00:00:00Z\",\"timestamp\":1433894400000},\"record-id\":\"17524\"}],\"reference-count\":0,\"publisher\":\"Springer Science and Business Media LLC\",\"content-domain\":{\"domain\":[],\"crossmark-restriction\":false},\"short-container-title\":[\"Int Arch Med\"],\"DOI\":\"10.3823\\/1654\",\"type\":\"journal-article\",\"created\":{\"date-parts\":[[2015,4,6]],\"date-time\":\"2015-04-06T19:56:52Z\",\"timestamp\":1428350212000},\"source\":\"Crossref\",\"is-referenced-by-count\":1,\"title\":[\"The comparison of resilience and spirituality in addicted and non-addicted women\"],\"prefix\":\"10.1186\",\"author\":[{\"given\":\"Tahereh\",\"family\":\"Ramezani\",\"sequence\":\"first\",\"affiliation\":[],\"role\":[{\"vocabulary\":\"crossref\",\"role\":\"author\"}]},{\"given\":\"Samaneh\",\"family\":\"Behzadifard\",\"sequence\":\"additional\",\"affiliation\":[],\"role\":[{\"vocabulary\":\"crossref\",\"role\":\"author\"}]},{\"given\":\"Nooshin\",\"family\":\"Parvaresh\",\"sequence\":\"additional\",\"affiliation\":[],\"role\":[{\"vocabulary\":\"crossref\",\"role\":\"author\"}]},{\"given\":\"Younes\",\"family\":\"Jahani\",\"sequence\":\"additional\",\"affiliation\":[],\"role\":[{\"vocabulary\":\"crossref\",\"role\":\"author\"}]},{\"given\":\"Fahimeh\",\"family\":\"Bakhtyari\",\"sequence\":\"additional\",\"affiliation\":[],\"role\":[{\"vocabulary\":\"crossref\",\"role\":\"author\"}]},{\"given\":\"Azizollah\",\"family\":\"Arbabisarjou\",\"sequence\":\"additional\",\"affiliation\":[],\"role\":[{\"vocabulary\":\"crossref\",\"role\":\"author\"}]}],\"member\":\"297\",\"published-online\":{\"date-parts\":[[2015]]},\"updated-by\":[{\"DOI\":\"10.3823\\/1654\",\"type\":\"retraction\",\"label\":\"Retraction\",\"source\":\"retraction-watch\",\"updated\":{\"date-parts\":[[2015,6,10]],\"date-time\":\"2015-06-10T00:00:00Z\",\"timestamp\":1433894400000},\"record-id\":\"17524\"}],\"container-title\":[\"International Archives of Medicine\"],\"original-title\":[],\"deposited\":{\"date-parts\":[[2025,4,23]],\"date-time\":\"2025-04-23T19:39:47Z\",\"timestamp\":1745437187000},\"score\":1,\"resource\":{\"primary\":{\"URL\":\"https:\\/\\/www.researchgate.net\\/search\\/publication?q=The+comparison+of+resilience+and+spirituality+in+addicted+and+non-addicted+women\"}},\"subtitle\":[],\"short-title\":[],\"issued\":{\"date-parts\":[[2015]]},\"references-count\":0,\"URL\":\"https:\\/\\/doi.org\\/10.3823\\/1654\",\"relation\":{},\"ISSN\":[\"1755-7682\"],\"issn-type\":[{\"value\":\"1755-7682\",\"type\":\"electronic\"}],\"subject\":[],\"published\":{\"date-parts\":[[2015]]}}}",
+  "headers": {
+    "date": "Sun, 16 Aug 2026 22:40:05 GMT",
+    "content-type": "application/json",
+    "x-rate-limit-limit": "10",
+    "x-rate-limit-interval": "1s",
+    "x-concurrency-limit": "3",
+    "x-api-pool": "polite-single"
+  },
+  "fetched_at": "2026-08-16T22:40:05.822167Z",
+  "from_cache": false,
+  "degraded": false
+}

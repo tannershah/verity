@@ -44,4 +44,13 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-addopts = "-q"
+# `-rs` prints the reason for every skip. A test that skips silently is a silent cap:
+# the model-layer integration test skips without the `verifier` extra installed, and a
+# reader has to be able to see that it did.
+# `-m "not live"` keeps the default suite offline and free: the retrieval tests run
+# against committed fixtures, and only `pytest -m live` spends OpenAlex credits. A
+# command-line `-m` overrides this one, which is what makes that opt-in work.
+addopts = "-q -rs -m 'not live'"
+markers = [
+    "live: hits the real registries; opt in with `pytest -m live`",
+]

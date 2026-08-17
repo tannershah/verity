@@ -1,0 +1,21 @@
+{
+  "request": {
+    "url": "https://api.crossref.org/works/10.1136/bmj.283.6307.1671",
+    "source": "crossref",
+    "endpoint_class": "work",
+    "credit_cost_hint": 1
+  },
+  "status": 200,
+  "body": "{\"status\":\"ok\",\"message-type\":\"work\",\"message-version\":\"1.0.0\",\"message\":{\"indexed\":{\"date-parts\":[[2025,12,23]],\"date-time\":\"2025-12-23T18:57:30Z\",\"timestamp\":1766516250213},\"reference-count\":0,\"publisher\":\"BMJ\",\"issue\":\"6307\",\"content-domain\":{\"domain\":[],\"crossmark-restriction\":false},\"short-container-title\":[\"BMJ\"],\"published-print\":{\"date-parts\":[[1981,12,19]]},\"DOI\":\"10.1136\\/bmj.283.6307.1671\",\"type\":\"journal-article\",\"created\":{\"date-parts\":[[2009,4,2]],\"date-time\":\"2009-04-02T15:00:59Z\",\"timestamp\":1238684459000},\"page\":\"1671-1674\",\"source\":\"Crossref\",\"is-referenced-by-count\":20,\"title\":[\"Fake.\"],\"prefix\":\"10.1136\",\"volume\":\"283\",\"author\":[{\"given\":\"T J\",\"family\":\"Hamblin\",\"sequence\":\"first\",\"affiliation\":[],\"role\":[{\"role\":\"author\",\"vocabulary\":\"crossref\"}]}],\"member\":\"239\",\"container-title\":[\"BMJ\"],\"original-title\":[],\"language\":\"en\",\"link\":[{\"URL\":\"https:\\/\\/syndication.highwire.org\\/content\\/doi\\/10.1136\\/bmj.283.6307.1671\",\"content-type\":\"unspecified\",\"content-version\":\"vor\",\"intended-application\":\"similarity-checking\"}],\"deposited\":{\"date-parts\":[[2020,9,25]],\"date-time\":\"2020-09-25T16:07:17Z\",\"timestamp\":1601050037000},\"score\":1,\"resource\":{\"primary\":{\"URL\":\"https:\\/\\/www.bmj.com\\/lookup\\/doi\\/10.1136\\/bmj.283.6307.1671\"}},\"subtitle\":[],\"short-title\":[],\"issued\":{\"date-parts\":[[1981,12,19]]},\"references-count\":0,\"journal-issue\":{\"issue\":\"6307\",\"published-print\":{\"date-parts\":[[1981,12,19]]}},\"URL\":\"https:\\/\\/doi.org\\/10.1136\\/bmj.283.6307.1671\",\"relation\":{},\"ISSN\":[\"0959-8138\",\"1468-5833\"],\"issn-type\":[{\"value\":\"0959-8138\",\"type\":\"print\"},{\"value\":\"1468-5833\",\"type\":\"electronic\"}],\"subject\":[],\"published\":{\"date-parts\":[[1981,12,19]]}}}",
+  "headers": {
+    "date": "Sun, 16 Aug 2026 22:39:58 GMT",
+    "content-type": "application/json",
+    "x-rate-limit-limit": "10",
+    "x-rate-limit-interval": "1s",
+    "x-concurrency-limit": "3",
+    "x-api-pool": "polite-single"
+  },
+  "fetched_at": "2026-08-16T22:39:58.772747Z",
+  "from_cache": false,
+  "degraded": false
+}

@@ -96,6 +96,21 @@ class RetrievalConfig(BaseModel):
     cache_dir: Path = Path(".cache/http")
     #: Minimum stance score for an evidence item to bind its key to a premise (M6-T3).
     stance_floor: float = 0.60
+    #: Starting request rate for a `(host, endpoint_class)` nobody has heard from yet.
+    #: Sources advertise their real limits per response and the limiter adopts them on
+    #: first sight, so this only governs the first request against a new endpoint class.
+    default_rate_per_s: float = 1.0
+    #: First retry delay; doubled per attempt and multiplied by injected jitter.
+    retry_base_delay_s: float = 0.5
+    #: Longest `Retry-After` we will honour. Past it the request is abandoned and the
+    #: refusal reported as a cap — capping the wait and retrying early would ignore an
+    #: instruction the server gave explicitly, and sleeping it out lets one upstream header
+    #: hang a run for as long as it likes.
+    max_retry_after_s: float = 60.0
+    #: OpenAlex credits kept in reserve. Below this the client refuses to spend, so a run
+    #: stops at a stated floor instead of discovering the wall mid-graph. The meter is a
+    #: credit budget on a rolling window of roughly 95 minutes (observed), not a daily one.
+    openalex_credit_floor: int = 200
 
 
 class LLMConfig(BaseModel):

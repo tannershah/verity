@@ -1,236 +1,160 @@
-"""Resolve seed identifiers against the registries, once, and record what came back.
+"""Resolve seed identifiers against the sources, once, and record what came back.
 
-**Provisional, and scheduled for deletion.** This is direct `urllib` with no disk cache,
-no rate limiter, and no retry policy — M6-T1a builds all three, and this module is removed
-when it does, its callers moving to those clients. It exists now because the seed cannot be
-gated without a resolution record and M5-T1 precedes M6-T1a in the ordering. The artifact
-it writes is not throwaway: it is committed, it makes seed loading offline and
-reproducible, and it is M6-T1a's first recorded fixture.
+**The transport this module used to carry is gone.** It was direct `urllib` with no disk
+cache, no rate limiter and no retry policy, written because the seed cannot be gated without
+a resolution record and M5-T1 precedes M6-T1a in the ordering. M6-T1a built all three, so
+the reading now goes through `verity.retrieval` — cached, rate-limited, credit-budgeted,
+and pool-asserted — and the request and parsing shapes moved to the clients that own them.
+What survives here is the curator's command, which is the part that was never provisional:
+adding a key to the seed still has to produce a checked record of what each source said.
 
-Run it when a key is added to the seed, never as part of a normal run:
+The swap was gated rather than asserted. Raw registry responses were recorded first, both
+parser sets were run over the same bytes, and the resulting `SourceReading`s and every
+`TierAssessment` across the seed corpus were compared — because re-recording live and
+diffing against the committed artifact cannot separate parser drift from API drift, and the
+gate is sensitive to exactly that: quote matching is substring containment over a
+reconstructed abstract, so a space-level change in the inverted-index join silently demotes
+`verified-primary` rows. `tests/test_seed_parity.py` keeps that comparison running.
+
+Run it when a key is added to the seed, never as part of a normal run, and after
+`python -m verity.retrieval record` has captured what the registries serve for it:
 
     python -m verity.alethiology verify-keys --from-seed
     python -m verity.alethiology verify-keys doi:10.1136/bmj.283.6307.1671
 
-Retraction Watch is read from the local table (`data/retraction_watch.csv`, gitignored) and
-its matched rows are copied into the artifact, so a clean checkout can seed without the
-71,799-row download.
+**Nothing unchecked reaches the artifact.** Two claims a resolution cannot make are refused
+here rather than written and discovered later. When a source could have answered and did
+not, the key is left out entirely and reported — the artifact stores `found` as a boolean,
+and the gate reads a resolution with nothing found as "resolves in no source consulted …
+correct it or drop the row", so a network failure recorded as `False` tells a curator to
+delete a good row. And when the Retraction Watch table (`data/retraction_watch.csv`,
+gitignored) is absent, that source is reported as unconsulted rather than silently omitted,
+because an artifact missing a source and an artifact whose source found nothing are
+different claims. A source that structurally cannot answer — Crossref holds no PMIDs — is
+neither: `found=False` is true of it, and is what the committed artifact already carries.
 """
 
 from __future__ import annotations
 
-import csv
-import json
-import re
-import urllib.error
-import urllib.parse
-import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
 
-from verity.alethiology.resolution import (
-    RETRACTION_WATCH,
-    KeyResolution,
-    ResolutionArtifact,
-    SourceReading,
-)
-from verity.keys import ExternalKey, InvalidKeyError, KeyType
-from verity.secrets import Secrets
+from pydantic import ConfigDict, Field
 
-RW_TABLE = Path("data/retraction_watch.csv")
-_TIMEOUT = 30.0
-_JATS = re.compile(r"<[^>]+>")
+from verity.alethiology.resolution import KeyResolution, ResolutionArtifact
+from verity.base import FrozenModel
+from verity.keys import ExternalKey
+from verity.retrieval import crossref, openalex
+from verity.retrieval import retraction_watch as rw
+from verity.retrieval.http import CacheMode, HttpClient, build_client
 
 
-def _get(url: str) -> dict | None:
-    request = urllib.request.Request(url, headers={"User-Agent": "verity/0.0.1 (research)"})
-    try:
-        with urllib.request.urlopen(request, timeout=_TIMEOUT) as response:
-            return json.load(response)
-    except urllib.error.HTTPError as exc:
-        if exc.code in (404, 410):
-            return None
-        raise
+class KeyReading(FrozenModel):
+    """One key resolved across every source, and whether it may be committed.
 
-
-def _now() -> datetime:
-    return datetime.now(UTC)
-
-
-def _openalex_abstract(work: dict) -> str | None:
-    """Reconstruct prose from OpenAlex's inverted index.
-
-    Token order survives; original spacing and punctuation do not, which is exactly why
-    the seed's quote check normalizes before testing containment.
+    **Recordability is a property of the reading, not a formatting concern.** The artifact
+    stores `found` as a boolean and the gate reads a resolution where nothing was found as
+    "resolves in no source consulted … correct it or drop the row" — a claim about the
+    identifier. A run that could not reach a registry does not have that claim, so writing
+    the key at all would tell a curator to delete a good row on the strength of a network
+    failure. That is the fabrication `ReadingOutcome` prevents at the record layer, arriving
+    one layer up through a schema that cannot express the difference.
     """
-    inverted = work.get("abstract_inverted_index")
-    if not inverted:
-        return None
-    positions: dict[int, str] = {}
-    for word, indices in inverted.items():
-        for index in indices:
-            positions[index] = word
-    return " ".join(positions[i] for i in sorted(positions)) or None
+
+    key: ExternalKey
+    resolution: KeyResolution | None
+    #: Sources that could have answered and did not, with the reason.
+    unreachable: dict[str, str] = Field(default_factory=dict)
+    #: Sources structurally unable to speak to this key type — Crossref holds no PMIDs.
+    #: Recorded for the report; these do not block a write, because `found=False` is true
+    #: of them and is already what the committed artifact carries for the PMID rows.
+    not_applicable: dict[str, str] = Field(default_factory=dict)
+    #: Whether the Retraction Watch table was on disk to consult at all.
+    table_consulted: bool = False
+
+    @property
+    def recordable(self) -> bool:
+        """Whether this reading may be written to the artifact.
+
+        Two ways to fail. Any source that could have answered and did not leaves the
+        reading incomplete. And a key that *no* source was able to speak to has been
+        checked by nobody — an NCT identifier today, since ClinicalTrials.gov arrives with
+        M6-T1b — so recording it would put a row in the artifact that the gate then rejects
+        as nonexistent.
+        """
+        return self.resolution is not None and not self.unreachable
+
+    def why_not(self) -> str:
+        reasons = self.unreachable or {"all sources": "no source indexes this identifier type"}
+        return "; ".join(f"{source}: {reason}" for source, reason in sorted(reasons.items()))
 
 
-#: OpenAlex `ids` entries that are identifiers we ground on. Read by name rather than by
-#: parsing every value: a MAG id is a bare integer, so `ExternalKey.parse` reads it as a
-#: PMID and invents an alias to a real, unrelated PubMed record.
-_OPENALEX_ID_FIELDS = ("doi", "pmid")
+def resolve(key: ExternalKey, client: HttpClient, *, table: Path | None = None) -> KeyReading:
+    """Ask every source about `key`, reconciling nothing.
 
-
-def _openalex_aliases(work: dict) -> list[ExternalKey]:
-    keys: list[ExternalKey] = []
-    ids = work.get("ids") or {}
-    for field in _OPENALEX_ID_FIELDS:
-        raw = ids.get(field)
-        if not isinstance(raw, str):
-            continue
-        try:
-            keys.append(ExternalKey.parse(raw))
-        except InvalidKeyError:
-            continue
-    return keys
-
-
-def read_openalex(
-    key: ExternalKey, api_key: str | None
-) -> tuple[SourceReading, list[ExternalKey]]:
-    match key.type:
-        case KeyType.DOI:
-            path = f"https://doi.org/{key.value}"
-        case KeyType.PMID:
-            path = f"pmid:{key.value}"
-        case KeyType.NCT:
-            # OpenAlex indexes works, not registry entries. Recorded as not-found rather
-            # than skipped, so "asked and absent" stays distinct from "never asked".
-            return SourceReading(source="openalex", found=False, checked_at=_now()), []
-    url = f"https://api.openalex.org/works/{path}"
-    if api_key:
-        url += f"?api_key={urllib.parse.quote(api_key)}"
-
-    work = _get(url)
-    checked_at = _now()
-    if work is None:
-        return SourceReading(source="openalex", found=False, checked_at=checked_at), []
-
-    detail = {}
-    if work.get("is_retracted") is not None:
-        detail["is_retracted"] = str(bool(work["is_retracted"])).lower()
-    if work.get("id"):
-        detail["openalex_id"] = str(work["id"])
-    return (
-        SourceReading(
-            source="openalex",
-            found=True,
-            checked_at=checked_at,
-            url=str(work.get("id")) if work.get("id") else None,
-            title=work.get("title"),
-            year=work.get("publication_year"),
-            abstract=_openalex_abstract(work),
-            detail=detail,
-        ),
-        _openalex_aliases(work),
-    )
-
-
-def read_crossref(key: ExternalKey, mailto: str | None) -> SourceReading:
-    if key.type is not KeyType.DOI:
-        return SourceReading(source="crossref", found=False, checked_at=_now())
-    url = f"https://api.crossref.org/works/{urllib.parse.quote(key.value)}"
-    if mailto:
-        url += f"?mailto={urllib.parse.quote(mailto)}"
-
-    payload = _get(url)
-    checked_at = _now()
-    if payload is None:
-        return SourceReading(source="crossref", found=False, checked_at=checked_at)
-
-    work = payload["message"]
-    abstract = work.get("abstract")
-    detail = {}
-    updates = [u.get("type", "") for u in work.get("update-to", []) if isinstance(u, dict)]
-    if updates:
-        detail["update_to"] = ",".join(sorted(set(updates)))
-    sources = [u.get("source", "") for u in work.get("updated-by", []) if isinstance(u, dict)]
-    if sources:
-        detail["updated_by_source"] = ",".join(sorted(set(sources)))
-    issued = (work.get("issued", {}).get("date-parts") or [[None]])[0][0]
-    return SourceReading(
-        source="crossref",
-        found=True,
-        checked_at=checked_at,
-        url=f"https://doi.org/{key.value}",
-        title=(work.get("title") or [None])[0],
-        year=issued if isinstance(issued, int) else None,
-        abstract=_JATS.sub(" ", abstract) if abstract else None,
-        detail=detail,
-    )
-
-
-def read_retraction_watch(key: ExternalKey, table: Path = RW_TABLE) -> SourceReading | None:
-    """Match `key` against the local Retraction Watch table. `None` when it is absent.
-
-    Returning `None` rather than a not-found reading matters: with no table on disk the
-    source was never consulted, and `RetractionFinding.NOT_INDEXED` would claim it was.
+    `table` names which Retraction Watch copy to read — the bulk download by default, and
+    the committed sample when a clean checkout has to reproduce the corpus without it.
     """
-    if not table.exists():
-        return None
-    column = {
-        KeyType.DOI: "OriginalPaperDOI",
-        KeyType.PMID: "OriginalPaperPubMedID",
-        KeyType.NCT: None,
-    }[key.type]
-    checked_at = _now()
-    if column is None:
-        return SourceReading(source=RETRACTION_WATCH, found=False, checked_at=checked_at)
-
-    csv.field_size_limit(10_000_000)
-    with table.open(encoding="utf-8", errors="replace") as handle:
-        for row in csv.DictReader(handle):
-            raw = (row.get(column) or "").strip()
-            if not raw:
-                continue
-            try:
-                if ExternalKey(type=key.type, value=raw).value != key.value:
-                    continue
-            except (InvalidKeyError, ValueError):
-                continue
-            detail = {
-                "record_id": (row.get("Record ID") or "").strip(),
-                "nature": (row.get("RetractionNature") or "").strip(),
-                "retraction_date": (row.get("RetractionDate") or "").strip(),
-                "reasons": (row.get("Reason") or "").strip(),
-                "journal": (row.get("Journal") or "").strip(),
-                "author": (row.get("Author") or "").strip(),
-            }
-            return SourceReading(
-                source=RETRACTION_WATCH,
-                found=True,
-                checked_at=checked_at,
-                url="https://gitlab.com/crossref/retraction-watch-data",
-                title=(row.get("Title") or "").strip() or None,
-                record=" ".join(f"{k}: {v}" for k, v in detail.items() if v),
-                detail={k: v for k, v in detail.items() if v},
-            )
-    return SourceReading(source=RETRACTION_WATCH, found=False, checked_at=checked_at)
-
-
-def resolve(key: ExternalKey, secrets: Secrets) -> KeyResolution:
-    """Ask every source about `key` and record all of it, reconciling nothing."""
-    openalex, aliases = read_openalex(key, secrets.reveal("openalex_api_key"))
-    readings = {
-        "openalex": openalex,
-        "crossref": read_crossref(key, secrets.reveal("crossref_mailto")),
+    records = {
+        openalex.SOURCE: openalex.fetch_work(client, key),
+        crossref.SOURCE: crossref.fetch_work(client, key),
     }
-    rw = read_retraction_watch(key)
-    if rw is not None:
-        readings[RETRACTION_WATCH] = rw
-    return KeyResolution(
+    table_reading = rw.read(key, table)
+    if table_reading is not None:
+        records[rw.SOURCE] = table_reading
+
+    unreachable = {
+        source: record.unanswered_because or "unanswered"
+        for source, record in records.items()
+        if record.unreachable
+    }
+    not_applicable = {
+        source: record.unanswered_because or "not applicable"
+        for source, record in records.items()
+        if record.not_applicable
+    }
+    if unreachable or not any(record.answered for record in records.values()):
+        return KeyReading(
+            key=key,
+            resolution=None,
+            unreachable=unreachable,
+            not_applicable=not_applicable,
+            table_consulted=table_reading is not None,
+        )
+
+    work = records[openalex.SOURCE]
+    return KeyReading(
         key=key,
-        aliases=sorted(set(aliases) - {key}, key=str),
-        readings=readings,
+        resolution=KeyResolution(
+            key=key,
+            aliases=sorted(set(work.aliases) - {key}, key=str),
+            readings={source: record.as_source_reading() for source, record in records.items()},
+        ),
+        not_applicable=not_applicable,
+        table_consulted=table_reading is not None,
     )
+
+
+class VerifyReport(FrozenModel):
+    """What was written, and everything that was not."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid", frozen=True)
+
+    artifact: ResolutionArtifact
+    #: Keys deliberately left out of the artifact because nothing could check them.
+    unrecordable: list[KeyReading] = Field(default_factory=list)
+    #: Keys whose Retraction Watch reading was skipped because the table is not on disk.
+    table_unconsulted: list[ExternalKey] = Field(default_factory=list)
+    #: Whether the file on disk actually changed. See `verify` for why it usually should not.
+    written: bool = False
+
+    @property
+    def resolving(self) -> int:
+        return sum(
+            1
+            for resolution in self.artifact.resolutions.values()
+            if any(reading.found for reading in resolution.readings.values())
+        )
 
 
 def verify(
@@ -238,19 +162,59 @@ def verify(
     artifact_path: Path,
     *,
     refresh: bool = False,
-    secrets: Secrets | None = None,
-) -> ResolutionArtifact:
-    """Resolve `keys` into the artifact, keeping existing entries unless `refresh`."""
-    secrets = secrets or Secrets()
+    client: HttpClient | None = None,
+    table: Path | None = None,
+) -> VerifyReport:
+    """Resolve `keys` into the artifact, keeping existing entries unless `refresh`.
+
+    **A key that could not be checked is not written.** Every unrecordable reading is
+    returned instead, so the curator is told "2 key(s) could not be checked" rather than
+    handed an artifact asserting those identifiers do not exist.
+
+    **A run that resolved nothing new leaves the file alone.** `generated_at` stamps every
+    seeded fact and travels into the load report, so rewriting it on a no-op produces a
+    committed diff that says the corpus was re-verified when nothing was — and a *failed*
+    run that also rewrote the file would modify tracked state on its way to exiting
+    non-zero. Existing entries are never removed either, so a `--refresh` that finds a key
+    unreachable keeps the reading it already had and reports the failure.
+    """
+    client = client or build_client(mode=CacheMode.REFRESH if refresh else CacheMode.LIVE)
     existing = (
         ResolutionArtifact.load(artifact_path).resolutions if artifact_path.exists() else {}
     )
     resolutions = dict(existing)
+    unrecordable: list[KeyReading] = []
+    table_unconsulted: list[ExternalKey] = []
+
     for key in keys:
         if not refresh and str(key) in resolutions:
             continue
-        resolutions[str(key)] = resolve(key, secrets)
+        reading = resolve(key, client, table=table)
+        if not reading.table_consulted:
+            table_unconsulted.append(key)
+        if reading.recordable:
+            assert reading.resolution is not None
+            resolutions[str(key)] = reading.resolution
+        else:
+            unrecordable.append(reading)
 
-    artifact = ResolutionArtifact(generated_at=_now(), resolutions=resolutions)
-    artifact.dump(artifact_path)
-    return artifact
+    changed = resolutions != existing
+    artifact = ResolutionArtifact(
+        generated_at=datetime.now(UTC) if changed else _generated_at(artifact_path),
+        resolutions=resolutions,
+    )
+    if changed:
+        artifact.dump(artifact_path)
+    return VerifyReport(
+        artifact=artifact,
+        unrecordable=unrecordable,
+        table_unconsulted=table_unconsulted,
+        written=changed,
+    )
+
+
+def _generated_at(artifact_path: Path) -> datetime:
+    """The stamp already on disk, or now for a file that does not exist yet."""
+    if artifact_path.exists():
+        return ResolutionArtifact.load(artifact_path).generated_at
+    return datetime.now(UTC)
