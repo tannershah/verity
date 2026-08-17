@@ -15,64 +15,116 @@ claim
         └─▶ render: per-premise confidence · symmetric evidence · no root aggregate
 ```
 
-**Status:** spine in place — typed data model, SQLite persistence with forward migration, config and secrets handling, LLM adapter, run manifests. The pipeline is orchestrated: four composable stages with content-hash caching, a run manifest that records what each one was given and what it returned, failure isolation that yields a partial graph rather than a crash, and replay that re-derives a recorded run instead of reading it back. The alethiology is seeded and grounding works: a premise carrying an exact DOI or PMID resolves to a verified fact, and when it doesn't, the store says which of the reasons it was. Backward chaining descends: a claim becomes a tree of steps, bounded by a depth budget and a node cap, and every leaf records why it stopped — a source could settle it, none could, the budget ran out, a cap bit, or the decomposition was refused. A local entailment scorer scores every step, labelled uncalibrated — the checkpoint was picked by a committed bake-off whose decision rule was fixed before the numbers existed, and whose [record](data/verifier/README.md) states what the winner still gets wrong. Retrieval reaches OpenAlex and Crossref through a client that caches to disk, reads each source's rate limit off its own responses, and refuses to spend past a credit floor — and it proves its credential reached the pool it pays for, because header authentication otherwise fails open onto an anonymous allowance. Every registry response the seed rests on is recorded and committed, so the suite runs offline and a swapped parser has to reproduce the corpus tier-for-tier. The hard constraints are enforced by the types rather than by convention, so a violation is a build failure: see [tests/](tests/). A claim renders in the terminal as its premise tree, one score per step beside the grounding, evidence and termination columns each producer fills as it lands — and the footer says what the checkpoint behind those numbers catches and what it misses, derived from its selection record rather than described. No evaluation number exists yet: the pre-registered thresholds in [docs/evaluation.md](docs/evaluation.md) are unmeasured, the grounding rate is not yet judged, and the metrics harness that will compute them is not built (build-plan M10). Beachhead is scientific and health claims; news is roadmap.
+---
+
+## Arriving from the application?
+
+Three places to look, in order:
+
+1. **This page** — what exists right now, what doesn't yet, and how to see it run.
+2. **[PROMPT_HISTORY.md](PROMPT_HISTORY.md)** — how this was built. The project is almost entirely agent-built: research passes, an adversarial "examining committee" audit, and scripted worker/red-team build loops. Every prompt quoted there is the literal text that was sent, recovered from git history and run artifacts.
+3. **[demo/](demo/README.md)** — captured terminal output from the demo, with a guide explaining what each capture shows. You can read the results without installing anything.
+
+The two-page proposal describes the vision; this repository is the v0 prototype of it, as of **2026-08-17**.
 
 ---
 
-## Start here
+## What works today — and what doesn't yet
+
+**Working, end to end:**
+
+- **Decomposition.** A claim becomes 3–7 load-bearing premises by backward chaining (an LLM proposes premises that jointly entail the claim; malformed proposals are refused and counted, never silently repaired). The descent recurses on premise types that warrant it, bounded by depth and node budgets, and **every leaf records why it stopped** — grounded, no source could settle it, budget ran out, a cap bit, or the decomposition was refused.
+- **Per-premise verification.** A locally-run entailment model scores every decomposition step. The checkpoint was picked by a committed bake-off whose decision rule was fixed before the numbers existed; it ships **labeled uncalibrated**, and the terminal render prints what it catches and what it misses, derived from the [selection record](data/verifier/README.md) rather than described.
+- **A seeded fact store ("alethiology").** 33 curated, source-verified facts, loaded offline against committed registry records. A premise carrying an exact DOI or PMID resolves against it; when it doesn't, the store says which of the reasons it was.
+- **A three-source retraction check.** Every identifier in the store is checked against Retraction Watch, Crossref, and OpenAlex; six facts come back flagged. When sources agree, the tool reports whether the "agreement" is actually one primary record seen through three windows — see [demo/01-retraction-check.txt](demo/01-retraction-check.txt) for the retracted chocolate-hoax paper.
+- **An honest render.** The terminal view shows the premise tree with one verifier score per step, grounding status, and a termination reason per leaf. **No aggregate score for the whole claim is ever computed or displayed** — that is a design decision enforced by tests, not a missing feature.
+- **Reproducibility.** The committed demo run replays **offline, with no API key**, byte-stable: recorded LLM answers and registry responses are committed, and `verity replay` re-derives the run and compares every stage digest. See [demo/03-replay.txt](demo/03-replay.txt).
+
+**Not built yet (stated here so the demo can't oversell):**
+
+- **No evaluation numbers.** The thresholds in [docs/evaluation.md](docs/evaluation.md) are pre-registered but unmeasured; the metrics harness is unbuilt. Every number the demo shows is a smoke test, not a result.
+- **Retrieval doesn't fill the tree yet.** The evidence and retraction columns of a rendered tree stay empty until agentic retrieval (build-plan M6) lands; today the retraction check lives on the fact store, not on freshly-retrieved evidence.
+- **Grounding is luck-dependent.** Until identifiers are bound from retrieval, a premise only grounds if the decomposer happens to volunteer a DOI — two of the ten recorded decompositions did. The committed demo run grounds nothing, and [demo/04-chocolate-attempt.txt](demo/04-chocolate-attempt.txt) shows two live attempts missing — kept deliberately, because the variance is the finding.
+- **No propagation yet.** The dependency-tracked invalidation layer (retract a leaf → dependents flip) is designed (JTMS) but not implemented.
+- **CLI only.** The v0 surface is the terminal; a Streamlit view is roadmap.
+
+---
+
+## See it run
+
+Setup (Python 3.12):
+
+```bash
+uv venv --python 3.12 && uv pip install -e ".[dev]"
+cp .env.example .env    # keys only needed for live runs; the demo below needs none
+```
+
+Then four commands, all offline and free:
+
+```bash
+python -m verity.alethiology seed        # load the curated fact store (offline, deterministic)
+python -m verity.quality apply           # three-source retraction check onto every fact
+python -m verity render data/demo/spinach.json          # draw the committed premise tree
+python -m verity.quality check doi:10.3823/1654         # the retracted-paper verdict, source by source
+```
+
+And the reproducibility beat — replay the committed run with no API key:
+
+```bash
+python -m verity runs --db data/demo/store.db            # list the recorded run
+python -m verity replay <run_id> --db data/demo/store.db # re-derive it; every digest must match
+```
+
+Expected output for each is captured in [demo/](demo/README.md). To run the pipeline live on a new claim (`python -m verity run "<claim>"`), put an Anthropic API key in `.env` — a run costs a few cents; a second run of the same claim spends nothing and returns a byte-identical graph.
+
+The entailment scorer is an opt-in extra — `uv pip install -e ".[dev,verifier]"` adds torch and pulls the ~2GB checkpoint on first use; without it the suite still runs green and says why it skipped. `pytest` runs the whole suite offline against committed fixtures.
+
+---
+
+## Where everything lives
 
 | Question | Document |
 |---|---|
-| What are we building? Data model, constraints, build plan | [docs/design.md](docs/design.md) |
-| How do we build it? Modules, tiers, session ordering | [docs/build-plan.md](docs/build-plan.md) |
+| How was this built? Prompt-by-prompt history | [PROMPT_HISTORY.md](PROMPT_HISTORY.md) |
+| What does the demo show? | [demo/](demo/README.md) |
+| What are we building? Data model, constraints | [docs/design.md](docs/design.md) |
+| How do we build it? Modules, tiers, ordering | [docs/build-plan.md](docs/build-plan.md) |
 | What do we claim is missing from the landscape, and why? | [docs/hypotheses.md](docs/hypotheses.md) |
 | How do we position and cite? | [docs/positioning.md](docs/positioning.md) |
-| How do we evaluate it, and against what thresholds? | [docs/evaluation.md](docs/evaluation.md) |
-| What's undecided or unverified? | [docs/open-questions.md](docs/open-questions.md) |
-| What's the underlying evidence? | [research/matrix/](research/matrix/README.md) |
-
----
-
-## Layout
+| How do we evaluate, and against what thresholds? | [docs/evaluation.md](docs/evaluation.md) |
+| What is undecided or unverified? | [docs/open-questions.md](docs/open-questions.md) |
+| The underlying research evidence | [research/matrix/](research/matrix/README.md) |
 
 ```
 src/verity/models/    the claim graph, facts, evidence, run manifests, and the render projection
-src/verity/store/     SQLite persistence — JSON payload authoritative, columns derived, schema versioned
+src/verity/store/     SQLite persistence — JSON payload authoritative, schema versioned
 src/verity/llm/       provider-agnostic adapter (Claude default), a scripted stub, and the cassette
 src/verity/orchestration/  the pipeline: four stages, the stage cache, the manifest, replay
-src/verity/decomposition/  backward chaining — one step, and the bounded descent that drives it; the prompt is one file
+src/verity/decomposition/  backward chaining — one step, and the bounded descent that drives it
 src/verity/alethiology/  fact-store policy: exact-key grounding, the curated seed and its gate
-src/verity/verifier/  the entailment gate: one score per step, two backends, the smoke set that picked between them
+src/verity/verifier/  the entailment gate: one score per step, and the smoke set that picked the model
 src/verity/retrieval/ registry clients over a cached, rate-limited, credit-budgeted transport
 src/verity/quality/   evidence quality — the three-source retraction check, and so far nothing else
 src/verity/presentation/  the terminal render — tree layout and the scorer's own caveat
-src/verity/           the CLI entry point, plus keys, ids, config, secrets, thresholds, and the content-addressed store the recordings live in
 seed/                 the curated facts and the key-resolution record they were checked against
-data/demo/            one real graph and the store that produced it, committed so render and replay run on a fresh clone with no key
-data/verifier/        the pilot decompositions, the review that ruled on them, the smoke set built from both, and the selection record
-demo/                 terminal captures of the demo commands, committed so a reader sees the output without running anything
+data/demo/            one real graph and the store that produced it, committed for keyless replay
+data/verifier/        the pilot decompositions, the smoke set, and the champion-selection record
+demo/                 captured demo output a reader can inspect without running anything
 tests/                enforcement tests for the hard constraints, plus the round-trip suite
-tests/fixtures/       recorded registry responses — verbatim, so the suite needs no network
+tests/fixtures/       recorded registry and LLM responses — the suite runs with no network
 docs/                 current thinking — design, hypotheses, positioning, evaluation, open questions
-research/raw/         the two deep-research reports and their source lists
-research/matrix/      structured extraction: 29 products · 34 papers · 98 sources, with per-cell provenance
+research/             two deep-research reports and a structured extraction: 29 products · 34 papers · 98 sources
 ```
 
-`docs/` is where decisions live. `research/` is the evidence they rest on — every claim in `docs/` cites a row by ID (`product-009`, `lit-005`).
+`docs/` is where decisions live. `research/` is the evidence they rest on — every claim in `docs/` cites a matrix row by ID.
 
-Setup: `uv venv --python 3.12 && uv pip install -e ".[dev]"`, then `cp .env.example .env` and fill in the keys. The entailment scorer is an opt-in extra — `uv pip install -e ".[dev,verifier]"` adds torch and pulls the ~2GB champion checkpoint on first use (the bake-off loads both candidates, ~5GB); without it the suite still runs green and the model-layer test says why it skipped. `pytest` runs the suite offline and spends nothing; `pytest -m live` opts into the calls that check the registry contracts are still what we recorded.
+---
 
-**Building the store takes two commands, in this order.** `python -m verity.alethiology seed` loads the curated facts — offline and deterministic, against a committed record of what each registry returned; what that gate refuses, and why, is in [seed/README.md](seed/README.md). Then `python -m verity.quality apply` checks every identifier in the store against all three retraction sources and writes what they said onto the facts. **Seeding alone leaves the retraction column empty**, because a seeded fact records that nobody has checked it yet rather than that it is clean — so a store that skipped the second command renders a clean tree over a retracted source. Both are offline and free: the committed fixtures answer for every key in the corpus, and `--live` is the opt-in that spends credits.
+## What the committed graph does and does not show
 
-`python -m verity.quality check doi:10.3823/1654` runs the same check on one identifier and prints what each source returned beside the verdict, writing nothing. `python -m verity.retrieval resolve doi:10.3823/1654` shows the underlying readings, and `record --from-seed` re-records the fixtures the corpus is checked against.
+It is one unedited run, stamped with the run id and configuration hash that produced it, and it is a descent artifact: every leaf records why it stopped, and the run reports its own fan-out and termination mix beside the tree. **How deep the tree goes is a fact about the decomposer, not about the descent.** Recursion runs on the premise types the configured predicate names — `statistical` by default, since a premise typed `empirical-citable` *is* the grounding target and one typed `definitional` or `background` is what no identifier can settle — so a claim whose premises are all citable in one step produces a shallow tree, and the render says so rather than hiding it. **No premise in this graph grounds**: every leaf stopped at `no-candidate-key`. Until M6-T3 binds identifiers from retrieval, grounding depends on the decomposer volunteering a key, and most decompositions don't — of the ten recorded so far, two proposed one, and the run this graph replaced was among the two, so grounding presence varies run to run and a re-record rolls that die. When a run does ground this way it is still **not** the pre-registered measurement in [evaluation.md](docs/evaluation.md) §2: a decomposer-proposed identifier is circular, and such a run says so in its own notes. The seeded store behind the graph is the surface that does not vary: 33 verified facts checked against all three retraction sources, six flagged. The evidence and retraction columns of this tree stay empty until retrieval fills them.
 
-The render is where the pipeline becomes readable. `python -m verity render data/demo/spinach.json` draws a committed graph and costs nothing — no key, no checkpoint, no network — and `--json` writes the render payload to stdout with the view on stderr. `python -m verity run "<claim>"` runs the pipeline for one claim instead: decompose, score every step, bind the identifiers a registry resolves, ground what binds, store, render. The first such run spends an LLM call; **a second run of the same claim spends nothing and returns a byte-identical graph**, because every stage that may be cached is, and the two that may not — binding, which caches at the transport, and grounding, which must not be cached at all — say why in the run's own record. `python -m verity runs` lists what has been run, and `python -m verity replay <run_id>` re-derives one from its manifest: the clock is pinned, the provider's recorded answers are replayed, the stage cache is switched off, and the result is compared stage by stage. A decomposition, scoring or binding digest that moved is drift and fails; a grounding that moved is the alethiology having changed under a stored graph, which is reported as exactly that. The committed demo ships this whole chain: `python -m verity runs --db data/demo/store.db` lists the recorded run, and `replay` against the same `--db` re-derives it on a fresh clone with no key — the recordings under `tests/fixtures/recordings/` answer for the provider.
-
-`--out data/demo/spinach.json` is how the committed graph is re-recorded — the decomposer is not deterministic, so a fresh run replaces it rather than reproducing it.
-
-Both caches live under `.cache/`, and the two are disposable in different senses. The stage cache keys on a digest of the whole source tree, so deleting it costs a re-run of deterministic code and can never change an answer. The cassette holds the provider's recorded answers, which is the money: deleting it means the next run calls the model again, and the decomposer is not deterministic, so that run can reach a different tree. Committed recordings under `tests/fixtures/recordings/` are read behind the working cache and survive the delete. `--no-cache` recomputes every stage without deleting anything.
-
-**What the committed graph does and does not show.** It is one unedited run, stamped with the run id and configuration hash that produced it, and it is a descent artifact: every leaf records why it stopped, and the run reports its own fan-out and termination mix beside the tree. **How deep the tree goes is a fact about the decomposer, not about the descent.** Recursion runs on the premise types the configured predicate names — `statistical` by default, since a premise typed `empirical-citable` *is* the grounding target and one typed `definitional` or `background` is what no identifier can settle — so a claim whose premises are all citable in one step produces a shallow tree, and the render says so rather than hiding it. **No premise in this graph grounds**: every leaf stopped at `no-candidate-key`. Until M6-T3 binds identifiers from retrieval, grounding depends on the decomposer volunteering a key, and most decompositions don't — of the ten recorded so far, two proposed one, and the run this graph replaced was among the two, so grounding presence varies run to run and a re-record rolls that die. When a run does ground this way it is still **not** the pre-registered measurement in [evaluation.md](docs/evaluation.md) §2: a decomposer-proposed identifier is circular, and such a run says so in its own notes. The seeded store behind the graph is the surface that does not vary: 33 verified facts checked against all three retraction sources, six flagged — `python -m verity.quality check doi:10.3823/1654` prints the three-source verdict on the retracted chocolate-hoax paper beside what each source returned. The evidence and retraction columns of this tree stay empty until retrieval fills them.
+Two cache layers stand behind the "second run is free" behavior: a cassette records what the *provider said*, and a stage cache records what a *stage concluded*, keyed on a digest of the whole source tree — the conservative choice re-runs deterministic code for free rather than serving a graph built by rules that no longer exist. Grounding is never cached, because the fact store can change underneath a stored graph; a replay that finds it has says exactly that.
 
 ---
 
@@ -98,4 +150,4 @@ Every ingredient ships somewhere today; the conjunction does not. Automatic deco
 
 ## Stack
 
-Python / PyTorch / scikit-learn. v0 surface: CLI first, then Streamlit. Claim-side LLM calls go through a provider-agnostic adapter (Claude API default); NLI and embedding models run locally. Invalidation layer: JTMS (Doyle 1979) over the alethiology. Evidence metadata from free APIs — OpenAlex cross-checked against Crossref for retraction, PubMed MeSH for study design, Semantic Scholar for citation intent, ClinicalTrials.gov for registered-trial enrollment.
+Python / PyTorch / scikit-learn. v0 surface: CLI first, then Streamlit. Claim-side LLM calls go through a provider-agnostic adapter (Claude API default); NLI and embedding models run locally. Invalidation layer: JTMS (Doyle 1979) over the alethiology. Evidence metadata from free APIs — OpenAlex cross-checked against Crossref for retraction, PubMed MeSH for study design, Semantic Scholar for citation intent, ClinicalTrials.gov for registered-trial enrollment. Beachhead domain: scientific and health claims; news is roadmap.
