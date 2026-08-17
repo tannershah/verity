@@ -88,6 +88,14 @@ class Stage(Protocol):
     #: Why not, when it is not. Recorded on the stage record so the refusal is visible in
     #: the artifact rather than only in this file.
     uncacheable_because: str | None
+    #: Why this stage's output may legitimately differ between a run and its replay, or
+    #: `None` when it may not — in which case a moved digest is drift and a defect.
+    #:
+    #: Declared per stage, like cacheability, rather than listed in `replay.py`. A list there
+    #: has to be edited by whoever adds a stage, and the direction it fails in is silent: an
+    #: unlisted stage would be treated as entitled to differ, so its drift would never be
+    #: reported at all. Here a new stage cannot avoid answering the question.
+    may_differ_because: str | None
     #: Exceptions this stage isolates. Anything else propagates — swallowing a
     #: `ValidationError` out of `ClaimGraph` would hide the invariant violation the type
     #: system exists to surface.
@@ -117,6 +125,7 @@ class DecomposeStage:
     name = "decompose"
     cacheable = True
     uncacheable_because = None
+    may_differ_because = None
     isolates = (DecompositionError, LLMError)
 
     def input_digest(self, ctx: RunContext, graph: ClaimGraph | None) -> str:
@@ -160,7 +169,7 @@ class DecomposeStage:
             usage=descent.usage,
             llm_settings=descent.steps[-1].llm_settings,
             counts=descent.counts,
-            notes=[*descent.notes, *_decomposition_notes(built, ctx)],
+            notes=[*descent.notes, *decomposition_notes(built, ctx.config.decomposition)],
         )
 
     def explain(self, error: Exception) -> str:
@@ -171,6 +180,7 @@ class VerifyStage:
     name = "verify"
     cacheable = True
     uncacheable_because = None
+    may_differ_because = None
     # Deliberately not `ValueError`: `pydantic.ValidationError` is one, so isolating it
     # would swallow a `ClaimGraph` invariant violation — the single failure that must
     # always propagate. `UnknownCheckpointError` is the registry refusing a checkpoint it
@@ -238,6 +248,10 @@ class BindStage:
         "outside `config_hash()`, so a stage key would let a replay be served a decision "
         "made from live bytes"
     )
+    #: Deterministic on replay even though it is uncacheable: the two are different
+    #: questions. A replay reads the same recorded registry bytes through `CacheMode.OFFLINE`
+    #: and must reach the same bindings, so a moved digest here is drift.
+    may_differ_because = None
     isolates = (RetrievalError,)
 
     def input_digest(self, ctx: RunContext, graph: ClaimGraph | None) -> str:
@@ -312,6 +326,11 @@ class GroundStage:
         "design.md §4.2: grounding is non-monotonic — a tree that terminated yesterday can "
         "be un-grounded today — so a grounding result is never cached as permanent"
     )
+    may_differ_because = (
+        "its input is the alethiology, which is allowed to have moved since the run: the "
+        "same code on the same graph legitimately reaches a different answer, and that is "
+        "the invalidation result rather than drift"
+    )
     isolates = (sqlite3.Error,)
 
     def input_digest(self, ctx: RunContext, graph: ClaimGraph | None) -> str:
@@ -323,10 +342,11 @@ class GroundStage:
             # stage is never cached: a digest that omits the configuration is a trap for
             # whoever changes `cacheable` without re-reading how the key is built.
             ctx.config_hash,
+            # The leaves, matching what `apply_groundings` will actually ground: a digest
+            # over every premise would move when an internal node's key moved, for a stage
+            # whose output that key no longer reaches.
             sorted(
-                (p.id, str(p.bound_key))
-                for p in graph.premises.values()
-                if p.bound_key is not None
+                (p.id, str(p.bound_key)) for p in graph.leaves() if p.bound_key is not None
             ),
         )
 
@@ -371,7 +391,7 @@ class GroundStage:
         )
 
 
-def _decomposition_notes(graph: ClaimGraph, ctx: RunContext) -> list[str]:
+def decomposition_notes(graph: ClaimGraph, config: DecompositionConfig) -> list[str]:
     """What the decomposition says about itself — derived from the graph, never in flight.
 
     Every fact here is recoverable from the stored artifact, and they have to be read off
@@ -380,9 +400,14 @@ def _decomposition_notes(graph: ClaimGraph, ctx: RunContext) -> list[str]:
     its warnings dropped is precisely the failure design.md §3.4 exists to prevent. What is
     *not* recoverable from the graph — which refusal happened, what a call cost — travels in
     the stage's `counts` instead of being narrated here.
+
+    Public, and takes a config rather than a `RunContext`, because the same argument reaches
+    one step further than the stage cache: `python -m verity render` draws a stored graph
+    without a run at all, and a surface that dropped these would show the tree and none of
+    what qualifies it. Being derived from the graph is exactly what lets the renderer
+    rebuild them.
     """
     notes: list[str] = []
-    config = ctx.config.decomposition
 
     if graph.restating_premise_ids():
         notes.append(

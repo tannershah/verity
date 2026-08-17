@@ -219,7 +219,7 @@ def run_claim(
 
     outcome = RunOutcome(claim=claim, manifest=manifest)
     try:
-        _execute(ctx, manifest, outcome, requested)
+        _execute(ctx, manifest, outcome, requested, persist=persist)
     finally:
         manifest.finished_at = utc_now()
         if persist:
@@ -228,7 +228,12 @@ def run_claim(
 
 
 def _execute(
-    ctx: RunContext, manifest: RunManifest, outcome: RunOutcome, requested: tuple[str, ...]
+    ctx: RunContext,
+    manifest: RunManifest,
+    outcome: RunOutcome,
+    requested: tuple[str, ...],
+    *,
+    persist: bool,
 ) -> None:
     graph: ClaimGraph | None = None
 
@@ -266,7 +271,8 @@ def _execute(
         return
     outcome.graph = _stamp(graph, ctx, manifest)
     manifest.graph_ids.append(outcome.graph.id)
-    _report_lost_output(ctx, manifest, outcome.graph)
+    if persist:
+        _report_lost_output(ctx, manifest, outcome.graph)
 
 
 def _run_stage(
@@ -503,6 +509,11 @@ def _report_lost_output(
 
     Groundings are excluded on purpose: a grounding that disappears is the alethiology
     having moved (design.md §4.2), which is a finding rather than a loss.
+
+    Called only when the run persists. A replay runs the pipeline with `persist=False`
+    precisely so it cannot overwrite the artifact it is checking, so nothing it computes can
+    lose anything — and reporting a loss there told a reviewer whose base install cannot
+    score that the tool had just destroyed the scores in their store.
     """
     stored = ctx.stored_graph
     if stored is None:

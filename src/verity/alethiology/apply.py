@@ -45,7 +45,15 @@ def apply_groundings(
     grounded_at: datetime | None = None,
     preserve_from: Iterable[Grounding] = (),
 ) -> tuple[ClaimGraph, list[GroundingAttempt]]:
-    """Ground every premise that carries a bound key, and record what grounded.
+    """Ground every *leaf* that carries a bound key, and record what grounded.
+
+    **The leaves, not every premise, because these rows are the grounding rate's
+    denominator.** evaluation.md §2 defines the pre-registered rate over branches that
+    descend to a citation-shaped premise, and a premise that was decomposed did not descend
+    to anything — it has visible children. Before M3-T2 every premise was a leaf, so the two
+    sets coincided and the distinction cost nothing; recursion separated them, and grounding
+    the whole map would put internal nodes into a pre-registered denominator and mark an
+    expanded premise `verified`. One attempt per leaf is what M10-T1 counts off.
 
     `preserve_from` is the previously stored graph's groundings. A new row whose
     (premise, fact, matched key) triple appears there keeps that row's `grounded_at`;
@@ -59,7 +67,7 @@ def apply_groundings(
     Returns a rebuilt graph rather than a mutated one, so construction re-runs every
     invariant — including the one that refuses `verified` without a grounding.
     """
-    attempts = service.ground_all(graph.premises.values(), grounded_at=grounded_at)
+    attempts = service.ground_all(graph.leaves(), grounded_at=grounded_at)
     grounded = {a.premise_id: a.grounding for a in attempts if a.grounding is not None}
     if not grounded:
         return graph, attempts

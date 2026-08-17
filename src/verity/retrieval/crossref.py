@@ -14,9 +14,19 @@ Parsing decisions that carry over or were repaired:
   read defensively and left `None`.
 - **`title` can be `[]` and `update-to` can hold non-dicts**, both of which occur, and both
   of which are skipped rather than assumed.
-- **`update-to` types are recorded, never interpreted.** The vocabulary includes
-  `correction`, `new_version` and `expression_of_concern` — the seed's cocoa Cochrane row
-  carries `new_version` — so "has an update" is not "is retracted". M7-T1 owns that cut.
+- **`update-to` and `updated-by` are opposite ends of one link, and both are recorded.**
+  `updated-by` lists the notices that update *this* work; `update-to` lists what this work
+  updates, which is the notice's side of the same link. Only the first can say a work was
+  retracted, and reading the second as if it could is wrong in both directions: the cocoa
+  Cochrane review carries `update-to: new_version` because it *is* the new version, while
+  the Ioannidis paper's publisher-filed correction appears only in `updated-by`, so an
+  `update-to` reader sees nothing on a work that was corrected. Types are recorded, never
+  interpreted — the vocabulary includes `correction`, `new_version` and
+  `expression_of_concern`, so "has an update" is not "is retracted". M7-T1 owns that cut.
+- **A work can carry several update entries**, so the joined fields are sets rendered as
+  text and a reader must split before testing membership. That also means the `updated-by`
+  type, source and record id cannot be paired back up across entries: they answer "what
+  kinds of notice", "filed by whom" and "citing which records", each over the whole list.
 """
 
 from __future__ import annotations
@@ -132,6 +142,16 @@ def parse_work(
     updated_by = _joined(work.get("updated-by"), "source")
     if updated_by:
         findings["updated_by_source"] = updated_by
+    updated_by_type = _joined(work.get("updated-by"), "type")
+    if updated_by_type:
+        findings["updated_by_type"] = updated_by_type
+    # Recorded so a policy can see whose record it is looking at rather than counting it as
+    # an independent source. Crossref carries Retraction-Watch-sourced updates verbatim —
+    # `10.3823/1654`'s entry is RW record 17524 — and OpenAlex ingests Crossref, so two
+    # registries agreeing can be one primary record and its echo.
+    updated_by_record = _joined(work.get("updated-by"), "record-id")
+    if updated_by_record:
+        findings["updated_by_record_id"] = updated_by_record
 
     abstract = work.get("abstract")
     return WorkRecord(
@@ -166,13 +186,39 @@ def fetch_work(client: HttpClient, key: ExternalKey) -> WorkRecord:
     return parse_work(fetched.json(), key, fetched.fetched_at, from_cache=fetched.from_cache)
 
 
-def update_types(record: WorkRecord) -> tuple[str, ...]:
-    """Crossref's `update-to` types, verbatim. Not a status — M7-T1 owns that cut."""
-    raw = record.raw_findings.get("update_to")
+def _split(record: WorkRecord, finding: str) -> tuple[str, ...]:
+    raw = record.raw_findings.get(finding)
     return tuple(raw.split(",")) if raw else ()
+
+
+def update_types(record: WorkRecord) -> tuple[str, ...]:
+    """What *this* work updates. Not a claim about this work — see the module docstring."""
+    return _split(record, "update_to")
+
+
+def updated_by_types(record: WorkRecord) -> tuple[str, ...]:
+    """Kinds of notice filed *against* this work. M7-T1's Crossref input, verbatim.
+
+    A tuple because a work can carry several — a correction and a later retraction — so
+    the question is whether any entry is a retraction, never whether the joined string
+    equals one.
+    """
+    return _split(record, "updated_by_type")
 
 
 def updated_by_sources(record: WorkRecord) -> tuple[str, ...]:
-    """Who filed the update — `publisher` or `retraction-watch`. M7-T1's second input."""
-    raw = record.raw_findings.get("updated_by_source")
-    return tuple(raw.split(",")) if raw else ()
+    """Who filed the notices — `publisher` or `retraction-watch`.
+
+    Across the whole `updated-by` list, so with several entries this cannot be paired back
+    to any one type. Diagnostic; the policy reads `updated_by_types` for the cut.
+    """
+    return _split(record, "updated_by_source")
+
+
+def updated_by_record_ids(record: WorkRecord) -> tuple[str, ...]:
+    """Records the notices cite — a Retraction Watch record id where RW filed the update.
+
+    What makes an echo visible: a Crossref retraction sourced from RW is that RW record
+    seen a second time, not a second source that checked.
+    """
+    return _split(record, "updated_by_record_id")

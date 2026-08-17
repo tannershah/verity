@@ -91,10 +91,17 @@ class HttpClient:
         mean a passing suite proves the fixture is *reproducible on that machine* rather
         than that it is correct. Every other mode reads the working cache first — that is
         what it is for — and falls back to the fixtures.
+
+        `OFFLINE` is the exception that proves the distinction: replaying a *recorded run*
+        must read the bytes that run wrote, which live in the working cache, so it reads
+        both roots and writes neither. Fixtures-only is a claim about a fixture; offline is
+        a claim about the network.
         """
         match mode:
             case CacheMode.REPLAY:
                 return HttpCache([FIXTURE_ROOT], [])
+            case CacheMode.OFFLINE:
+                return HttpCache([cache_dir, FIXTURE_ROOT], [])
             case CacheMode.RECORD:
                 return HttpCache([cache_dir, FIXTURE_ROOT], [cache_dir, FIXTURE_ROOT])
             case _:

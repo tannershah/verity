@@ -33,7 +33,7 @@ from verity.models.common import (
     RetractionStatus,
     TmsStatus,
 )
-from verity.models.evidence import EvidenceQuality
+from verity.models.evidence import EvidenceQuality, RetractionCheck
 from verity.store.db import connect
 from verity.store.facts import load_fact, save_fact
 
@@ -248,7 +248,8 @@ def test_re_seeding_does_not_resurrect_a_fact_the_jtms_flipped_out(conn, report)
 
 def test_re_seeding_preserves_evidence_quality_written_after_curation(conn, report):
     """M7-T1 writes retraction findings onto facts the seed created. A loader that
-    overwrote them would erase a live check with a curation-time reading."""
+    overwrote them would erase a live check with a curation-time reading — and since the
+    seed's own reading is now empty, overwriting would erase the finding outright."""
     fact_id = next(row.fact_id for row in report.rows if row.key == CHOCOLATE)
     fact = load_fact(conn, fact_id)
     assert fact is not None
@@ -258,7 +259,13 @@ def test_re_seeding_preserves_evidence_quality_written_after_curation(conn, repo
             update={
                 "evidence_quality": EvidenceQuality(
                     retraction=RetractionStatus.RETRACTED,
-                    retraction_checks=fact.evidence_quality.retraction_checks,
+                    retraction_checks={
+                        RetractionSource.RETRACTION_WATCH: RetractionCheck(
+                            source=RetractionSource.RETRACTION_WATCH,
+                            result=RetractionFinding.RETRACTED,
+                            checked_at=report.resolution_generated_at,
+                        )
+                    },
                 )
             }
         ),
@@ -330,17 +337,28 @@ def test_created_at_is_the_recorded_check_time_not_the_load_time(conn, report):
         assert fact.created_at.tzinfo is not None
 
 
-def test_the_seed_records_the_retraction_watch_reading_and_withholds_the_verdict(conn, report):
-    """M7-T1 owns the cut. The seed records what one source said and concludes nothing, so
-    the Phase-4 checker produces the other two readings live and can disagree with this."""
+def test_the_seed_writes_no_retraction_reading_at_all(conn, report):
+    """The seed once projected the artifact's Retraction Watch reading into a check, which
+    put "what an absence from that table means" in two modules — and only M7-T1's can
+    answer it. The artifact stores `found` as a boolean with no note of which copy of the
+    table replied, so a miss here cannot distinguish absence from 71,799 recorded
+    retractions, which is evidence the work stands, from absence from the committed two-row
+    sample, which is evidence of nothing.
+
+    So a seeded fact is `unknown` with nothing consulted, which is what a work nobody
+    checked is entitled to, and `python -m verity.quality apply` is the only writer.
+    Checked on the chocolate DOI specifically: it is the one key the table *does* hold, so
+    a loader that had kept the reading would still look correct here.
+    """
     fact_id = next(row.fact_id for row in report.rows if row.key == CHOCOLATE)
     fact = load_fact(conn, fact_id)
     assert fact is not None
-
-    checks = fact.evidence_quality.retraction_checks
-    assert set(checks) == {RetractionSource.RETRACTION_WATCH}
-    assert checks[RetractionSource.RETRACTION_WATCH].result is RetractionFinding.RETRACTED
+    assert fact.evidence_quality.retraction_checks == {}
     assert fact.evidence_quality.retraction is RetractionStatus.UNKNOWN
+
+    for row in report.rows:
+        seeded = load_fact(conn, row.fact_id)
+        assert seeded is not None and not seeded.evidence_quality.retraction_checks
 
 
 def test_no_justifications_are_written_for_seeded_facts(conn, report):
@@ -463,46 +481,6 @@ def test_every_grounding_eligible_row_carries_its_quote_on_the_fact(conn, report
         assert fact.supporting_quote, f"{row.slug} carries no quote"
         if row.grounding_eligible:
             assert len(fact.supporting_quote.split()) >= 5
-
-
-def test_a_non_retraction_notice_is_not_reported_as_clean():
-    """Retraction Watch indexes expressions of concern, corrections and reinstatements —
-    5,512 of the 71,799 rows. Mapping those to `CLEAN` claims the source looked and found
-    nothing, which is the error `RetractionFinding`'s own docstring rules out one step
-    over: it would let a flagged work outvote a source that did find a retraction."""
-    from datetime import datetime as dt
-
-    from verity.alethiology.resolution import KeyResolution, SourceReading
-    from verity.alethiology.seed._project import _retraction_check
-
-    def check_for(nature: str) -> RetractionFinding:
-        resolution = KeyResolution(
-            key=HAMBLIN,
-            readings={
-                "retraction-watch": SourceReading(
-                    source="retraction-watch",
-                    found=True,
-                    checked_at=dt(2026, 8, 16, tzinfo=UTC),
-                    detail={"nature": nature, "record_id": "1"},
-                )
-            },
-        )
-        return _retraction_check(resolution)[RetractionSource.RETRACTION_WATCH].result
-
-    assert check_for("Retraction") is RetractionFinding.RETRACTED
-    for nature in ("Expression of concern", "Correction", "Reinstatement", ""):
-        assert check_for(nature) is RetractionFinding.NOT_INDEXED, nature
-
-
-def test_the_nature_of_a_non_retraction_notice_survives_for_m7(conn, report):
-    """`NOT_INDEXED` is the conservative reading of a three-value enum, not the whole
-    truth. The raw nature travels in `detail` so M7-T1 can introduce the fourth finding
-    the vocabulary actually needs."""
-    fact_id = next(row.fact_id for row in report.rows if row.key == CHOCOLATE)
-    fact = load_fact(conn, fact_id)
-    assert fact is not None
-    detail = fact.evidence_quality.retraction_checks[RetractionSource.RETRACTION_WATCH].detail
-    assert detail is not None and "nature=Retraction" in detail
 
 
 def test_the_write_is_as_atomic_as_the_gate(conn, monkeypatch):

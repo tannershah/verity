@@ -110,13 +110,14 @@ def _resolve(keys: list[ExternalKey], *, live: bool) -> int:
         print(f"{key}")
         for module in (openalex, crossref):
             _show(module.fetch_work(client, key))
-        table = rw.read(key) or rw.read(key, rw.SAMPLE_TABLE)
-        if table is None:
+        source = rw.resolve_table()
+        if source is None:
             # Absent table means never consulted, and that is reported rather than
             # rendered as a source with no opinion.
             print(f"  {'retraction-watch':<16} table not on disk — source not consulted")
         else:
-            _show(table)
+            _show(rw.read(key, source.path))
+            print(f"  {'':<16} read from {source.describe()}"[:110])
     return 0
 
 

@@ -154,24 +154,23 @@ restore a demoted seed fact to IN forever. Seeded facts are IN with no justifica
 **This is a blocker on M8-T1:** the type needs an out-list (Doyle 1979's SL-justification)
 before a seeded fact can carry one.
 
-**No retraction verdict.** The loader records what the Retraction Watch table said as a
-`RetractionCheck` and leaves `retraction` at `unknown`. The cut between `retracted` and
-`retraction-flagged-unconfirmed` is M7-T1's, and the two API readings stay in
-`key_resolution.json` as fixture data so the retraction path produces them live and can
-disagree with what was seeded.
+**No retraction reading at all.** A seeded fact carries an empty check map and
+`retraction: unknown` — what a work nobody has checked is entitled to — and
+`python -m verity.quality apply` is the only writer. The loader once projected the
+artifact's Retraction Watch reading into a `RetractionCheck`, which put "what an absence
+from that table means" in two modules, and only one of them can answer it: this artifact
+stores `found` as a boolean with no note of which copy of the table replied, so a miss here
+cannot tell absence from 71,799 recorded retractions, which is evidence the work stands,
+from absence from the committed two-row sample, which is evidence of nothing. M7-T1
+resolves the table before it reads it and therefore can. All three readings stay in
+`key_resolution.json` as curation evidence; none of them is a verdict.
 
-Only `RetractionNature: Retraction` is read as a retraction. The table also carries
-expressions of concern, corrections and reinstatements — 5,512 of its 71,799 rows — and
-those are recorded as `not-indexed` rather than `clean`, because `clean` asserts a source
-looked and found nothing. The raw nature travels in the check's `detail`. **Input to
-M7-T1:** the vocabulary needs a fourth finding for "indexed, with a notice that is not a
-retraction"; introducing it here would set the terms of a cut that tier owns.
-
-**A seeded retraction reading is write-once.** `evidence_quality` is store-owned, so a
-re-load will not refresh it on a row that already exists — that is the same rule that stops
-a re-seed from clobbering M7-T1's live findings, and the cost is that a corrected reading
-needs the row dropped or the store rebuilt. Rebuilding is cheap: delete the database and
-re-seed.
+**`evidence_quality` is store-owned, so a re-seed cannot clobber a live finding.** It is
+absent from `SEED_OWNED_FIELDS`, which is what lets the two writers coexist: seeding
+creates the fact, the retraction pass fills its quality, and re-seeding refreshes the
+statement, key, tier, provenance and quote without touching what the pass found. The cost
+is that a corrected reading needs the row dropped or the store rebuilt — and rebuilding is
+cheap: delete the database, re-seed, re-apply.
 
 **Nothing the store owns.** Re-loading rewrites `statement`, `key`, `tier`, provenance and
 `created_at`. It never touches `status`, `revalidated_at`, `justification_ids`, or an

@@ -864,6 +864,52 @@ def test_a_stage_this_machine_cannot_run_is_incomplete_not_drift(workspace):
     assert any("verify" in why for why in report.partial_because)
 
 
+def test_a_gap_upstream_disqualifies_the_stages_that_digest_the_graph(workspace):
+    """The same scenario over the *whole* pipeline, which is the one a reviewer runs.
+
+    `bind` and `ground` hash the graph rather than their own increment, so a graph missing
+    `verify`'s scores differs from one carrying them at every later stage — and comparing
+    them anyway made the base install report `DRIFT in bind`, blaming the binder for an
+    absent checkpoint. The predecessor test above passes with `bind` skipped, which is
+    exactly why it did not catch this: there was no downstream digest to contaminate."""
+    config, conn, cache = workspace
+    first, _ = _run_all(workspace)
+    store_outcome(conn, first)
+    assert [s.name for s in first.manifest.stages if s.output_hash] == [
+        "decompose",
+        "verify",
+        "bind",
+        "ground",
+    ], "the recording must carry all four digests, or there is nothing to contaminate"
+
+    def _absent():
+        raise ImportError("No module named 'torch'")
+
+    from verity.orchestration.replay import replay_run as _replay
+
+    report = _replay(first.manifest.run_id, conn=conn, cache=cache, scorer_factory=_absent)
+    assert not report.drifted, "a stage downstream of a gap has not been shown to drift"
+    assert report.verdict == "incomplete"
+    downstream = {s.stage for s in report.stages if not s.comparable}
+    assert {"verify", "bind", "ground"} <= downstream
+    assert any("bind digests the whole graph" in why for why in report.partial_because)
+
+
+def test_grounding_is_attempted_once_per_leaf_not_once_per_premise(workspace):
+    """The attempts are the grounding rate's denominator (build-plan §4), and a premise the
+    descent expanded terminated nothing. Before M3-T2 every premise was a leaf, so the two
+    sets coincided; recursion separated them."""
+    config, conn, cache = workspace
+    outcome, _ = _run_all(workspace, adapter=_descending())
+    graph = outcome.graph
+    leaves = {p.id for p in graph.leaves()}
+    assert leaves < set(graph.premises), "the fixture must actually expand a premise"
+    attempted = {a.premise_id for a in outcome.attempts}
+    assert attempted == leaves
+    ground = next(s for s in outcome.manifest.stages if s.name == "ground")
+    assert sum(ground.counts.values()) == len(leaves)
+
+
 def test_a_drift_verdict_always_cites_something(workspace, seeded_fact):
     """The invariant, over every route that reaches a verdict rather than over one of them.
 
@@ -1221,3 +1267,22 @@ def test_every_stage_declares_whether_it_may_be_cached(workspace):
     assert set(declining) == {"bind", "ground"}
     assert "non-monotonic" in declining["ground"]
     assert "CacheMode" in declining["bind"]
+
+
+def test_every_stage_declares_whether_replay_may_reach_a_different_answer(workspace):
+    """The same discipline for drift, and the reason it is a declaration rather than a list.
+
+    `replay.py` once held `DETERMINISTIC = ("decompose", "verify", "bind")`. A stage added
+    later would not appear in it and would therefore be excused from every drift check —
+    silently, and in the direction that hides a regression. Reading the property off the
+    stage means a new one cannot avoid answering, and an unknown name defaults to strict."""
+    from verity.orchestration.replay import _may_differ
+
+    excused = {s.name: s.may_differ_because for s in PIPELINE if s.may_differ_because}
+    assert set(excused) == {"ground"}, "only the stage reading a moving store may differ"
+    assert "alethiology" in excused["ground"]
+    assert all(_may_differ(s.name) is None for s in PIPELINE if s.name != "ground")
+    assert _may_differ("a_stage_this_build_does_not_have") is None, (
+        "an unrecognised stage is compared strictly, so a difference is cited rather than "
+        "excused"
+    )

@@ -29,6 +29,7 @@ from verity.config import VerityConfig, load_config
 from verity.export import graph_from_json, to_json
 from verity.models.claim import ClaimGraph
 from verity.models.render import to_render_payload
+from verity.orchestration.stages import decomposition_notes
 from verity.presentation import console as surface
 from verity.store.db import open_db
 from verity.store.graphs import load_graph
@@ -60,15 +61,19 @@ def render(
     The projection is taken here rather than by the caller because it is the boundary: a
     renderer's only legitimate input is a `RenderPayload`, and reading the fact store is
     what makes a stale grounding visible instead of replayed as live.
+
+    `notes` supplied by a caller are run-level — what a stage failed at, what a call cost —
+    and are added to, never replaced by, the ones this derives from the graph itself.
     """
     payload = to_render_payload(graph, service)
+    derived = decomposition_notes(graph, config.decomposition)
     if as_json:
         print(to_json(payload))
     surface.render(
         payload,
         Console(stderr=as_json),
         gate=config.verifier.entailment_threshold,
-        notes=notes or [],
+        notes=[*(notes or []), *derived],
     )
 
 

@@ -225,11 +225,31 @@ class RetractionFinding(StrEnum):
     `NOT_INDEXED` is separate from `CLEAN` deliberately: a source that has never heard of
     a work has no opinion about it, and counting that as clean would let an unindexed DOI
     silently outvote a source that did find a retraction.
+
+    `NOTICE_NOT_RETRACTION` is the same distinction pointed the other way, and it is what a
+    three-value vocabulary could not say. An expression of concern, a correction, a
+    reinstatement, a new version: the source looked, found a notice, and the notice is not a
+    retraction. Recording that as `NOT_INDEXED` claims the source has no opinion about a
+    work it demonstrably has one about, and recording it as `CLEAN` would let a flagged work
+    read as checked-and-clear. It has real occupants — 5,512 of the Retraction Watch
+    table's 71,799 rows, and three of the twenty works in the committed corpus. It never
+    asserts a retraction, so it can never produce a flag; on the retraction question it
+    agrees with `CLEAN`, which is why `has_retraction_disagreement` reads the two together.
     """
 
     RETRACTED = "retracted"
     CLEAN = "clean"
     NOT_INDEXED = "not-indexed"
+    NOTICE_NOT_RETRACTION = "notice-not-retraction"
+
+
+#: Findings that answer the retraction question with "no". A source returning either is
+#: contradicting one that found a retraction, and neither is contradicting the other — a
+#: correction and an absence of notices agree that the work stands. Shipped as a set so the
+#: disagreement rule and the policy's cut read one definition rather than two lists.
+NOT_RETRACTED_FINDINGS: frozenset[RetractionFinding] = frozenset(
+    {RetractionFinding.CLEAN, RetractionFinding.NOTICE_NOT_RETRACTION}
+)
 
 
 class QueryClass(StrEnum):

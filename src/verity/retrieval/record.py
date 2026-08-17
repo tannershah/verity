@@ -14,16 +14,18 @@ is not found aborts the seed load. The rendering is a contract with the corpus, 
 implementation detail, and `tests/test_retrieval_parsers.py` pins it.
 
 **`raw_findings` keys are a contract too.** `is_retracted`, `openalex_id`, `update_to`,
-`updated_by_source`, `record_id`, `nature`, `retraction_date`, `reasons`, `journal`,
-`author` are the names already committed in `seed/key_resolution.json`; renaming one would
-break the artifact without breaking any type.
+`updated_by_source`, `updated_by_type`, `updated_by_record_id`, `record_id`, `nature`,
+`retraction_date`, `reasons`, `journal`, `author` are the names committed in
+`seed/key_resolution.json`; renaming one would break the artifact without breaking any
+type, and adding one is a re-record of that artifact rather than a free change.
 
-**Nothing here concludes a retraction.** OpenAlex's `is_retracted` and Crossref's
-`update-to` types travel verbatim. Crossref's update vocabulary includes `correction`,
-`new_version` and `expression_of_concern` — the cocoa Cochrane row in the seed carries
-`new_version` — so collapsing "has an update" into "retracted" would invent a verdict here
-that M7-T1 owns, and the seed README already flags that the finding vocabulary needs a
-fourth value before that cut can be made honestly.
+**Nothing here concludes a retraction.** OpenAlex's `is_retracted` and Crossref's update
+types travel verbatim. Crossref's vocabulary includes `correction`, `new_version` and
+`expression_of_concern` — the cocoa Cochrane row in the seed carries `new_version` — so
+collapsing "has an update" into "retracted" would invent a verdict here that M7-T1 owns.
+The two directions are recorded separately for the same reason: `updated_by_*` describes
+notices filed against this work, `update_to` describes what this work updates, and only
+the first could ever support a retraction finding.
 
 **A reading has three outcomes, not two.** `found: bool` cannot say that nobody asked, and
 every consumer that reads a boolean has to reconstruct the difference from context it does

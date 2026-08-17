@@ -100,5 +100,10 @@ class Alethiology:
     def ground_all(
         self, premises: Iterable[Premise], *, grounded_at: datetime | None = None
     ) -> list[GroundingAttempt]:
-        """One attempt per premise, in the order given. M10-T1 counts off these rows."""
+        """One attempt per premise, in the order given.
+
+        M10-T1 counts off these rows, so the *caller* owns the denominator: `apply_groundings`
+        passes the leaves, because the pre-registered rate is over branches that terminated
+        (evaluation.md §2) and a decomposed premise terminated nothing.
+        """
         return [self.ground(premise, grounded_at=grounded_at) for premise in premises]

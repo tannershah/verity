@@ -24,6 +24,7 @@ from pydantic import Field, model_validator
 from verity.base import FrozenModel, VerityModel
 from verity.keys import ExternalKey
 from verity.models.common import (
+    NOT_RETRACTED_FINDINGS,
     CapRecord,
     Extraction,
     LabeledField,
@@ -100,18 +101,26 @@ class EvidenceQuality(VerityModel):
 
     @property
     def has_retraction_disagreement(self) -> bool:
-        """Whether consulted sources returned different answers.
+        """Whether consulted sources disagree about whether the work was retracted.
 
-        M7-T1's exit criterion logs exactly this, so it is an observation about the
-        checks rather than part of the policy that reads them. `NOT_INDEXED` is not a
-        disagreement — a source with no opinion is not contradicting one that has one.
+        M7-T1's exit criterion logs exactly this, so it is an observation about the checks
+        rather than part of the policy that reads them. Two findings are excluded from
+        counting as disagreement, for opposite reasons.
+
+        `NOT_INDEXED` is no opinion: a source that has never heard of a work is not
+        contradicting one that found a retraction.
+
+        `NOTICE_NOT_RETRACTION` *is* an opinion, and it is the same opinion as `CLEAN` on
+        the only question being asked. Comparing raw findings instead would report
+        `10.1371/journal.pmed.0020124` — Crossref knows about its publisher-filed
+        correction, OpenAlex's boolean cannot model one, Retraction Watch has no row — as a
+        three-source disagreement, and every clean row in the demo would carry a
+        disagreement mark earned by a vocabulary difference rather than by a conflict.
         """
-        answers = {
-            check.result
+        return bool(self.asserting_sources) and any(
+            check.result in NOT_RETRACTED_FINDINGS
             for check in self.retraction_checks.values()
-            if check.result is not RetractionFinding.NOT_INDEXED
-        }
-        return len(answers) > 1
+        )
 
     @property
     def has_model_extracted_fields(self) -> bool:

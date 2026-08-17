@@ -86,14 +86,20 @@ class CacheMode(StrEnum):
     LIVE = "live"
     #: `LIVE`, and also promote each entry into the committed fixture directory.
     RECORD = "record"
-    #: Read only. A miss raises; the network is never touched.
+    #: Read the committed fixtures only. A miss raises; the network is never touched.
     REPLAY = "replay"
+    #: Read any recording on this machine — working cache first, fixtures behind it — and
+    #: never fetch. The mode a replay of a *recorded run* needs: that run's registry bytes
+    #: were written to the working cache, so `REPLAY`'s deliberate refusal to read it (which
+    #: is what keeps the suite honest about its fixtures) turns every live-bound key into
+    #: drift. Separate values because the two refusals differ in what they are protecting.
+    OFFLINE = "offline"
     #: Ignore existing entries, fetch, overwrite.
     REFRESH = "refresh"
 
     @property
     def may_fetch(self) -> bool:
-        return self is not CacheMode.REPLAY
+        return self not in (CacheMode.REPLAY, CacheMode.OFFLINE)
 
     @property
     def may_read_cache(self) -> bool:

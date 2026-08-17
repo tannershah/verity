@@ -1,71 +1,25 @@
-"""Gated row plus resolution record -> `Fact`. The one place a seed becomes a record."""
+"""Gated row plus resolution record -> `Fact`. The one place a seed becomes a record.
+
+**No retraction reading is written here, and that is the whole of this tier's position on
+retraction.** The seed once projected the artifact's Retraction Watch reading into a check,
+which meant two modules encoded what an absence from that table means — and only one of
+them could do it honestly. The artifact records `found` as a boolean with no note of which
+copy of the table answered, so a seed reading a miss cannot tell "absent from 71,799
+recorded retractions", which is evidence the work stands, from "absent from the committed
+two-row sample", which is evidence of nothing. M7-T1 resolves the table before it reads it
+and therefore can. A freshly seeded fact carries an empty check map and `unknown`, which is
+what a work nobody has checked is entitled to; `python -m verity.quality apply` fills it,
+and `SEED_OWNED_FIELDS` excludes `evidence_quality`, so a re-seed cannot clobber what that
+found.
+"""
 
 from __future__ import annotations
 
-from verity.alethiology.resolution import (
-    REGISTRY_SOURCES,
-    RETRACTION_WATCH,
-    KeyResolution,
-    ResolutionArtifact,
-)
+from verity.alethiology.resolution import REGISTRY_SOURCES, KeyResolution, ResolutionArtifact
 from verity.alethiology.seed._gate import TierAssessment
 from verity.alethiology.seed._row import SeedFact
-from verity.models.common import (
-    ConfidenceTier,
-    Provenance,
-    RetractionFinding,
-    RetractionSource,
-    RetractionStatus,
-)
-from verity.models.evidence import EvidenceQuality, RetractionCheck
+from verity.models.common import ConfidenceTier, Provenance
 from verity.models.fact import Fact
-
-
-def _retraction_check(resolution: KeyResolution) -> dict[RetractionSource, RetractionCheck]:
-    """The Retraction Watch reading, as a check. A reading, not a policy cut (M7-T1 owns that).
-
-    Only Retraction Watch is seeded. OpenAlex `is_retracted` and Crossref `update-to` stay
-    in the resolution artifact as fixture data so the Phase-4 retraction path produces them
-    live — a demo that renders three hand-typed agreements shows nothing a checker did.
-    """
-    reading = resolution.reading(RETRACTION_WATCH)
-    if reading is None:
-        return {}
-    if not reading.found:
-        result = RetractionFinding.NOT_INDEXED
-        detail = None
-    else:
-        nature = reading.detail.get("nature", "")
-        # The table mixes notice types: over the 71,799-row snapshot, 66,287 rows are
-        # `Retraction` and 5,512 are `Expression of concern`, `Correction`,
-        # `Reinstatement`, or blank. Only the first is a retraction.
-        #
-        # The others are NOT_INDEXED rather than CLEAN, which is the conservative reading
-        # of a three-value enum that cannot say "indexed, with a notice that is not a
-        # retraction". `RetractionFinding.CLEAN` asserts a source looked and found nothing;
-        # reporting an expression of concern that way is the same error the enum's own
-        # docstring rules out one step over — it would let a flagged work read as checked
-        # and clean, and outvote a source that did find something. The nature travels in
-        # `detail` either way, so M7-T1 has what it needs when it writes the policy.
-        #
-        # **Input to M7-T1:** the honest fix is a fourth finding for "indexed with a
-        # non-retraction notice". Introducing it here would set the vocabulary that tier's
-        # cut is written against, which is not this tier's call.
-        result = (
-            RetractionFinding.RETRACTED
-            if "retraction" in nature.casefold()
-            else RetractionFinding.NOT_INDEXED
-        )
-        detail = "; ".join(f"{k}={v}" for k, v in sorted(reading.detail.items())) or None
-    return {
-        RetractionSource.RETRACTION_WATCH: RetractionCheck(
-            source=RetractionSource.RETRACTION_WATCH,
-            result=result,
-            checked_at=reading.checked_at,
-            source_url=reading.url,
-            detail=detail,
-        )
-    }
 
 
 def to_fact(
@@ -120,11 +74,5 @@ def to_fact(
         tier=assessment.effective_tier,
         provenance=provenance,
         supporting_quote=row.quote,
-        evidence_quality=EvidenceQuality(
-            # The cut between `retracted` and `flagged-unconfirmed` is M7-T1's; the seed
-            # records what Retraction Watch said and concludes nothing.
-            retraction=RetractionStatus.UNKNOWN,
-            retraction_checks=_retraction_check(resolution),
-        ),
         created_at=checked_at,
     )

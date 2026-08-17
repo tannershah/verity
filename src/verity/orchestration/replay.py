@@ -1,7 +1,7 @@
 """Deterministic replay: re-execute a recorded run and say whether it reproduced.
 
 **Replay is not a cache read.** It pins the clock to the run's own, forces the cassette to
-replay-only and the HTTP client to `REPLAY`, and then **turns the stage cache off** — so
+replay-only and the HTTP client to `OFFLINE`, and then **turns the stage cache off** — so
 every deterministic line runs again against the provider answers the original run received.
 A replay that reproduces the graph has re-derived it, which is the whole point: a stage
 cache trusted at replay time would report success for a codebase that had silently changed
@@ -24,6 +24,13 @@ tool has. The mirror is just as real: a run recorded *before* the extra was inst
 replayed after it, produced more than the recording rather than something different. So the
 comparison keys on which side produced a digest, never on either side's status.
 
+**And a gap contaminates everything downstream of it.** `bind` and `ground` digest the whole
+graph, not their own increment, so a graph missing `verify`'s scores differs from one
+carrying them at every later stage — for a reason that says nothing about whether the later
+stage's code reproduces. Comparing them anyway is what made the README's own base install
+report `DRIFT in bind`: the strongest negative signal the tool has, emitted because an
+optional dependency was absent. Once a stage is incomparable, every stage after it is too.
+
 Three outcomes rather than two. `reproduced` means every comparable stage matched and
 nothing was left unchecked; `drifted` means code moved, and is the only failure; `incomplete`
 means the two machines were not in the same condition, which is a statement about the
@@ -44,13 +51,27 @@ from verity.llm.cassette import CassetteMode
 from verity.models.manifest import RunManifest
 from verity.orchestration.context import graph_fingerprint
 from verity.orchestration.pipeline import RunOutcome, run_claim
+from verity.orchestration.stages import PIPELINE
 from verity.retrieval.http import CacheMode
 from verity.store.graphs import load_graph
 from verity.store.manifests import load_manifest
 
-#: Stages whose output hash must match for a replay to count as a reproduction. `ground` is
-#: excluded because the store it reads is allowed to have moved.
-DETERMINISTIC = ("decompose", "verify", "bind")
+
+def _may_differ(stage_name: str) -> str | None:
+    """Why `stage_name` is entitled to a different answer on replay, or None if it is not.
+
+    Read off the stage's own `may_differ_because` rather than from a list here. A list has to
+    be edited by whoever adds a stage, and it fails silently in the permissive direction — an
+    unlisted stage would be excused from every drift check, so its regressions would never be
+    reported. Today exactly one stage answers non-None: `ground`, whose input is a store that
+    is allowed to have moved.
+
+    A stage in an old manifest that no longer exists is treated as deterministic, which
+    reports a difference it cannot explain rather than excusing one. `verdict` then has
+    something to cite, which is the invariant that direction protects.
+    """
+    stage = next((s for s in PIPELINE if s.name == stage_name), None)
+    return stage.may_differ_because if stage is not None else None
 
 
 class ReplayError(RuntimeError):
@@ -171,7 +192,7 @@ def replay_run(
         scorer_factory=scorer_factory,
         score="verify" in requested,
         bind="bind" in requested,
-        cache_mode=CacheMode.REPLAY,
+        cache_mode=CacheMode.OFFLINE,
         cassette_mode=CassetteMode.REPLAY,
         use_stage_cache=False,
         persist=False,
@@ -212,11 +233,18 @@ def _compare_stages(
     recording was made without the `verifier` extra and this machine has it, or the reverse.
     Neither is a disagreement about a result. Both sides empty is not a partial — a stage
     neither run produced was expected of neither.
+
+    A one-sided stage also disqualifies every stage after it, because the later ones digest
+    the graph rather than their own contribution: `bind`'s hash moves when `verify` did not
+    run on both machines, and reading that as drift blames the binder for a missing
+    checkpoint. Stages arrive in pipeline order, so one forward-carried flag is enough.
     """
     fresh = {stage.name: stage for stage in outcome.manifest.stages}
+    upstream_gap: str | None = None
     for stage in manifest.stages:
         replayed = fresh.get(stage.name)
         replayed_hash = replayed.output_hash if replayed else None
+        one_sided = (stage.output_hash is None) != (replayed_hash is None)
 
         if stage.output_hash is not None and replayed_hash is None:
             report.partial_because.append(
@@ -231,13 +259,23 @@ def _compare_stages(
             )
 
         comparable = stage.output_hash is not None and replayed_hash is not None
+        if comparable and upstream_gap is not None:
+            comparable = False
+            report.partial_because.append(
+                f"{stage.name} digests the whole graph, and {upstream_gap} did not run on "
+                "both machines, so its hash compares two different graphs rather than two "
+                "runs of the same code"
+            )
+        if one_sided:
+            upstream_gap = upstream_gap or stage.name
+
         report.stages.append(
             StageComparison(
                 stage=stage.name,
                 recorded=stage.output_hash,
                 replayed=replayed_hash,
                 matches=comparable and replayed_hash == stage.output_hash,
-                may_differ=stage.name not in DETERMINISTIC,
+                may_differ=_may_differ(stage.name) is not None,
                 comparable=comparable,
             )
         )
