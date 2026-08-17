@@ -100,6 +100,13 @@ class RenderPremise(VerityModel):
     step_score_calibration: Calibration | None = None
     step_score: str | None = None
     step_score_scope: str = STEP_SCORE_SCOPE_NOTE
+    #: The scorer that produced the number, travelling with it. What an uncalibrated score
+    #: *means* is a property of the checkpoint: the M4-T1 champion separates some corruption
+    #: families decisively and misses others entirely, so a surface that caveats
+    #: "uncalibrated" without naming the producer cannot state which caveat applies, and
+    #: cannot notice when a graph's numbers came from a checkpoint its caveat does not
+    #: describe. `ScorerSpec.scorer_id` also encodes whether label-order verification ran.
+    step_score_scorer: str | None = None
 
     #: This premise's leave-one-out delta within *this* step (M4-T2). Signed.
     ablation_delta_value: float | None = None
@@ -131,8 +138,21 @@ class RenderPremise(VerityModel):
     grounding_fact_statement: str | None = None
     bound_key: ExternalKey | None = None
 
+    #: This premise reproduces the root claim. Structurally legal, and the highest-
+    #: confidence worthless step the system can produce — an entailment scorer rates it
+    #: near 1.0. `ClaimGraph.restating_premise_ids()` derives it from the graph, but a
+    #: renderer's only input is this payload, so a projection that dropped it would render
+    #: the decomposer's worst failure as its cleanest row (design.md §3.4).
+    restates_root_claim: bool = False
+
     #: supporting / contradicting / neutral / rejected counts, or None if no bundle yet.
     evidence_counts: dict[str, int] | None = None
+    #: Bounds that bit while this premise's evidence was gathered — retrieval top-k, a
+    #: per-source cap. Projected because evaluation.md §6's "no silent caps" binds the
+    #: surface a reader actually sees: a bundle whose caps stop at the graph shows four
+    #: retained items and says nothing about the four it dropped. Graph-level caps travel
+    #: on the payload; these are per-premise and have nowhere else to go.
+    evidence_caps: list[CapRecord] = Field(default_factory=list)
     #: Retractions reachable from this premise — through its evidence bundle *and*
     #: through the alethiology fact it is grounded in.
     retraction_flags: list[str] = Field(default_factory=list)
@@ -186,6 +206,7 @@ def to_render_payload(
     rows: list[RenderPremise] = []
     uncalibrated = False
     stale = False
+    restating = set(graph.restating_premise_ids())
 
     for edge in graph.walk():
         premise = graph.premises[edge.premise_id]
@@ -242,6 +263,8 @@ def to_render_payload(
                 step_score_value=score.value if score else None,
                 step_score_calibration=score.calibration if score else None,
                 step_score=score.label() if score else None,
+                step_score_scorer=score.scorer if score else None,
+                restates_root_claim=premise.id in restating,
                 ablation_delta_value=ablation.delta if ablation else None,
                 ablation_delta_calibration=ablation.calibration if ablation else None,
                 ablation_delta=ablation.label() if ablation else None,
@@ -257,6 +280,7 @@ def to_render_payload(
                 grounding_fact_statement=fact.statement if fact else None,
                 bound_key=premise.bound_key,
                 evidence_counts=bundle.counts if bundle else None,
+                evidence_caps=list(bundle.caps) if bundle else [],
                 retraction_flags=flags,
             )
         )

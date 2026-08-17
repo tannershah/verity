@@ -1,0 +1,133 @@
+{
+  "bundles": {},
+  "groundings": [
+    {
+      "fact_id": "fact_0f80fe0396324c7e",
+      "grounded_at": "2026-08-17T02:01:52.486019Z",
+      "matched_key": {
+        "type": "doi",
+        "value": "10.1136/bmj.283.6307.1671"
+      },
+      "premise_id": "prem_db3b182dd57d650a"
+    }
+  ],
+  "id": "graph_5746363f432dc03d",
+  "metadata": {
+    "caps": [],
+    "config_hash": "ebbaaad6d019c653a4d5af91c94b545db3ba207ad2c8e05ff3f0bf4c1fce0bcb",
+    "created_at": "2026-08-17T02:01:52.486019Z",
+    "depth_budget": 3,
+    "run_id": "run_dc9883fc4529984d"
+  },
+  "premises": {
+    "prem_02ed5a30c95e71bd": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_02ed5a30c95e71bd",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "The inflated iron figure for spinach was reproduced across textbooks, dietary guides, and popular media for decades after its original publication."
+    },
+    "prem_1d3a3e7e2988a6d2": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_1d3a3e7e2988a6d2",
+      "premise_type": "background",
+      "termination_reason": null,
+      "text": "Spinach's popular reputation as an exceptionally iron-rich food emerged and spread during the period in which the inflated iron figure was in circulation."
+    },
+    "prem_6746388cbf3b37b5": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_6746388cbf3b37b5",
+      "premise_type": "statistical",
+      "termination_reason": null,
+      "text": "A reported value that is exactly ten times the correct value corresponds to shifting the decimal point one position in the numeral."
+    },
+    "prem_8dcebb1c4539b6ab": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_8dcebb1c4539b6ab",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Spinach's iron content is not distinctive among common leafy green vegetables, so its measured iron level alone would not single it out as an iron-rich food."
+    },
+    "prem_a6ab0925a1567bb3": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_a6ab0925a1567bb3",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Nineteenth-century published chemical analyses of spinach reported its iron content as approximately 35 mg per 100 g of fresh spinach."
+    },
+    "prem_b7b3c3a930372ec6": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_b7b3c3a930372ec6",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Modern food-composition tables give the iron content of raw spinach as approximately 3.5 mg per 100 g."
+    },
+    "prem_db3b182dd57d650a": {
+      "bound_key": {
+        "type": "doi",
+        "value": "10.1136/bmj.283.6307.1671"
+      },
+      "candidate_key": {
+        "type": "doi",
+        "value": "10.1136/bmj.283.6307.1671"
+      },
+      "evidence_state": "verified",
+      "evidence_state_provisional": true,
+      "id": "prem_db3b182dd57d650a",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "The tenfold-inflated iron figure for spinach has been documented in the medical and nutritional literature as arising from a decimal-point transcription error rather than from a flawed laboratory measurement."
+    }
+  },
+  "root_claim": {
+    "claim_type": null,
+    "created_at": "2026-08-17T02:01:52.475682Z",
+    "decontextualization": null,
+    "id": "claim_9dbeb26895392694",
+    "source_text": null,
+    "text": "A misplaced decimal point made spinach famous as an iron-rich food."
+  },
+  "schema_version": 1,
+  "steps": [
+    {
+      "ablation_deltas": {},
+      "conclusion_id": "claim_9dbeb26895392694",
+      "created_at": "2026-08-17T02:01:52.486019Z",
+      "depth": 0,
+      "id": "step_3603275ec07585e7",
+      "premise_ids": [
+        "prem_a6ab0925a1567bb3",
+        "prem_b7b3c3a930372ec6",
+        "prem_6746388cbf3b37b5",
+        "prem_db3b182dd57d650a",
+        "prem_02ed5a30c95e71bd",
+        "prem_8dcebb1c4539b6ab",
+        "prem_1d3a3e7e2988a6d2"
+      ],
+      "score": {
+        "basis": null,
+        "calibration": "uncalibrated",
+        "scorer": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli@b3546ea+concat-v1",
+        "value": 0.998
+      }
+    }
+  ]
+}

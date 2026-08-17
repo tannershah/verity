@@ -149,3 +149,29 @@ is hard.
   are Tanner's lane — out of scope for every agent session unless otherwise directed.
 - After submission: delete SPRINT.md, remove the CLAUDE.md sprint pointer, and
   resume the build-plan.md ordering at the next incomplete tier.
+
+## Carry forward before deleting this file
+
+Decisions taken during the sprint that currently live only in code, and code parked
+in a file that Phase 3 deletes. Both evaporate with this document unless moved.
+
+**Into `design.md` §3.4 (display) and `build-plan.md` M9:** the CLI renders per-step
+confidence as a number and never as a bar, because the M4-T1 champion is near-binary
+and a proportional bar reads as full on every step it fails to catch; the scorer
+caveat is generated from `data/verifier/selection.json` at render time rather than
+written as prose, after two hand-drafted paraphrases of that record were wrong in
+opposite directions; `RenderPremise` carries `step_score_scorer`,
+`restates_root_claim` and `evidence_caps`, the last closing an evaluation.md §6 hole
+where a retrieval cap that dropped evidence was invisible at the render boundary.
+
+**Into Phase 3, as file moves rather than rewrites:** `apply_groundings` in
+`presentation/driver.py` writes the `verified` evidence state that design.md §4.2
+pins to exact-key grounding — nothing else in the codebase writes it — and belongs in
+`verity.alethiology` under M6-T3; the `bind_candidate_keys` call in the same file is
+the only caller of the binder outside tests, and belongs in M1-T2's orchestrator.
+
+**Open, and owned by M3:** across the eight decompositions run so far, two proposed a
+candidate key. The grounding beat depends on an identifier reaching the premise side,
+so until M6-T3's key attribution lands it depends on the decomposer volunteering one —
+the committed demo graph grounds one premise, and a re-run may ground none. This is the
+number the Phase 5 prompt rewrite should move.
