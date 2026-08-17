@@ -533,15 +533,17 @@ def test_a_seeded_store_flags_nothing_until_the_pass_runs(
 
 
 def test_the_committed_demo_graph_carries_no_flag(client) -> None:  # noqa: ANN001
-    """An empty retraction column on the shipped artifact is the checker being right, not
-    the checker being broken. The spinach claim's one bound key is Hamblin's BMJ note,
-    which every source finds standing."""
+    """An empty retraction column must read as the checker having nothing to flag, not as
+    the checker being broken — Hamblin's BMJ note, the key this decomposition has bound in
+    the past, checks clean against every source, verified directly here since the graph
+    cannot show it: the currently committed decomposition volunteered no candidate key at
+    all, the same gap `test_the_committed_chocolate_decomposition_binds_no_identifier`
+    records for the chocolate claim. Phase 5's prompt rewrite is what moves this; recorded
+    here so it is measured rather than remembered."""
     from verity.export import graph_from_json
 
     graph = graph_from_json((ROOT / "data" / "demo" / "spinach.json").read_text())
-    assert {str(p.bound_key) for p in graph.premises.values() if p.bound_key} == {
-        f"doi:{HAMBLIN.value}"
-    }
+    assert {str(p.bound_key) for p in graph.premises.values() if p.bound_key} == set()
     assert assess_key(client, HAMBLIN, table=rw.SAMPLE_TABLE).status is RetractionStatus.CLEAN
 
 

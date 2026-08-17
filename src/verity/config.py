@@ -190,7 +190,6 @@ class LLMConfig(BaseModel):
 
 class PathsConfig(BaseModel):
     db_path: Path = Path("data/verity.db")
-    runs_dir: Path = Path("data/runs")
     #: Tracked in git, not under `data/`: the curated seed and the key-resolution record
     #: it is checked against are source the demo's reproducibility depends on, while
     #: `data/` holds the derived and the bulky (the database, the Retraction Watch table).

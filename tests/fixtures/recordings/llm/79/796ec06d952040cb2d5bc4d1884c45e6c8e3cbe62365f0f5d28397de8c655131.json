@@ -1,0 +1,33 @@
+{
+  "kind": "structured",
+  "purpose": "decompose:step",
+  "settings": {
+    "model": "claude-opus-5",
+    "effort": "high",
+    "thinking": true,
+    "max_tokens": 8000
+  },
+  "response": {
+    "text": "",
+    "raw_output": "{\"premises\":[{\"text\":\"Spinach is widely reputed in popular culture and nutrition writing to be an exceptionally rich dietary source of iron.\",\"premise_type\":\"empirical-citable\",\"candidate_key\":null},{\"text\":\"A nineteenth-century published chemical analysis reported spinach's iron content as roughly ten times the value obtained by later analyses.\",\"premise_type\":\"empirical-citable\",\"candidate_key\":null},{\"text\":\"The tenfold discrepancy in the published spinach iron figure originated from a decimal point being placed one position to the right of its correct location.\",\"premise_type\":\"empirical-citable\",\"candidate_key\":null},{\"text\":\"The inflated spinach iron figure was reproduced in subsequent food composition tables, textbooks, and popular media rather than being corrected before wide circulation.\",\"premise_type\":\"empirical-citable\",\"candidate_key\":null},{\"text\":\"Spinach's measured iron content, about 2 to 3 milligrams per 100 grams fresh weight, is comparable to that of many other leafy vegetables and not exceptional.\",\"premise_type\":\"empirical-citable\",\"candidate_key\":null},{\"text\":\"Spinach's public reputation as an iron-rich food arose from the circulated inflated iron figure rather than from independent observation or promotion.\",\"premise_type\":\"empirical-citable\",\"candidate_key\":null}]}",
+    "model": "claude-opus-5",
+    "usage": {
+      "input_tokens": 1433,
+      "output_tokens": 944,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "cost_usd": 0.030765,
+      "price_bases": [
+        "anthropic-first-party-2026-06-24"
+      ]
+    },
+    "stop_reason": "end_turn",
+    "effort": "high",
+    "thinking": true
+  },
+  "schema_name": "ProposedDecomposition",
+  "raw_form": "provider",
+  "refusal_message": null,
+  "refusal_category": null,
+  "recorded_at": "2026-08-17T04:20:09.630985Z"
+}

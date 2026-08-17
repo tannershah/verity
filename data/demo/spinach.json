@@ -1,105 +1,79 @@
 {
   "bundles": {},
-  "groundings": [
-    {
-      "fact_id": "fact_0f80fe0396324c7e",
-      "grounded_at": "2026-08-17T02:01:52.486019Z",
-      "matched_key": {
-        "type": "doi",
-        "value": "10.1136/bmj.283.6307.1671"
-      },
-      "premise_id": "prem_db3b182dd57d650a"
-    }
-  ],
+  "groundings": [],
   "id": "graph_5746363f432dc03d",
   "metadata": {
     "caps": [],
-    "config_hash": "ebbaaad6d019c653a4d5af91c94b545db3ba207ad2c8e05ff3f0bf4c1fce0bcb",
-    "created_at": "2026-08-17T02:01:52.486019Z",
+    "config_hash": "d20459fbee7b051dceb12620aac3d1f39f0e701aefd812e607085fb8cc7a3bf0",
+    "created_at": "2026-08-17T19:07:11.135274Z",
     "depth_budget": 3,
-    "run_id": "run_dc9883fc4529984d"
+    "run_id": "run_9c0f9d272c259a24"
   },
   "premises": {
-    "prem_02ed5a30c95e71bd": {
+    "prem_02efd5ab1c2f302d": {
       "bound_key": null,
       "candidate_key": null,
       "evidence_state": "unverified",
       "evidence_state_provisional": true,
-      "id": "prem_02ed5a30c95e71bd",
+      "id": "prem_02efd5ab1c2f302d",
       "premise_type": "empirical-citable",
-      "termination_reason": null,
-      "text": "The inflated iron figure for spinach was reproduced across textbooks, dietary guides, and popular media for decades after its original publication."
+      "termination_reason": "citation-shaped",
+      "text": "The inflated spinach iron figure was reproduced in subsequent food composition tables, textbooks, and popular media rather than being corrected before wide circulation."
     },
-    "prem_1d3a3e7e2988a6d2": {
+    "prem_046c0211391752ee": {
       "bound_key": null,
       "candidate_key": null,
       "evidence_state": "unverified",
       "evidence_state_provisional": true,
-      "id": "prem_1d3a3e7e2988a6d2",
-      "premise_type": "background",
-      "termination_reason": null,
-      "text": "Spinach's popular reputation as an exceptionally iron-rich food emerged and spread during the period in which the inflated iron figure was in circulation."
-    },
-    "prem_6746388cbf3b37b5": {
-      "bound_key": null,
-      "candidate_key": null,
-      "evidence_state": "unverified",
-      "evidence_state_provisional": true,
-      "id": "prem_6746388cbf3b37b5",
-      "premise_type": "statistical",
-      "termination_reason": null,
-      "text": "A reported value that is exactly ten times the correct value corresponds to shifting the decimal point one position in the numeral."
-    },
-    "prem_8dcebb1c4539b6ab": {
-      "bound_key": null,
-      "candidate_key": null,
-      "evidence_state": "unverified",
-      "evidence_state_provisional": true,
-      "id": "prem_8dcebb1c4539b6ab",
+      "id": "prem_046c0211391752ee",
       "premise_type": "empirical-citable",
-      "termination_reason": null,
-      "text": "Spinach's iron content is not distinctive among common leafy green vegetables, so its measured iron level alone would not single it out as an iron-rich food."
+      "termination_reason": "citation-shaped",
+      "text": "The tenfold discrepancy in the published spinach iron figure originated from a decimal point being placed one position to the right of its correct location."
     },
-    "prem_a6ab0925a1567bb3": {
+    "prem_4c317d5e35daf5a7": {
       "bound_key": null,
       "candidate_key": null,
       "evidence_state": "unverified",
       "evidence_state_provisional": true,
-      "id": "prem_a6ab0925a1567bb3",
+      "id": "prem_4c317d5e35daf5a7",
       "premise_type": "empirical-citable",
-      "termination_reason": null,
-      "text": "Nineteenth-century published chemical analyses of spinach reported its iron content as approximately 35 mg per 100 g of fresh spinach."
+      "termination_reason": "citation-shaped",
+      "text": "Spinach is widely reputed in popular culture and nutrition writing to be an exceptionally rich dietary source of iron."
     },
-    "prem_b7b3c3a930372ec6": {
+    "prem_5ba5e7f4c7a48c94": {
       "bound_key": null,
       "candidate_key": null,
       "evidence_state": "unverified",
       "evidence_state_provisional": true,
-      "id": "prem_b7b3c3a930372ec6",
+      "id": "prem_5ba5e7f4c7a48c94",
       "premise_type": "empirical-citable",
-      "termination_reason": null,
-      "text": "Modern food-composition tables give the iron content of raw spinach as approximately 3.5 mg per 100 g."
+      "termination_reason": "citation-shaped",
+      "text": "Spinach's public reputation as an iron-rich food arose from the circulated inflated iron figure rather than from independent observation or promotion."
     },
-    "prem_db3b182dd57d650a": {
-      "bound_key": {
-        "type": "doi",
-        "value": "10.1136/bmj.283.6307.1671"
-      },
-      "candidate_key": {
-        "type": "doi",
-        "value": "10.1136/bmj.283.6307.1671"
-      },
-      "evidence_state": "verified",
+    "prem_6d6efebf2000b58e": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
       "evidence_state_provisional": true,
-      "id": "prem_db3b182dd57d650a",
+      "id": "prem_6d6efebf2000b58e",
       "premise_type": "empirical-citable",
-      "termination_reason": null,
-      "text": "The tenfold-inflated iron figure for spinach has been documented in the medical and nutritional literature as arising from a decimal-point transcription error rather than from a flawed laboratory measurement."
+      "termination_reason": "citation-shaped",
+      "text": "Spinach's measured iron content, about 2 to 3 milligrams per 100 grams fresh weight, is comparable to that of many other leafy vegetables and not exceptional."
+    },
+    "prem_784bd425963d28c9": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_784bd425963d28c9",
+      "premise_type": "empirical-citable",
+      "termination_reason": "citation-shaped",
+      "text": "A nineteenth-century published chemical analysis reported spinach's iron content as roughly ten times the value obtained by later analyses."
     }
   },
   "root_claim": {
     "claim_type": null,
-    "created_at": "2026-08-17T02:01:52.475682Z",
+    "created_at": "2026-08-17T19:07:11.135274Z",
     "decontextualization": null,
     "id": "claim_9dbeb26895392694",
     "source_text": null,
@@ -110,23 +84,22 @@
     {
       "ablation_deltas": {},
       "conclusion_id": "claim_9dbeb26895392694",
-      "created_at": "2026-08-17T02:01:52.486019Z",
+      "created_at": "2026-08-17T19:07:11.135274Z",
       "depth": 0,
-      "id": "step_3603275ec07585e7",
+      "id": "step_d0026c3787f0bae8",
       "premise_ids": [
-        "prem_a6ab0925a1567bb3",
-        "prem_b7b3c3a930372ec6",
-        "prem_6746388cbf3b37b5",
-        "prem_db3b182dd57d650a",
-        "prem_02ed5a30c95e71bd",
-        "prem_8dcebb1c4539b6ab",
-        "prem_1d3a3e7e2988a6d2"
+        "prem_4c317d5e35daf5a7",
+        "prem_784bd425963d28c9",
+        "prem_046c0211391752ee",
+        "prem_02efd5ab1c2f302d",
+        "prem_6d6efebf2000b58e",
+        "prem_5ba5e7f4c7a48c94"
       ],
       "score": {
         "basis": null,
         "calibration": "uncalibrated",
         "scorer": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli@b3546ea+concat-v1",
-        "value": 0.998
+        "value": 0.9995
       }
     }
   ]
