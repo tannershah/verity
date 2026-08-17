@@ -218,10 +218,11 @@ demonstrably came from the committed recordings.
   = ground     a78eb018d000f40be2e5f64055041b96cdc7eb4c2e398ab91e9ae0036f225244
   ...
   reproduced
-``` One printed note is worth
-noticing: the replay says the store it read was overridden relative to the
-one the run recorded — the tool reports the substitution rather than letting
-it pass silently.
+```
+
+One printed note is worth noticing: the replay says the store it read was
+overridden relative to the one the run recorded — the tool reports the
+substitution rather than letting it pass silently.
 
 ### `04-chocolate-attempt.txt` — the deepest tree, and the honest miss
 
@@ -240,8 +241,8 @@ no citation could or should settle).
 The shape of the tree first — premises paraphrased for the diagram and
 color-coded by why each branch stopped (blue: a citation could settle it;
 purple: unverifiable by design — definitions and arithmetic; amber: the depth
-budget stopped it). The verbatim 80-column render follows (a few long labels
-wrap mid-word there):
+budget stopped it). The table beneath carries the verbatim premise text and
+the per-row numbers, keyed to the same node labels.
 
 ```mermaid
 flowchart LR
@@ -278,149 +279,38 @@ flowchart LR
     class P4,Q5 expand
 ```
 
-```text
-CLAIM  Eating dark chocolate accelerates weight loss.
-       Verity issues no verdict on this claim. Every number below scores
-       one step.
+> **CLAIM** — Eating dark chocolate accelerates weight loss.
+> Verity issues no verdict on this claim. Every number below scores one step.
 
-                                   step     Δ if  evidence
-                                entail.  removed  state        grounding
-├─ Dark chocolate with a high   0.999 ~        —  unverified*  not grounded
-│  cocoa solids content
-│  contains cocoa flavanols
-│  and other polyphenols at
-│  concentrations
-│  substantially greater than
-│  those in milk chocolate.
-│    citation-shaped
-├─ Ingestion of cocoa           0.999 ~        —  unverified*  not grounded
-│  flavanols increases
-│  satiety and reduces ad
-│  libitum energy intake at
-│  subsequent meals in
-│  controlled feeding
-│  studies.
-│    citation-shaped
-├─ Cocoa flavanol intake        0.999 ~        —  unverified*  not grounded
-│  increases resting energy
-│  expenditure and whole-body
-│  fat oxidation in human
-│  metabolic measurements.
-│    citation-shaped
-├─ For a typical serving of     0.999 ~        —  unverified*  not grounded
-│  dark chocolate, the
-│  calories it supplies are
-│  fewer than the reduction
-│  in total daily energy
-│  intake that its
-│  consumption produces.
-│  ├─ A typical serving of     0.9995 ~        —  unverified*  not grounded
-│  │  dark chocolate is about
-│  │  30 grams and supplies
-│  │  roughly 170
-│  │  kilocalories.
-│  │    citation-shaped
-│  ├─ In controlled feeding    0.9995 ~        —  unverified*  not grounded
-│  │  studies, consuming a
-│  │  serving of dark
-│  │  chocolate as a preload
-│  │  lowers energy intake at
-│  │  the following meal by
-│  │  more than 200
-│  │  kilocalories compared
-│  │  with no preload.
-│  │    citation-shaped
-│  ├─ The suppression of food  0.9995 ~        —  unverified*  not grounded
-│  │  intake that follows
-│  │  dark chocolate
-│  │  consumption is not
-│  │  offset by extra eating
-│  │  during the remainder of
-│  │  the same day.
-│  │    citation-shaped
-│  ├─ The measured reduction   0.9995 ~        —  unverified*  not grounded
-│  │  in total daily energy
-│  │  intake attributed to
-│  │  dark chocolate
-│  │  consumption is
-│  │  calculated from intake
-│  │  of foods other than the
-│  │  chocolate itself.
-│  │    unverifiable-by-desig
-│  │    n
-│  └─ A value of roughly 170   0.9995 ~        —  unverified*  not grounded
-│     kilocalories is smaller
-│     than a value exceeding
-│     200 kilocalories.
-│     ├─ The phrase "roughly    0.998 ~        —  unverified*  not grounded
-│     │  170 kilocalories"
-│     │  designates a
-│     │  quantity no greater
-│     │  than 180
-│     │  kilocalories.
-│     │    unverifiable-by-de
-│     │    sign
-│     ├─ The phrase "a value    0.998 ~        —  unverified*  not grounded
-│     │  exceeding 200
-│     │  kilocalories"
-│     │  designates a
-│     │  quantity strictly
-│     │  greater than 200
-│     │  kilocalories.
-│     │    unverifiable-by-de
-│     │    sign
-│     ├─ 180 kilocalories is    0.998 ~        —  unverified*  not grounded
-│     │  less than 200
-│     │  kilocalories.
-│     │    budget-exit
-│     ├─ Two quantities both    0.998 ~        —  unverified*  not grounded
-│     │  expressed in
-│     │  kilocalories are
-│     │  measured on the same
-│     │  scale and can be
-│     │  compared directly by
-│     │  magnitude.
-│     │    unverifiable-by-de
-│     │    sign
-│     └─ For any quantities A   0.998 ~        —  unverified*  not grounded
-│        and B and threshold
-│        T, if A is no
-│        greater than T and B
-│        is strictly greater
-│        than T, then A is
-│        less than B.
-│          budget-exit
-├─ A larger daily energy        0.999 ~        —  unverified*  not grounded
-│  deficit, produced by lower
-│  energy intake combined
-│  with higher energy
-│  expenditure, results in a
-│  faster rate of body weight
-│  loss over time.
-│    unverifiable-by-design
-├─ In randomized controlled     0.999 ~        —  unverified*  not grounded
-│  trials of adults following
-│  a reduced-calorie diet,
-│  groups assigned to consume
-│  dark chocolate daily lost
-│  body weight at a greater
-│  rate than control groups
-│  consuming no dark
-│  chocolate.
-│    citation-shaped
-└─ To accelerate weight loss    0.999 ~        —  unverified*  not grounded
-   means to increase the
-   amount of body weight lost
-   per unit of time relative
-   to a comparison condition.
-     unverifiable-by-design
+| Node | Premise (verbatim) | Terminal | Step entail. |
+| --- | --- | --- | --- |
+| P1 | Dark chocolate with a high cocoa solids content contains cocoa flavanols and other polyphenols at concentrations substantially greater than those in milk chocolate. | citation-shaped | 0.999 ~ |
+| P2 | Ingestion of cocoa flavanols increases satiety and reduces ad libitum energy intake at subsequent meals in controlled feeding studies. | citation-shaped | 0.999 ~ |
+| P3 | Cocoa flavanol intake increases resting energy expenditure and whole-body fat oxidation in human metabolic measurements. | citation-shaped | 0.999 ~ |
+| P4 | For a typical serving of dark chocolate, the calories it supplies are fewer than the reduction in total daily energy intake that its consumption produces. | *expanded* | 0.999 ~ |
+| Q1 | ↳ A typical serving of dark chocolate is about 30 grams and supplies roughly 170 kilocalories. | citation-shaped | 0.9995 ~ |
+| Q2 | ↳ In controlled feeding studies, consuming a serving of dark chocolate as a preload lowers energy intake at the following meal by more than 200 kilocalories compared with no preload. | citation-shaped | 0.9995 ~ |
+| Q3 | ↳ The suppression of food intake that follows dark chocolate consumption is not offset by extra eating during the remainder of the same day. | citation-shaped | 0.9995 ~ |
+| Q4 | ↳ The measured reduction in total daily energy intake attributed to dark chocolate consumption is calculated from intake of foods other than the chocolate itself. | unverifiable-by-design | 0.9995 ~ |
+| Q5 | ↳ A value of roughly 170 kilocalories is smaller than a value exceeding 200 kilocalories. | *expanded* | 0.9995 ~ |
+| R1 | ↳↳ The phrase "roughly 170 kilocalories" designates a quantity no greater than 180 kilocalories. | unverifiable-by-design | 0.998 ~ |
+| R2 | ↳↳ The phrase "a value exceeding 200 kilocalories" designates a quantity strictly greater than 200 kilocalories. | unverifiable-by-design | 0.998 ~ |
+| R3 | ↳↳ 180 kilocalories is less than 200 kilocalories. | budget-exit | 0.998 ~ |
+| R4 | ↳↳ Two quantities both expressed in kilocalories are measured on the same scale and can be compared directly by magnitude. | unverifiable-by-design | 0.998 ~ |
+| R5 | ↳↳ For any quantities A and B and threshold T, if A is no greater than T and B is strictly greater than T, then A is less than B. | budget-exit | 0.998 ~ |
+| P5 | A larger daily energy deficit, produced by lower energy intake combined with higher energy expenditure, results in a faster rate of body weight loss over time. | unverifiable-by-design | 0.999 ~ |
+| P6 | In randomized controlled trials of adults following a reduced-calorie diet, groups assigned to consume dark chocolate daily lost body weight at a greater rate than control groups consuming no dark chocolate. | citation-shaped | 0.999 ~ |
+| P7 | To accelerate weight loss means to increase the amount of body weight lost per unit of time relative to a comparison condition. | unverifiable-by-design | 0.999 ~ |
+
+Every row in this run carries the same three remaining columns: **Δ if
+removed** is empty, **evidence state** is `unverified*`, and **grounding** is
+`not grounded`.
 
 17 premises · 17 rows · 3 steps · graph depth 3 (traversal depth) ·
-   alethiology read 2026-08-17 19:22Z
+alethiology read 2026-08-17 19:22Z
 
-note  the descent expanded 2 of 17 premises to depth 3 against a budget of 3;
-   terminals: 2 budget-exit, 7 citation-shaped, 6 unverifiable-by-design.
-```
+*note* — the descent expanded 2 of 17 premises to depth 3 against a budget of
+3; terminals: 2 budget-exit, 7 citation-shaped, 6 unverifiable-by-design.
 
 And the miss, kept deliberately: `no-candidate-key 17`. The decomposer
 volunteered no identifier on any premise, so nothing bound, nothing grounded —
