@@ -113,6 +113,25 @@ shows the step's entailment score (`0.9995` here, tilde-marked as
 uncalibrated), a `Δ if removed` column (unmeasured yet — shown as `—` rather
 than faked), an evidence state, and a grounding status.
 
+The shape of the tree first — premises paraphrased for the diagram; the
+verbatim render follows:
+
+```mermaid
+flowchart LR
+    C["CLAIM<br/>A misplaced decimal point made<br/>spinach famous as an iron-rich food"]
+    C --> P1["Spinach is widely reputed to be<br/>exceptionally iron-rich<br/><i>citation-shaped</i>"]
+    C --> P2["A 19th-century analysis reported<br/>about ten times the later value<br/><i>citation-shaped</i>"]
+    C --> P3["The tenfold discrepancy came from<br/>a misplaced decimal point<br/><i>citation-shaped</i>"]
+    C --> P4["The inflated figure spread uncorrected<br/>through tables, textbooks, media<br/><i>citation-shaped</i>"]
+    C --> P5["Measured iron, about 2-3 mg per 100 g,<br/>is unexceptional among leafy greens<br/><i>citation-shaped</i>"]
+    C --> P6["The iron-rich reputation traces to<br/>the inflated figure itself<br/><i>citation-shaped</i>"]
+
+    classDef claim fill:#ffffff,stroke:#374151,stroke-width:2px,color:#111827
+    classDef cite fill:#dbeafe,stroke:#1e40af,color:#111827
+    class C claim
+    class P1,P2,P3,P4,P5,P6 cite
+```
+
 ```text
 CLAIM  A misplaced decimal point made spinach famous as an iron-rich
        food.
@@ -216,8 +235,48 @@ no greater than T and B is strictly greater than T, then A is less than B"*.
 The termination accounting is printed beside the tree: 2 branches stopped at
 the depth budget (`budget-exit`), 7 at citation-shaped statements, 6 at
 statements marked `unverifiable-by-design` (definitions and arithmetic that
-no citation could or should settle). Quoted as rendered at 80 columns — a few
-long labels wrap mid-word:
+no citation could or should settle).
+
+The shape of the tree first — premises paraphrased for the diagram and
+color-coded by why each branch stopped (blue: a citation could settle it;
+purple: unverifiable by design — definitions and arithmetic; amber: the depth
+budget stopped it). The verbatim 80-column render follows (a few long labels
+wrap mid-word there):
+
+```mermaid
+flowchart LR
+    C["CLAIM<br/>Eating dark chocolate<br/>accelerates weight loss"]
+    C --> P1["High-cocoa chocolate is rich in<br/>flavanols and polyphenols<br/><i>citation-shaped</i>"]
+    C --> P2["Flavanols increase satiety and<br/>reduce later energy intake<br/><i>citation-shaped</i>"]
+    C --> P3["Flavanols raise energy expenditure<br/>and fat oxidation<br/><i>citation-shaped</i>"]
+    C --> P4["A serving's calories are fewer than<br/>the intake reduction it produces"]
+    C --> P5["A larger energy deficit means<br/>faster weight loss<br/><i>unverifiable-by-design</i>"]
+    C --> P6["In RCTs, chocolate groups lost<br/>weight faster than controls<br/><i>citation-shaped</i>"]
+    C --> P7["To accelerate means more weight<br/>lost per unit time<br/><i>unverifiable-by-design</i>"]
+
+    P4 --> Q1["A serving is about 30 g and<br/>roughly 170 kcal<br/><i>citation-shaped</i>"]
+    P4 --> Q2["A chocolate preload cuts the next<br/>meal by more than 200 kcal<br/><i>citation-shaped</i>"]
+    P4 --> Q3["The suppression is not offset by<br/>extra eating later that day<br/><i>citation-shaped</i>"]
+    P4 --> Q4["The measured reduction excludes<br/>the chocolate's own calories<br/><i>unverifiable-by-design</i>"]
+    P4 --> Q5["Roughly 170 kcal is smaller than a<br/>value exceeding 200 kcal"]
+
+    Q5 --> R1["Roughly 170 designates a quantity<br/>no greater than 180 kcal<br/><i>unverifiable-by-design</i>"]
+    Q5 --> R2["Exceeding 200 designates a quantity<br/>strictly greater than 200 kcal<br/><i>unverifiable-by-design</i>"]
+    Q5 --> R3["180 kcal is less than 200 kcal<br/><i>budget-exit</i>"]
+    Q5 --> R4["Quantities in the same unit can be<br/>compared directly by magnitude<br/><i>unverifiable-by-design</i>"]
+    Q5 --> R5["If A is at most T and B is greater<br/>than T, then A is less than B<br/><i>budget-exit</i>"]
+
+    classDef claim fill:#ffffff,stroke:#374151,stroke-width:2px,color:#111827
+    classDef cite fill:#dbeafe,stroke:#1e40af,color:#111827
+    classDef unver fill:#ede9fe,stroke:#6d28d9,color:#111827
+    classDef budget fill:#fef3c7,stroke:#b45309,color:#111827
+    classDef expand fill:#f3f4f6,stroke:#374151,color:#111827
+    class C claim
+    class P1,P2,P3,P6,Q1,Q2,Q3 cite
+    class P5,P7,Q4,R1,R2,R4 unver
+    class R3,R5 budget
+    class P4,Q5 expand
+```
 
 ```text
 CLAIM  Eating dark chocolate accelerates weight loss.
