@@ -54,6 +54,21 @@ class DuplicatePremiseError(VerifierError):
     """
 
 
+class ScorerIdentityError(VerifierError):
+    """The scorer that was built is not the one its output was about to be filed under.
+
+    M1-T2 derives the verify stage's cache key from the checkpoint `VerifierConfig` names,
+    without loading anything. If a backend then loads something else, one checkpoint's
+    numbers would be stored under another's key — the drift `verity.verifier.registry`
+    exists to prevent, arriving through the cache instead of through a constructor.
+
+    Its own type rather than a `ValueError`, because the orchestrator isolates a declared
+    set of exceptions and `pydantic.ValidationError` *is* a `ValueError`: a stage that
+    isolated `ValueError` would swallow a `ClaimGraph` invariant violation, which is the
+    one failure that must never be caught.
+    """
+
+
 class LabelOrderUnverifiedError(VerifierError):
     """The checkpoint's label conventions did not survive verification at init.
 

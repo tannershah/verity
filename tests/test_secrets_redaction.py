@@ -71,6 +71,51 @@ def test_manifest_serialization_carries_no_secret(canary_secrets: Secrets):
     assert '"openalex_api_key": true' in serialized
 
 
+def test_a_failed_run_leaks_nothing_through_its_error_text(
+    canary_secrets: Secrets, tmp_path: Path
+):
+    """M1-T2 writes two new kinds of artifact, and the uncovered path in both is failure.
+
+    `StageRecord.error` carries an exception message, and an exception raised inside the
+    retrieval layer names the URL it was working on. `HttpRequest` refuses a URL carrying a
+    credential parameter, so there is nothing there to leak — this is the test that keeps
+    that true once a stage record starts persisting the message.
+    """
+    from verity.cache import BlobCache
+    from verity.decomposition.backward_chain import PURPOSE
+    from verity.decomposition.schema import ProposedDecomposition
+    from verity.llm.stub import StubAdapter
+    from verity.orchestration import run_claim
+    from verity.store.db import open_db
+    from verity.store.manifests import load_manifest
+
+    config = VerityConfig()
+    cache = BlobCache([tmp_path / "cache"], [tmp_path / "cache"])
+    refusing = StubAdapter(structured={PURPOSE: ProposedDecomposition(premises=[])})
+
+    with open_db(tmp_path / "v.db") as conn:
+        outcome = run_claim(
+            "A claim whose decomposition refuses.",
+            config=config,
+            conn=conn,
+            cache=cache,
+            adapter_factory=lambda: refusing,
+            score=False,
+            bind=False,
+        )
+        stored = load_manifest(conn, outcome.manifest.run_id)
+
+    assert outcome.manifest.errors, "the fixture must actually fail"
+    surfaces = [to_json(outcome.manifest), to_json(stored)]
+    for path in tmp_path.rglob("*.json"):
+        surfaces.append(path.read_text(encoding="utf-8"))
+    assert len(surfaces) > 2, "the cassette must have written something to scan"
+
+    for value in CANARIES.values():
+        for surface in surfaces:
+            assert value not in surface
+
+
 def test_real_env_values_do_not_appear_in_artifacts():
     """Belt and braces: scan with the developer's actual credentials, if present."""
     live = Secrets()

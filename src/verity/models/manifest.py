@@ -59,6 +59,26 @@ class Usage(VerityModel):
         )
 
 
+class RunInputs(FrozenModel):
+    """What the run was asked to do, in the form replay has to reconstruct.
+
+    The claim arrives as *text* rather than as a `Claim`, because `Claim.created_at`
+    defaults to wall-clock time and is serialized into the graph while contributing
+    nothing to the claim's id. A manifest that stored a rendered `Claim` would therefore
+    replay a graph whose every id matched and whose bytes did not. The orchestrator
+    constructs the claim on the run clock, and this is what it constructs it from.
+    """
+
+    claim_text: str
+    source_text: str | None = None
+    #: Where the binder's registry bytes were permitted to come from. Not configuration —
+    #: see `verity.retrieval.http.CacheMode` — so it has to be recorded per run.
+    cache_mode: str = "live"
+    #: Stage names the caller asked for. A stage absent here was never requested; a stage
+    #: present with status `skipped` was requested and could not run.
+    stages_requested: tuple[str, ...] = ()
+
+
 class LLMSettings(FrozenModel):
     """The settings a stage's calls actually ran under, not the ones configured.
 
@@ -90,8 +110,22 @@ class StageRecord(VerityModel):
     llm_calls: int = 0
     usage: Usage = Field(default_factory=Usage)
     cache_hits: int = 0
+    #: Bounds that describe the *execution* and have nowhere else to live — retrieval's
+    #: retry ceiling, its credit floor. Bounds that describe the artifact (dropped
+    #: premises, pruned subtrees, unscored oversize steps) live on `GraphMetadata.caps`
+    #: and are deliberately not copied here: a cap filed in both places is counted twice
+    #: by anything that reads the manifest and the graph together.
     caps: list[CapRecord] = Field(default_factory=list)
     error: str | None = None
+    #: Why this stage has the status it has, when the status alone does not say — a skip
+    #: reason, a rejected cache entry, what a replayed call originally cost. Distinct from
+    #: `error`, which is reserved for a stage that failed.
+    note: str | None = None
+    #: Stage-scoped tallies, as plain strings and integers so no producer's vocabulary has
+    #: to be imported here. The grounding stage files its reason mix, which is a
+    #: measurement *of this run* — recomputing it later reads a store that has since
+    #: moved, and would report a different number under this run's name.
+    counts: dict[str, int] = Field(default_factory=dict)
 
     #: Digest of the stage's inputs, and the key derived from it together with the config
     #: hash. Both recorded because a key that cannot be rebuilt cannot be checked.
@@ -108,8 +142,14 @@ class RunManifest(VerityModel):
     """Everything needed to understand — and replay — one run."""
 
     run_id: str
+    #: **The run clock.** Every timestamp that reaches the graph derives from this single
+    #: reading, and replay pins it back. A run that took its own `now()` per stage would
+    #: produce a graph no replay could reproduce byte-for-byte.
     started_at: datetime = Field(default_factory=utc_now)
     finished_at: datetime | None = None
+    #: What the run was asked to do. `None` only on a manifest written before the field
+    #: existed, which replay refuses rather than guessing at.
+    inputs: RunInputs | None = None
     code_version: str | None = None  # git sha
     code_dirty: bool | None = None
     #: Redacted config snapshot. See `verity.config.VerityConfig.snapshot()`.
@@ -119,6 +159,11 @@ class RunManifest(VerityModel):
     stages: list[StageRecord] = Field(default_factory=list)
     graph_ids: list[str] = Field(default_factory=list)
     errors: list[str] = Field(default_factory=list)
+    #: What the run concluded about itself, in the words a reader gets — a premise
+    #: restating the claim, an out-of-range arity, a binding basis, a cassette-served call.
+    #: Stored rather than printed and forgotten, so a run re-rendered later still carries
+    #: the caveats that qualified it.
+    notes: list[str] = Field(default_factory=list)
 
     @property
     def total_usage(self) -> Usage:

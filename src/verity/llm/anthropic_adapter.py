@@ -33,12 +33,11 @@ from verity.llm.base import (
     LLMResponse,
     StructuredResponse,
     TSchema,
+    resolve_settings,
 )
 from verity.llm.pricing import PRICE_BASIS, cost_usd
 from verity.models.manifest import Usage
 from verity.secrets import Secrets
-
-_NO_THINKING_MAX_EFFORT = {"low", "medium", "high"}
 
 
 class AnthropicAdapter:
@@ -63,16 +62,14 @@ class AnthropicAdapter:
     # -- internals ---------------------------------------------------------------
 
     def _resolve(self, request: LLMRequest) -> tuple[str, int, str, bool]:
-        model = request.model or self.config.model
-        max_tokens = request.max_tokens or self.config.max_tokens
-        effort = request.effort or self.config.effort
-        thinking = self.config.thinking if request.thinking is None else request.thinking
-        if not thinking and effort not in _NO_THINKING_MAX_EFFORT:
-            raise LLMError(
-                f"thinking cannot be disabled at effort {effort!r}; "
-                f"use effort in {sorted(_NO_THINKING_MAX_EFFORT)} or leave thinking on"
-            )
-        return model, max_tokens, effort, thinking
+        """Delegates to `resolve_settings`, which the cassette keys on. One rule, one place.
+
+        Unpacked here because the provider call wants four positional values, and left
+        non-optional because `resolve_settings` fills every field from `LLMConfig`, whose
+        defaults are not optional.
+        """
+        s = resolve_settings(request, self.config)
+        return s.model, s.max_tokens or self.config.max_tokens, s.effort or "", bool(s.thinking)
 
     @staticmethod
     def _usage(response: object, model: str) -> Usage:
@@ -116,10 +113,9 @@ class AnthropicAdapter:
             messages=[{"role": "user", "content": request.prompt}],
         )
         self._guard_refusal(response)
-        text = "".join(
-            block.text for block in response.content if getattr(block, "type", "") == "text"
+        return self._envelope(
+            response, model, effort, thinking, text=_text_blocks(response)
         )
-        return self._envelope(response, model, effort, thinking, text=text)
 
     def structured(
         self, request: LLMRequest, schema: type[TSchema]
@@ -145,7 +141,14 @@ class AnthropicAdapter:
             )
         return StructuredResponse[schema](  # type: ignore[valid-type]
             parsed=parsed,
-            response=self._envelope(response, model, effort, thinking),
+            # The model's own JSON, carried so a cassette can re-validate it through the
+            # schema instead of storing an object that already validated. `None` when the
+            # provider returned the structured result through a channel with no text
+            # blocks — the cassette then records that it holds a re-serialization rather
+            # than a recording, which is a weaker claim and must not read as the stronger.
+            response=self._envelope(
+                response, model, effort, thinking, raw_output=_text_blocks(response) or None
+            ),
         )
 
     def _envelope(
@@ -156,12 +159,23 @@ class AnthropicAdapter:
         thinking: bool,
         *,
         text: str = "",
+        raw_output: str | None = None,
     ) -> LLMResponse:
         return LLMResponse(
             text=text,
+            raw_output=raw_output,
             model=getattr(response, "model", model),
             usage=self._usage(response, model),
             stop_reason=getattr(response, "stop_reason", None),
             effort=effort,
             thinking=thinking,
         )
+
+
+def _text_blocks(response: object) -> str:
+    """Every text block, concatenated. Empty when the response carried none."""
+    return "".join(
+        block.text
+        for block in getattr(response, "content", ())
+        if getattr(block, "type", "") == "text"
+    )

@@ -103,6 +103,25 @@ def resolve_revision(config: VerifierConfig, checkpoint: str) -> str:
     return config.revision or pinned_revision(checkpoint)
 
 
+def expected_scorer_id(config: VerifierConfig, *, checkpoint: str | None = None) -> str:
+    """The `Score.scorer` a scorer built from `config` will write — without loading it.
+
+    M1-T2 keys its verify stage on this. Deriving it from `ScorerSpec` instead would mean
+    constructing the scorer to discover whether the scorer was needed: a ~2GB checkpoint
+    load to find out the answer was already cached, and no replay at all on a machine
+    without the `verifier` extra. Every component is a config value or a registry constant,
+    so none of them needs torch.
+
+    The scorer built on a miss is checked against this, so a backend that loaded something
+    else fails rather than writing one checkpoint's numbers under another's cache key.
+    """
+    from verity.verifier.base import RECIPE_ID
+
+    target = checkpoint or config.model_id
+    base = f"{target}@{resolve_revision(config, target)[:7]}+{RECIPE_ID}"
+    return base if config.verify_label_order_at_init else f"{base}+label-order-unverified"
+
+
 def build_scorer(config: VerifierConfig, *, checkpoint: str | None = None) -> StepScorer:
     """The scorer `config.model_id` names."""
     target = checkpoint or config.model_id

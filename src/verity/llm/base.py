@@ -23,9 +23,13 @@ from typing import Protocol, TypeVar, runtime_checkable
 from pydantic import BaseModel, ConfigDict, Field
 
 from verity.base import VerityModel
-from verity.models.manifest import Usage
+from verity.config import LLMConfig
+from verity.models.manifest import LLMSettings, Usage
 
 TSchema = TypeVar("TSchema", bound=BaseModel)
+
+#: Efforts at which the provider accepts thinking being turned off.
+_NO_THINKING_MAX_EFFORT = frozenset({"low", "medium", "high"})
 
 
 class LLMError(RuntimeError):
@@ -61,6 +65,14 @@ class LLMResponse(VerityModel):
     """One call's outcome, including how it ended and what it ran under."""
 
     text: str = ""
+    #: The provider's own serialization of a structured result, when it emitted one.
+    #: Deliberately not `text`: on the `complete()` path that field is free-text output a
+    #: caller reads, and overloading it with a serialized schema instance would give one
+    #: field two meanings in a model four tiers consume. It exists so a cassette can
+    #: re-validate a recorded response *through the schema* rather than storing an object
+    #: that already validated — replaying a parse that never re-ran is exactly the
+    #: code-changed-underneath-a-stored-result failure the cassette exists to catch.
+    raw_output: str | None = None
     model: str
     usage: Usage = Field(default_factory=Usage)
     stop_reason: str | None = None
@@ -94,6 +106,34 @@ class StructuredResponse[T: BaseModel](VerityModel):
     @property
     def truncated(self) -> bool:
         return self.response.truncated
+
+
+def resolve_settings(request: LLMRequest, config: LLMConfig) -> LLMSettings:
+    """The settings a request will actually run under, before it is sent.
+
+    One implementation, for two callers that must not disagree. The adapter needs them to
+    build the call; the cassette needs them to build its key, and every field is `None` on
+    an unmodified `LLMRequest` — a key built from the request as passed would key every
+    call on nothing. Resolving twice in two files would let the cassette key on settings
+    the adapter did not use, which surfaces only as a cache that hits when it should miss.
+
+    Deriving them without a client is also what lets a fully-replayed run need no
+    provider credential at all.
+    """
+    thinking = config.thinking if request.thinking is None else request.thinking
+    effort = request.effort or config.effort
+    if not thinking and effort not in _NO_THINKING_MAX_EFFORT:
+        # Refused here rather than paying a round trip for a 400.
+        raise LLMError(
+            f"thinking cannot be disabled at effort {effort!r}; "
+            f"use effort in {sorted(_NO_THINKING_MAX_EFFORT)} or leave thinking on"
+        )
+    return LLMSettings(
+        model=request.model or config.model,
+        effort=effort,
+        thinking=thinking,
+        max_tokens=request.max_tokens or config.max_tokens,
+    )
 
 
 @runtime_checkable

@@ -50,6 +50,34 @@ class ScoringResult(VerityModel):
     output_hash: str
 
 
+def step_inputs(graph: ClaimGraph) -> list[tuple[str, str, list[str]]]:
+    """The (step id, conclusion, canonical premises) triples this pass scores.
+
+    Keyed by step id and sorted by the caller, so a graph whose steps were stored in a
+    different order is the same input: an input digest that moved with list order would
+    miss M1-T2's cache while the output digest said nothing had changed.
+    """
+    return [
+        (
+            step.id,
+            graph.conclusion_of(step).text,
+            canonical_order([graph.premises[pid].text for pid in step.premise_ids]),
+        )
+        for step in graph.steps
+    ]
+
+
+def input_digest(graph: ClaimGraph, scorer_id: str) -> str:
+    """What this pass is about to be given, digested before it runs.
+
+    Exported because M1-T2's stage cache needs the key *before* the producer executes,
+    while `ScoringResult.input_hash` is written after. Two derivations of one number in
+    two files would drift with nothing asserting they agree, so there is one, and
+    `tests/test_orchestration.py` pins that the stage's key equals the recorded one.
+    """
+    return content_hash(scorer_id, sorted(step_inputs(graph)))
+
+
 def score_graph(graph: ClaimGraph, scorer: StepScorer) -> ScoringResult:
     """Score every step in `graph`, returning a new graph carrying the results.
 
@@ -62,16 +90,10 @@ def score_graph(graph: ClaimGraph, scorer: StepScorer) -> ScoringResult:
     scored_steps: list[EntailmentStep] = []
     oversize: list[str] = []
     scored = 0
-    step_inputs: list[tuple[str, str, list[str]]] = []
 
     for step in graph.steps:
         conclusion = graph.conclusion_of(step)
         premises = [graph.premises[pid].text for pid in step.premise_ids]
-        # Keyed by step id and sorted below, matching `output_hash`. The pair has to be
-        # invariant to the same things: a graph whose steps were stored in a different
-        # order is the same input to this pass, and an input hash that moved with list
-        # order would miss M1-T2's cache while the output hash said nothing changed.
-        step_inputs.append((step.id, conclusion.text, canonical_order(premises)))
         try:
             score = scorer.score(conclusion.text, premises)
         except OversizeStepError:
@@ -115,7 +137,7 @@ def score_graph(graph: ClaimGraph, scorer: StepScorer) -> ScoringResult:
         unscored=len(oversize),
         oversize_step_ids=oversize,
         caps=caps,
-        input_hash=content_hash(scorer.spec.scorer_id, sorted(step_inputs)),
+        input_hash=input_digest(graph, scorer.spec.scorer_id),
         output_hash=content_hash(
             [
                 (s.id, None if s.score is None else s.score.value)

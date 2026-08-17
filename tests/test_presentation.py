@@ -26,6 +26,7 @@ from pathlib import Path
 import pytest
 from rich.console import Console
 
+from verity.alethiology.apply import apply_groundings
 from verity.alethiology.service import Alethiology
 from verity.config import RetrievalConfig
 from verity.export import from_json, to_json
@@ -44,9 +45,11 @@ from verity.models.common import (
 )
 from verity.models.fact import Fact, InMemoryFacts
 from verity.models.render import RenderPayload, RenderPremise, RenderRoot, to_render_payload
-from verity.presentation import bands, driver, layout
+from verity.orchestration.stages import VERIFIER_ABSENT_NOTE
+from verity.presentation import bands, layout
 from verity.presentation import console as surface
-from verity.retrieval.http import CacheMode
+from verity.retrieval.binder import bind_candidate_keys
+from verity.retrieval.http import CacheMode, build_client
 from verity.store.db import open_db
 from verity.store.facts import save_fact
 from verity.store.graphs import save_graph
@@ -257,8 +260,8 @@ def test_an_unscored_step_prints_a_word_not_a_blank():
     assert "unscored" in out
 
 
-def test_the_driver_note_distinguishes_a_missing_scorer_from_an_oversize_step():
-    out = render_to_text(payload_of(row()), notes=[driver.VERIFIER_ABSENT_NOTE])
+def test_the_run_note_distinguishes_a_missing_scorer_from_an_oversize_step():
+    out = render_to_text(payload_of(row()), notes=[VERIFIER_ABSENT_NOTE])
     assert "not installed" in out
     assert "oversize" not in out
 
@@ -586,7 +589,7 @@ def test_grounding_a_premise_marks_it_verified_and_provisional(tmp_path: Path, s
     with open_db(tmp_path / "v.db") as conn:
         save_fact(conn, seeded_fact)
         service = Alethiology.open(conn, resolution_path=tmp_path / "none.json")
-        grounded, attempts = driver.apply_groundings(graph, service, grounded_at=CHECKED_AT)
+        grounded, attempts = apply_groundings(graph, service, grounded_at=CHECKED_AT)
 
     assert [a.grounded for a in attempts].count(True) == 1
     assert grounded.premises[premise.id].evidence_state is EvidenceState.VERIFIED
@@ -612,8 +615,8 @@ def test_grounding_twice_replaces_the_row_rather_than_adding_a_second(
     with open_db(tmp_path / "v.db") as conn:
         save_fact(conn, seeded_fact)
         service = Alethiology.open(conn, resolution_path=tmp_path / "none.json")
-        once, _ = driver.apply_groundings(graph, service, grounded_at=CHECKED_AT)
-        twice, _ = driver.apply_groundings(once, service, grounded_at=CHECKED_AT)
+        once, _ = apply_groundings(graph, service, grounded_at=CHECKED_AT)
+        twice, _ = apply_groundings(once, service, grounded_at=CHECKED_AT)
 
     assert len(once.groundings) == 1
     assert len(twice.groundings) == 1
@@ -630,7 +633,7 @@ def test_grounding_nothing_leaves_the_graph_exactly_as_it_was(tmp_path: Path):
     )
     with open_db(tmp_path / "v.db") as conn:
         service = Alethiology.open(conn, resolution_path=tmp_path / "none.json")
-        after, attempts = driver.apply_groundings(graph, service)
+        after, attempts = apply_groundings(graph, service)
     assert after == graph
     assert all(not a.grounded for a in attempts)
 
@@ -789,11 +792,12 @@ def test_the_grounding_beat_runs_end_to_end_from_committed_bytes(
         ],
     )
 
-    bound, notes = driver.bind_keys(
-        graph,
+    client = build_client(
         config=RetrievalConfig(cache_dir=Path(__file__).parent / "fixtures/http"),
         mode=CacheMode.REPLAY,
     )
+    bound, report = bind_candidate_keys(graph, client)
+    notes = [f"binding ran in cache mode {CacheMode.REPLAY.value}", report.basis]
     assert bound.premises[cited.id].bound_key == seeded_fact.key, (
         "the registries resolve this identifier in the committed fixtures"
     )
@@ -803,7 +807,7 @@ def test_the_grounding_beat_runs_end_to_end_from_committed_bytes(
     with open_db(tmp_path / "v.db") as conn:
         save_fact(conn, seeded_fact)
         service = Alethiology.open(conn, resolution_path=tmp_path / "none.json")
-        grounded, attempts = driver.apply_groundings(bound, service, grounded_at=CHECKED_AT)
+        grounded, attempts = apply_groundings(bound, service, grounded_at=CHECKED_AT)
         payload = to_render_payload(grounded, service, checked_at=CHECKED_AT)
 
     assert [a.grounded for a in attempts].count(True) == 1
@@ -834,43 +838,3 @@ def test_the_header_never_breaks_to_the_left_margin(width: int):
     assert header[0].startswith("CLAIM  ")
     for line in header[1:]:
         assert line.startswith(" " * 7), f"header continuation at column zero: {line!r}"
-
-
-def test_a_run_stamps_the_configuration_it_was_produced_under():
-    """A committed artifact a stranger is asked to check has to be tied to a run and to
-    the configuration that produced it — otherwise it is a committed output rather than a
-    committed artifact, and M1-T2's replay has nothing to key on."""
-    from verity.config import VerityConfig
-    from verity.decomposition.backward_chain import PURPOSE
-    from verity.decomposition.schema import ProposedDecomposition, ProposedPremise
-    from verity.llm.stub import StubAdapter
-
-    config = VerityConfig()
-    proposal = ProposedDecomposition(
-        premises=[
-            ProposedPremise(text=f"Premise {n}.", premise_type=PremiseType.EMPIRICAL_CITABLE)
-            for n in range(3)
-        ]
-    )
-    stamped_at = datetime(2026, 8, 17, 9, 0, tzinfo=UTC)
-
-    def run() -> ClaimGraph:
-        result = driver.run_claim(
-            Claim(text="A claim to decompose.", created_at=stamped_at),
-            config=config,
-            adapter=StubAdapter(structured={PURPOSE: proposal}),
-            score=False,
-            bind=False,
-            now=stamped_at,
-        )
-        assert result.graph is not None
-        return result.graph
-
-    first = run()
-    assert first.metadata.config_hash == config.config_hash()
-    assert first.metadata.run_id
-    assert first.metadata.created_at == stamped_at
-
-    # Derived from the claim, the config and the clock rather than drawn at random, so the
-    # same inputs reproduce the same bytes — the property replay is checked against.
-    assert to_json(run()) == to_json(first)

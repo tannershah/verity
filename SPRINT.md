@@ -46,7 +46,7 @@ merged only in Phase 3. One tier per session; honor its exit criterion.
 | **1 — spine** | Sun early | Opus | ✅ **COMPLETE.** M1-T1 done: package layout, typed model, SQLite store, config/secrets, LLM adapter, run manifest, enforcement tests. See status below |
 | **2A — core loop** | Sun | Opus | ✅ **COMPLETE.** M3-T1, M4-T1, M9-T1 done. See status below |
 | **2B — grounding** | Sun, parallel | Opus | ✅ **COMPLETE.** M5-T1, M6-T1a done. See status below |
-| **3 — integrate** | Sun night | Opus | Single session: merge lanes, M1-T2, M3-T2 |
+| **3 — integrate** | Sun night | Opus | Merge lanes, M1-T2 (done — see status below), M3-T2 |
 | **4 — demo-cuts** | Sun night / Mon early | Opus | (i) Retraction flag: RW-table + Crossref/OpenAlex check on the demo claim's DOIs — a labeled partial of M7-T1 (no full disagreement policy). (ii) Metrics logger over a 5–10 claim mini-set — a labeled partial of M10-T1 |
 | **5 — quality pass** | Mon 00:00–12:00 | **Fable** (fresh reset) | Rewrite the decomposition prompt, re-run demo claims until trees pass eyeball review against the three validity criteria. Optional Streamlit strip only if ahead. **Code freeze 12:00** |
 | **6 — repo presentation** | Mon 12:00–17:00 | Fable | Screenshots; recorded demo run; README quickstart so a reviewer can run the demo; GitHub cleanup. (Tanner handles application materials and submission in parallel — not agent work) |
@@ -105,15 +105,62 @@ are: the M4-T1 champion is near-binary and misses three of seven corruption fami
 lens and ships as the blind-spot case, and the demo graph's single grounding runs through a
 key the decomposer proposed rather than one retrieval bound.
 
-### Reading in for Phase 3
+**Phase 3 status (M1-T2 complete; M3-T2 is what remains):** 541 tests green, ruff clean.
+`presentation/driver.py` is gone; `apply_groundings` moved to `verity.alethiology.apply` and
+the binder call into the bind stage. The pipeline is `python -m verity run | replay | render |
+runs`, and the render surface no longer composes anything.
 
-Phase 3 merges the lanes and adds M1-T2 and M3-T2. Two file moves are already scoped in
-**Carry forward** below — `apply_groundings` and the `bind_candidate_keys` call both live in
-`presentation/driver.py` as pure functions over models so they move rather than get rewritten,
-and that file is deleted when M1-T2's orchestrator replaces it. `DecomposedStep` and
-`ScoringResult` already carry every `StageRecord` field except timing, which is the
-orchestrator's to add. M3-T2's descent drives `decompose_step` unchanged: it takes a `Claim`
-or a `Premise`, records the descent depth it was called at, and refuses past the budget.
+**Two cache layers, and the split is the design.** The cassette records what the *provider
+said* and re-executes every line downstream of the call; the stage cache records what a
+*stage concluded* and skips the work. Because the cassette holds the money, the stage cache
+keys on a digest of the whole `src/verity` tree — the conservative choice re-runs
+deterministic code for free rather than serving a graph built by rules that no longer exist.
+Two of the four stages decline the stage cache on design grounds, each recording its reason
+in the run: `ground`, because grounding is non-monotonic (design §4.2), and `bind`, because
+its cache is the transport's and `CacheMode` is deliberately outside `config_hash()`.
+
+Verified live on the demo claim: first run $0.0308, second run "no provider call and no
+registry call", replay reproduced with every deterministic digest matching.
+
+**Four decisions taken here that are not recoverable from the diff.** The orchestrator
+constructs the `Claim` from text on the run clock, because `Claim.created_at` is serialized
+into the graph and contributes nothing to the claim's id — the committed demo graph shows the
+11ms gap that opened when the CLI built it instead. `Grounding.grounded_at` is preserved when
+a re-run reaches the same conclusion, since re-confirming reaches no new conclusion and
+"when did we last look" already lives in `RenderPayload.checked_at`; without that rule the
+never-cached grounding stage would restamp every run and byte-identity would be unclaimable.
+The graph is stamped with a run id only when its serialized content differs from what is
+stored, compared with `run_id` and `created_at` masked. And storage stays one row per claim —
+`ClaimGraph.id` derives from the root claim alone — which is why the graph is written once at
+the end of a run rather than checkpointed per stage.
+
+### Reading in for M3-T2
+
+`decomposition/descent.py` is the seam: `decompose_claim` does one step today and its
+docstring holds the open questions. The orchestrator, the stage, the cache key and the
+manifest are all unchanged by recursion. `StubAdapter` now scripts by callable over the
+request, which is the only form that works for a descent — every call carries the same
+`purpose`, so a single scripted object answers every node identically and the second level
+refuses as circular.
+
+Four items M3-T2 owns, none visible from the orchestrator:
+
+- **A refused branch has no `TerminationReason`.** `CyclicPremiseError` refuses rather than
+  repairing, and the vocabulary has no value for it. Inventing one is a measurement decision.
+- **`TerminationReason.GROUNDED` is unreachable** under `decompose → verify → bind → ground`,
+  because nothing is bound while the descent runs. Either the descent gains a grounding check
+  (worth little before M6-T3's key attribution), or the run reports the value as structurally
+  unreachable rather than letting it read as "no branch grounded" in M10-T1's mix.
+- **Cross-branch cycles and double decomposition are caught at assembly**, by `ClaimGraph`,
+  after every call in the tree is paid for. The check belongs inside the descent. Until it is
+  there such a graph raises out of `decompose_claim` and the run reports it — cheaply on a
+  retry, because the cassette holds the calls. Per-claim isolation across a *set* is M1-T3's.
+- **M10-T1 computes metrics from a run's own artifacts, not by re-reading `claim_graphs`
+  later.** Storage is one row per claim, so a later run replaces it; where a metrics pass does
+  read a stored graph it checks the manifest's per-stage `output_hash` and refuses to
+  attribute numbers whose digests disagree. And after the cap-ownership rule the manifest
+  alone no longer describes a run's caps — artifact caps are on the graph, execution caps on
+  the stage record — so that pass reads both.
 
 ### Reading in for Phase 2
 
@@ -185,11 +232,23 @@ opposite directions; `RenderPremise` carries `step_score_scorer`,
 `restates_root_claim` and `evidence_caps`, the last closing an evaluation.md §6 hole
 where a retrieval cap that dropped evidence was invisible at the render boundary.
 
-**Into Phase 3, as file moves rather than rewrites:** `apply_groundings` in
-`presentation/driver.py` writes the `verified` evidence state that design.md §4.2
-pins to exact-key grounding — nothing else in the codebase writes it — and belongs in
-`verity.alethiology` under M6-T3; the `bind_candidate_keys` call in the same file is
-the only caller of the binder outside tests, and belongs in M1-T2's orchestrator.
+**Into `design.md` §4.2/§4.3 and `build-plan.md` M1-T2:** the four orchestration decisions
+under Phase 3 status above — the run clock owning `Claim.created_at`, `grounded_at`
+surviving a re-confirmation, the stamp-on-content-change rule, and one graph row per
+claim — plus the rule that a cap is filed on exactly one record: artifact caps on
+`GraphMetadata.caps`, execution caps on `StageRecord.caps`, never both.
+
+**Into `build-plan.md` M9 and M10-T1:** `python -m verity` is the pipeline's entry point
+and `verity.presentation` is a render surface only. Committed LLM cassettes under
+`tests/fixtures/recordings/` are recorded in **Phase 6, against the final prompt** —
+Phase 5's rewrite invalidates every one recorded before it — so a reviewer can run the
+recorded demo with no API key, the way `tests/fixtures/http/` already does for the
+registries.
+
+**Removed with Phase 5's demo re-record:** `PathsConfig.runs_dir` and the auto-write to
+`data/runs/`. The store is authoritative and `--out` covers the file case; the removal
+moves `config_hash()` and therefore every run id and stage-cache key, so it belongs in the
+commit that re-records the demo graph anyway.
 
 **Open, and owned by M3:** across the eight decompositions run so far, two proposed a
 candidate key. The grounding beat depends on an identifier reaching the premise side,
