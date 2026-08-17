@@ -1,0 +1,180 @@
+CLAIM  Eating dark chocolate accelerates weight loss.
+       Verity issues no verdict on this claim. Every number below scores 
+       one step.
+
+                                   step     Δ if  evidence                    
+                                entail.  removed  state        grounding      
+├─ Dark chocolate with a high   0.999 ~        —  unverified*  not grounded   
+│  cocoa solids content                                                       
+│  contains cocoa flavanols                                                   
+│  and other polyphenols at                                                   
+│  concentrations                                                             
+│  substantially greater than                                                 
+│  those in milk chocolate.                                                   
+│    citation-shaped                                                          
+├─ Ingestion of cocoa           0.999 ~        —  unverified*  not grounded   
+│  flavanols increases                                                        
+│  satiety and reduces ad                                                     
+│  libitum energy intake at                                                   
+│  subsequent meals in                                                        
+│  controlled feeding                                                         
+│  studies.                                                                   
+│    citation-shaped                                                          
+├─ Cocoa flavanol intake        0.999 ~        —  unverified*  not grounded   
+│  increases resting energy                                                   
+│  expenditure and whole-body                                                 
+│  fat oxidation in human                                                     
+│  metabolic measurements.                                                    
+│    citation-shaped                                                          
+├─ For a typical serving of     0.999 ~        —  unverified*  not grounded   
+│  dark chocolate, the                                                        
+│  calories it supplies are                                                   
+│  fewer than the reduction                                                   
+│  in total daily energy                                                      
+│  intake that its                                                            
+│  consumption produces.                                                      
+│  ├─ A typical serving of     0.9995 ~        —  unverified*  not grounded   
+│  │  dark chocolate is about                                                 
+│  │  30 grams and supplies                                                   
+│  │  roughly 170                                                             
+│  │  kilocalories.                                                           
+│  │    citation-shaped                                                       
+│  ├─ In controlled feeding    0.9995 ~        —  unverified*  not grounded   
+│  │  studies, consuming a                                                    
+│  │  serving of dark                                                         
+│  │  chocolate as a preload                                                  
+│  │  lowers energy intake at                                                 
+│  │  the following meal by                                                   
+│  │  more than 200                                                           
+│  │  kilocalories compared                                                   
+│  │  with no preload.                                                        
+│  │    citation-shaped                                                       
+│  ├─ The suppression of food  0.9995 ~        —  unverified*  not grounded   
+│  │  intake that follows                                                     
+│  │  dark chocolate                                                          
+│  │  consumption is not                                                      
+│  │  offset by extra eating                                                  
+│  │  during the remainder of                                                 
+│  │  the same day.                                                           
+│  │    citation-shaped                                                       
+│  ├─ The measured reduction   0.9995 ~        —  unverified*  not grounded   
+│  │  in total daily energy                                                   
+│  │  intake attributed to                                                    
+│  │  dark chocolate                                                          
+│  │  consumption is                                                          
+│  │  calculated from intake                                                  
+│  │  of foods other than the                                                 
+│  │  chocolate itself.                                                       
+│  │    unverifiable-by-desig                                                 
+│  │    n                                                                     
+│  └─ A value of roughly 170   0.9995 ~        —  unverified*  not grounded   
+│     kilocalories is smaller                                                 
+│     than a value exceeding                                                  
+│     200 kilocalories.                                                       
+│     ├─ The phrase "roughly    0.998 ~        —  unverified*  not grounded   
+│     │  170 kilocalories"                                                    
+│     │  designates a                                                         
+│     │  quantity no greater                                                  
+│     │  than 180                                                             
+│     │  kilocalories.                                                        
+│     │    unverifiable-by-de                                                 
+│     │    sign                                                               
+│     ├─ The phrase "a value    0.998 ~        —  unverified*  not grounded   
+│     │  exceeding 200                                                        
+│     │  kilocalories"                                                        
+│     │  designates a                                                         
+│     │  quantity strictly                                                    
+│     │  greater than 200                                                     
+│     │  kilocalories.                                                        
+│     │    unverifiable-by-de                                                 
+│     │    sign                                                               
+│     ├─ 180 kilocalories is    0.998 ~        —  unverified*  not grounded   
+│     │  less than 200                                                        
+│     │  kilocalories.                                                        
+│     │    budget-exit                                                        
+│     ├─ Two quantities both    0.998 ~        —  unverified*  not grounded   
+│     │  expressed in                                                         
+│     │  kilocalories are                                                     
+│     │  measured on the same                                                 
+│     │  scale and can be                                                     
+│     │  compared directly by                                                 
+│     │  magnitude.                                                           
+│     │    unverifiable-by-de                                                 
+│     │    sign                                                               
+│     └─ For any quantities A   0.998 ~        —  unverified*  not grounded   
+│        and B and threshold                                                  
+│        T, if A is no                                                        
+│        greater than T and B                                                 
+│        is strictly greater                                                  
+│        than T, then A is                                                    
+│        less than B.                                                         
+│          budget-exit                                                        
+├─ A larger daily energy        0.999 ~        —  unverified*  not grounded   
+│  deficit, produced by lower                                                 
+│  energy intake combined                                                     
+│  with higher energy                                                         
+│  expenditure, results in a                                                  
+│  faster rate of body weight                                                 
+│  loss over time.                                                            
+│    unverifiable-by-design                                                   
+├─ In randomized controlled     0.999 ~        —  unverified*  not grounded   
+│  trials of adults following                                                 
+│  a reduced-calorie diet,                                                    
+│  groups assigned to consume                                                 
+│  dark chocolate daily lost                                                  
+│  body weight at a greater                                                   
+│  rate than control groups                                                   
+│  consuming no dark                                                          
+│  chocolate.                                                                 
+│    citation-shaped                                                          
+└─ To accelerate weight loss    0.999 ~        —  unverified*  not grounded   
+   means to increase the                                                      
+   amount of body weight lost                                                 
+   per unit of time relative                                                  
+   to a comparison condition.                                                 
+     unverifiable-by-design                                                   
+
+17 premises · 17 rows · 3 steps · graph depth 3 (traversal depth) · 
+   alethiology read 2026-08-17 19:22Z
+~  uncalibrated — no human anchor yet (evaluation.md §6).
+   Scores come from 
+      MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli@b3546ea+concat-v1
+   Read at the 0.5 gate, of the 7 corruption families in the M4-T1 smoke 
+      set (22 cases, pooling the record's probe, deciding-corrupt, diagnostic 
+      and blind-spot roles) it catches 2 outright (swapped conclusion 6/6, 
+      conclusion overreach 2/2); splits on 2 (negated premise 1/2, dropped 
+      premise 1/2); misses 3 entirely (inconsistent premise set 0/1, irrelevant 
+      premise injected 0/2, blind spot 0/1).
+   It flags none of the 6 clean steps.
+   The selection rule scored only the 4 deciding corrupt cases; over those
+      the min−max margin is -0.0024, so the clean and corrupt bands overlap.
+   Those counts are unchanged for any gate in (0.4172, 0.9961].
+   A high score means the step was not caught, not that the step is that 
+      likely to hold. Full record: data/verifier/selection.json and 
+      data/verifier/README.md.
+   A step score is a single-step entailment score; not composed with any 
+      other step. Premises in one step share it — it scores the step, not the 
+      premise — and no score is shown for the claim.
+   Δ is signed: positive means removing the premise lowers its step's 
+      score, so the premise is load-bearing. — means nothing measured it yet 
+      (M4-T2); * marks a provisional evidence state (M6-T3, not M8-T3).
+note  the descent expanded 2 of 17 premises to depth 3 against a budget of 3;
+   terminals: 2 budget-exit, 7 citation-shaped, 6 unverifiable-by-design. 
+   Recursion ran on premises typed statistical, so a shallow tree means the 
+   decomposer typed its premises terminal, not that the descent failed. A mix is
+   only comparable against a run with the same predicate
+note  `grounded` is structurally unreachable in this pipeline order — nothing
+   is bound while the descent runs — so an absent grounded bucket is a fact 
+   about the stage order, not about the alethiology (M6-T3 moves it)
+note  candidate-key binding ran in cache mode live: no-candidate-key 17
+note  run run_3f77fe2987993a98; graph graph_a7082f0bf50f31fa stored
+note  this run made no provider call and no registry call — every answer came
+   from a recording on disk
+note  the descent expanded 2 of 17 premises to depth 3 against a budget of 3;
+   terminals: 2 budget-exit, 7 citation-shaped, 6 unverifiable-by-design. 
+   Recursion ran on premises typed statistical, so a shallow tree means the 
+   decomposer typed its premises terminal, not that the descent failed. A mix is
+   only comparable against a run with the same predicate
+note  `grounded` is structurally unreachable in this pipeline order — nothing
+   is bound while the descent runs — so an absent grounded bucket is a fact 
+   about the stage order, not about the alethiology (M6-T3 moves it)

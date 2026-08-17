@@ -1,0 +1,124 @@
+=== python -m verity.alethiology seed ===
+seed:            seed/alethiology.jsonl (6dee7cf6d308)
+resolution:      recorded 2026-08-17T15:41:12.231706+00:00
+mode:            applied
+rows:            33
+  by action:     {'unchanged': 33}
+  by scope:      {'chocolate-hoax': 14, 'spinach-iron': 19}
+  by key type:   {'doi': 30, 'pmid': 3}
+  by tier:       {'single-secondary': 6, 'verified-primary': 27}
+grounding-eligible facts: 27
+tier-capped rows (6):
+  - rw-17524-retraction: only retraction-watch identifies doi:10.3823/1654 as 'Chocolate with high Cocoa content as a weight-loss accelerator'; registries returned crossref='The comparison of resilience and spirituality in addicted and non-addicted women'; openalex='The comparison of resilience and spirituality in addicted and non-addicted women'; retraction-watch='Chocolate with high Cocoa content as a weight-loss accelerator'; quote matched the record, not the work's own abstract; work identity is unconfirmed by any registry; the quote is 2 word(s); primary verification needs at least 5, because a shorter string is contained in a source without quoting it; requested verified-primary, capped to single-secondary
+  - rw-17524-reasons: only retraction-watch identifies doi:10.3823/1654 as 'Chocolate with high Cocoa content as a weight-loss accelerator'; registries returned crossref='The comparison of resilience and spirituality in addicted and non-addicted women'; openalex='The comparison of resilience and spirituality in addicted and non-addicted women'; retraction-watch='Chocolate with high Cocoa content as a weight-loss accelerator'; quote matched the record, not the work's own abstract; work identity is unconfirmed by any registry
+  - rw-17524-journal: only retraction-watch identifies doi:10.3823/1654 as 'Chocolate with high Cocoa content as a weight-loss accelerator'; registries returned crossref='The comparison of resilience and spirituality in addicted and non-addicted women'; openalex='The comparison of resilience and spirituality in addicted and non-addicted women'; retraction-watch='Chocolate with high Cocoa content as a weight-loss accelerator'; quote matched the record, not the work's own abstract; work identity is unconfirmed by any registry; the quote is 4 word(s); primary verification needs at least 5, because a shorter string is contained in a source without quoting it
+  - rw-17524-author: only retraction-watch identifies doi:10.3823/1654 as 'Chocolate with high Cocoa content as a weight-loss accelerator'; registries returned crossref='The comparison of resilience and spirituality in addicted and non-addicted women'; openalex='The comparison of resilience and spirituality in addicted and non-addicted women'; retraction-watch='Chocolate with high Cocoa content as a weight-loss accelerator'; quote matched the record, not the work's own abstract; work identity is unconfirmed by any registry; the quote is 2 word(s); primary verification needs at least 5, because a shorter string is contained in a source without quoting it
+  - registries-1654-identity: quote matched the title, not the work's own abstract
+  - rw-71483-hesperidin: quote matched the record, not the work's own abstract; the quote is 4 word(s); primary verification needs at least 5, because a shorter string is contained in a source without quoting it
+work-identity mismatches (4):
+  - rw-17524-retraction (doi:10.3823/1654)
+  - rw-17524-reasons (doi:10.3823/1654)
+  - rw-17524-journal (doi:10.3823/1654)
+  - rw-17524-author (doi:10.3823/1654)
+exit code: 0
+
+=== python -m verity.quality apply ===
+retraction check (labelled partial of M7-T1)
+
+doi:10.1002/14651858.cd008893.pub3  clean
+  crossref          clean
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.1002/asi.23265  clean
+  crossref          clean
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.1007/s11019-016-9740-3  clean
+  crossref          clean
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.1017/s0007114513002912  clean
+  crossref          clean
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.1021/acsomega.2c01833  clean
+  crossref          clean
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.1046/j.1440-6047.1999.00038.x  clean
+  crossref          clean
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.1079/bjn19830042  clean
+  crossref          clean
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.1108/jpbm-12-2018-2180  clean
+  crossref          clean
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.1136/bmj.283.6307.1671  clean
+  crossref          clean
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.1177/0306312714535679  clean
+  crossref          clean
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.1177/0956797611417632  clean
+  crossref          clean
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.1186/1741-7015-8-39  clean
+  crossref          clean
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.1186/s41073-016-0008-5  clean
+  crossref          notice-not-retraction  (updated-by=correction source=publisher)
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.1371/journal.pmed.0020124  clean
+  crossref          notice-not-retraction  (updated-by=correction source=publisher)
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.1579/0044-7447(2008)37[114:ecitbs]2.0.co;2  clean
+  crossref          clean
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+doi:10.3823/1654  retracted
+  crossref          retracted  (updated-by=retraction source=retraction-watch record-id=17524)
+  openalex          retracted  (is_retracted=true)
+  retraction-watch  retracted  (nature=Retraction record-id=17524 table=data/retraction_watch.csv)
+  a registry check cites record-id=17524 — that is a Retraction Watch record seen again, not a second source
+pmid:25272616  clean
+  crossref          — crossref indexes DOIs, and this is a pmid
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+pmid:31844967  retracted
+  crossref          — crossref indexes DOIs, and this is a pmid
+  openalex          retracted  (is_retracted=true)
+  retraction-watch  retracted  (nature=Retraction record-id=71483 table=data/retraction_watch.csv)
+pmid:6797607  clean
+  crossref          — crossref indexes DOIs, and this is a pmid
+  openalex          clean  (is_retracted=false)
+  retraction-watch  clean  (table=data/retraction_watch.csv)
+
+  clean: 27, retracted: 6, unchanged: 33
+  flagged  doi:10.3823/1654  Retraction Watch records that the paper it indexes under DOI 10.3823/1
+  flagged  doi:10.3823/1654  Retraction Watch records that the recorded retraction reasons include 
+  flagged  doi:10.3823/1654  Retraction Watch records that the retracted paper appeared in the Inte
+  flagged  doi:10.3823/1654  Retraction Watch records that the first author recorded for the retrac
+  flagged  doi:10.3823/1654  OpenAlex and Crossref record that the work indexed under DOI 10.3823/1
+  flagged  pmid:31844967  Retraction Watch records that the hesperidin metabolic-syndrome trial 
+
+  Labelled partial of M7-T1. The three-source cut is complete and is applied to
+  alethiology facts; what is not built is the rest of the tier. No evidence item is
+  checked, because M6-T2 has not produced a bundle to check. A disagreement is recorded
+  and reported but no curator queue persists it. A retracted fact is NOT flipped OUT and
+  nothing propagates to premises standing on it — that is M8-T2's JTMS. Linkage precision
+  and recall, and the false-flag rate against the 5% threshold, are unmeasured until
+  M10-T4b. And 'three sources agree' means three sources were consulted, not that their
+  evidence is independent: Crossref carries Retraction-Watch-sourced updates verbatim and
+  OpenAlex ingests Crossref, so agreement between the two APIs can be one primary record
+  seen twice. Where it is, the record id is reported beside the verdict.
+exit code: 0

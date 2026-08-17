@@ -1,0 +1,100 @@
+Loading weights:   0%|          | 0/394 [00:00<?, ?it/s]Loading weights:  38%|███▊      | 150/394 [00:00<00:00, 1422.83it/s]Loading weights:  74%|███████▍  | 293/394 [00:00<00:00, 964.96it/s] Loading weights: 100%|██████████| 394/394 [00:00<00:00, 1185.64it/s]
+CLAIM  A misplaced decimal point made spinach famous as an iron-rich 
+       food.
+       Verity issues no verdict on this claim. Every number below scores 
+       one step.
+
+                                   step     Δ if  evidence                    
+                                entail.  removed  state        grounding      
+├─ Spinach is widely reputed   0.9995 ~        —  unverified*  not grounded   
+│  in popular culture and                                                     
+│  nutrition writing to be an                                                 
+│  exceptionally rich dietary                                                 
+│  source of iron.                                                            
+│    citation-shaped                                                          
+├─ A nineteenth-century        0.9995 ~        —  unverified*  not grounded   
+│  published chemical                                                         
+│  analysis reported                                                          
+│  spinach's iron content as                                                  
+│  roughly ten times the                                                      
+│  value obtained by later                                                    
+│  analyses.                                                                  
+│    citation-shaped                                                          
+├─ The tenfold discrepancy in  0.9995 ~        —  unverified*  not grounded   
+│  the published spinach iron                                                 
+│  figure originated from a                                                   
+│  decimal point being placed                                                 
+│  one position to the right                                                  
+│  of its correct location.                                                   
+│    citation-shaped                                                          
+├─ The inflated spinach iron   0.9995 ~        —  unverified*  not grounded   
+│  figure was reproduced in                                                   
+│  subsequent food                                                            
+│  composition tables,                                                        
+│  textbooks, and popular                                                     
+│  media rather than being                                                    
+│  corrected before wide                                                      
+│  circulation.                                                               
+│    citation-shaped                                                          
+├─ Spinach's measured iron     0.9995 ~        —  unverified*  not grounded   
+│  content, about 2 to 3                                                      
+│  milligrams per 100 grams                                                   
+│  fresh weight, is                                                           
+│  comparable to that of many                                                 
+│  other leafy vegetables and                                                 
+│  not exceptional.                                                           
+│    citation-shaped                                                          
+└─ Spinach's public            0.9995 ~        —  unverified*  not grounded   
+   reputation as an iron-rich                                                 
+   food arose from the                                                        
+   circulated inflated iron                                                   
+   figure rather than from                                                    
+   independent observation or                                                 
+   promotion.                                                                 
+     citation-shaped                                                          
+
+6 premises · 6 rows · 1 step · graph depth 1 (traversal depth) · alethiology 
+   read 2026-08-17 19:08Z
+~  uncalibrated — no human anchor yet (evaluation.md §6).
+   Scores come from 
+      MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli@b3546ea+concat-v1
+   Read at the 0.5 gate, of the 7 corruption families in the M4-T1 smoke 
+      set (22 cases, pooling the record's probe, deciding-corrupt, diagnostic 
+      and blind-spot roles) it catches 2 outright (swapped conclusion 6/6, 
+      conclusion overreach 2/2); splits on 2 (negated premise 1/2, dropped 
+      premise 1/2); misses 3 entirely (inconsistent premise set 0/1, irrelevant 
+      premise injected 0/2, blind spot 0/1).
+   It flags none of the 6 clean steps.
+   The selection rule scored only the 4 deciding corrupt cases; over those
+      the min−max margin is -0.0024, so the clean and corrupt bands overlap.
+   Those counts are unchanged for any gate in (0.4172, 0.9961].
+   A high score means the step was not caught, not that the step is that 
+      likely to hold. Full record: data/verifier/selection.json and 
+      data/verifier/README.md.
+   A step score is a single-step entailment score; not composed with any 
+      other step. Premises in one step share it — it scores the step, not the 
+      premise — and no score is shown for the claim.
+   Δ is signed: positive means removing the premise lowers its step's 
+      score, so the premise is load-bearing. — means nothing measured it yet 
+      (M4-T2); * marks a provisional evidence state (M6-T3, not M8-T3).
+note  the descent expanded 0 of 6 premises to depth 1 against a budget of 3; 
+   terminals: 6 citation-shaped. Recursion ran on premises typed statistical, so
+   a shallow tree means the decomposer typed its premises terminal, not that the
+   descent failed. A mix is only comparable against a run with the same 
+   predicate
+note  `grounded` is structurally unreachable in this pipeline order — nothing
+   is bound while the descent runs — so an absent grounded bucket is a fact 
+   about the stage order, not about the alethiology (M6-T3 moves it)
+note  candidate-key binding ran in cache mode live: no-candidate-key 6
+note  run run_9c0f9d272c259a24; graph graph_5746363f432dc03d stored, written 
+   to data/demo/spinach.json
+note  this run made no provider call and no registry call — every answer came
+   from a recording on disk
+note  the descent expanded 0 of 6 premises to depth 1 against a budget of 3; 
+   terminals: 6 citation-shaped. Recursion ran on premises typed statistical, so
+   a shallow tree means the decomposer typed its premises terminal, not that the
+   descent failed. A mix is only comparable against a run with the same 
+   predicate
+note  `grounded` is structurally unreachable in this pipeline order — nothing
+   is bound while the descent runs — so an absent grounded bucket is a fact 
+   about the stage order, not about the alethiology (M6-T3 moves it)

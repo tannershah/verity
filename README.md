@@ -50,6 +50,7 @@ src/verity/           the CLI entry point, plus keys, ids, config, secrets, thre
 seed/                 the curated facts and the key-resolution record they were checked against
 data/demo/            one real graph and the store that produced it, committed so render and replay run on a fresh clone with no key
 data/verifier/        the pilot decompositions, the review that ruled on them, the smoke set built from both, and the selection record
+demo/                 terminal captures of the demo commands, committed so a reader sees the output without running anything
 tests/                enforcement tests for the hard constraints, plus the round-trip suite
 tests/fixtures/       recorded registry responses — verbatim, so the suite needs no network
 docs/                 current thinking — design, hypotheses, positioning, evaluation, open questions

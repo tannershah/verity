@@ -1,0 +1,10 @@
+Loading weights:   0%|          | 0/394 [00:00<?, ?it/s]Loading weights:  63%|██████▎   | 247/394 [00:00<00:00, 2444.77it/s]Loading weights: 100%|██████████| 394/394 [00:00<00:00, 3643.06it/s]
+  = decompose  72d9603b267ca2f3c7aa5f8514c5fb3424ca866ca8ece08bd9cd39cef4776f35
+  = verify     89af5e77714bd0b70fc1f005b2cc102b32e3d27e1984f1bae10f6cbe051142b5
+  = bind       89af5e77714bd0b70fc1f005b2cc102b32e3d27e1984f1bae10f6cbe051142b5
+  = ground     a78eb018d000f40be2e5f64055041b96cdc7eb4c2e398ab91e9ae0036f225244
+  note: the descent expanded 0 of 6 premises to depth 1 against a budget of 3; terminals: 6 citation-shaped. Recursion ran on premises typed statistical, so a shallow tree means the decomposer typed its premises terminal, not that the descent failed. A mix is only comparable against a run with the same predicate
+  note: `grounded` is structurally unreachable in this pipeline order — nothing is bound while the descent runs — so an absent grounded bucket is a fact about the stage order, not about the alethiology (M6-T3 moves it)
+  note: candidate-key binding ran in cache mode offline: no-candidate-key 6
+  note: the store was overridden, so the alethiology this replay read is not the one the run recorded
+  reproduced

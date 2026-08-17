@@ -1,0 +1,16 @@
+doi:10.3823/1654  retracted
+  crossref          retracted  (updated-by=retraction source=retraction-watch record-id=17524)
+  openalex          retracted  (is_retracted=true)
+  retraction-watch  retracted  (nature=Retraction record-id=17524 table=data/retraction_watch.csv)
+  a registry check cites record-id=17524 — that is a Retraction Watch record seen again, not a second source
+
+  Labelled partial of M7-T1. The three-source cut is complete and is applied to
+  alethiology facts; what is not built is the rest of the tier. No evidence item is
+  checked, because M6-T2 has not produced a bundle to check. A disagreement is recorded
+  and reported but no curator queue persists it. A retracted fact is NOT flipped OUT and
+  nothing propagates to premises standing on it — that is M8-T2's JTMS. Linkage precision
+  and recall, and the false-flag rate against the 5% threshold, are unmeasured until
+  M10-T4b. And 'three sources agree' means three sources were consulted, not that their
+  evidence is independent: Crossref carries Retraction-Watch-sourced updates verbatim and
+  OpenAlex ingests Crossref, so agreement between the two APIs can be one primary record
+  seen twice. Where it is, the record id is reported beside the verdict.
