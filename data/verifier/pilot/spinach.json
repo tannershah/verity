@@ -1,0 +1,106 @@
+{
+  "bundles": {},
+  "groundings": [],
+  "id": "graph_5746363f432dc03d",
+  "metadata": {
+    "caps": [],
+    "config_hash": null,
+    "created_at": "2026-08-16T20:25:07.227503Z",
+    "depth_budget": 3,
+    "run_id": null
+  },
+  "premises": {
+    "prem_087ca827f2bab1ac": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_087ca827f2bab1ac",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Published analyses of spinach's iron content from the early twentieth century reported a value approximately ten times higher than the amount measured by later analyses."
+    },
+    "prem_090b41644a0a0b84": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_090b41644a0a0b84",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Raw spinach contains roughly 2.7 mg of iron per 100 g, a level comparable to other common leafy green vegetables rather than exceptional among foods."
+    },
+    "prem_40d02a12cd2d1d5c": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_40d02a12cd2d1d5c",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "The tenfold overstatement of spinach's iron content in the nutrition literature originated from a decimal point placed one position too far to the right when the original measurement was recorded or transcribed."
+    },
+    "prem_7589ccd15d6f57a2": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_7589ccd15d6f57a2",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "The overstated iron figure for spinach was reproduced in food composition tables, textbooks, and popular media for decades before being corrected."
+    },
+    "prem_d3957a8b1132fa0c": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_d3957a8b1132fa0c",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Popular belief that spinach is an exceptionally iron-rich food emerged after the erroneous figure entered circulation and was not supported by any independent measurement showing unusually high iron in spinach."
+    },
+    "prem_da1136f4cfd04299": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_da1136f4cfd04299",
+      "premise_type": "definitional",
+      "termination_reason": null,
+      "text": "A food is famous as iron-rich when the public widely believes it to contain unusually high amounts of iron relative to other foods."
+    }
+  },
+  "root_claim": {
+    "claim_type": null,
+    "created_at": "2026-08-16T20:24:55.903836Z",
+    "decontextualization": null,
+    "id": "claim_9dbeb26895392694",
+    "source_text": "Popular nutrition column.",
+    "text": "A misplaced decimal point made spinach famous as an iron-rich food."
+  },
+  "schema_version": 1,
+  "steps": [
+    {
+      "ablation_deltas": {},
+      "conclusion_id": "claim_9dbeb26895392694",
+      "created_at": "2026-08-16T20:25:07.226348Z",
+      "depth": 0,
+      "id": "step_a270d4e69df84fa0",
+      "premise_ids": [
+        "prem_087ca827f2bab1ac",
+        "prem_40d02a12cd2d1d5c",
+        "prem_090b41644a0a0b84",
+        "prem_7589ccd15d6f57a2",
+        "prem_d3957a8b1132fa0c",
+        "prem_da1136f4cfd04299"
+      ],
+      "score": {
+        "basis": null,
+        "calibration": "uncalibrated",
+        "scorer": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli@b3546ea+concat-v1",
+        "value": 0.9995
+      }
+    }
+  ]
+}

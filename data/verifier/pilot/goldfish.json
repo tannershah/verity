@@ -1,0 +1,106 @@
+{
+  "bundles": {},
+  "groundings": [],
+  "id": "graph_ca402e4af73680de",
+  "metadata": {
+    "caps": [],
+    "config_hash": null,
+    "created_at": "2026-08-16T20:25:28.836148Z",
+    "depth_budget": 3,
+    "run_id": null
+  },
+  "premises": {
+    "prem_06003625dc91e749": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_06003625dc91e749",
+      "premise_type": "background",
+      "termination_reason": null,
+      "text": "The three-second retention limit measured in laboratory goldfish is characteristic of the species as a whole rather than of particular individuals or testing conditions."
+    },
+    "prem_1a266b9a7269f391": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_1a266b9a7269f391",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "In conditioning experiments, goldfish fail to demonstrate retention of a learned association when the retention interval exceeds three seconds."
+    },
+    "prem_30762cfa41c37fc9": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_30762cfa41c37fc9",
+      "premise_type": "definitional",
+      "termination_reason": null,
+      "text": "Memory span is defined as the maximum time interval over which an animal can retain learned information such that it still influences the animal's behavior."
+    },
+    "prem_334dc1b154956e92": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_334dc1b154956e92",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Goldfish show no capacity for spatial learning, maze learning, or recognition of feeding locations that persists across days or weeks."
+    },
+    "prem_8fe46a6f04451c1a": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_8fe46a6f04451c1a",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "In conditioning experiments, goldfish demonstrate retention of a learned association when the retention interval is three seconds or shorter."
+    },
+    "prem_98153f1e55c6b7ad": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_98153f1e55c6b7ad",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "The goldfish brain lacks the neural structures required to consolidate information into memory lasting longer than a few seconds."
+    }
+  },
+  "root_claim": {
+    "claim_type": null,
+    "created_at": "2026-08-16T20:24:55.904135Z",
+    "decontextualization": null,
+    "id": "claim_8428159f988d9bdc",
+    "source_text": "Widely shared social media post.",
+    "text": "Goldfish have a memory span of three seconds."
+  },
+  "schema_version": 1,
+  "steps": [
+    {
+      "ablation_deltas": {},
+      "conclusion_id": "claim_8428159f988d9bdc",
+      "created_at": "2026-08-16T20:25:28.835108Z",
+      "depth": 0,
+      "id": "step_4460f789e2ca28ad",
+      "premise_ids": [
+        "prem_30762cfa41c37fc9",
+        "prem_8fe46a6f04451c1a",
+        "prem_1a266b9a7269f391",
+        "prem_334dc1b154956e92",
+        "prem_98153f1e55c6b7ad",
+        "prem_06003625dc91e749"
+      ],
+      "score": {
+        "basis": null,
+        "calibration": "uncalibrated",
+        "scorer": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli@b3546ea+concat-v1",
+        "value": 0.9971
+      }
+    }
+  ]
+}

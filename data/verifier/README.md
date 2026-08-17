@@ -5,6 +5,7 @@ directory is the evidence that the pick was made rather than assumed.
 
 | File | What it is |
 |---|---|
+| `pilot/*.json` | The five pilot decompositions themselves — one unedited graph per claim, the stimulus everything below is derived from. Named by claim; each carries the graph id `case_review.json` keys on |
 | `case_review.json` | Review of the five pilot decompositions and two nested steps against five lenses, performed **before** any case was labelled clean |
 | `nested_steps.json` | Two real depth-1 steps (conclusion is a `Premise`, not the root `Claim`), produced by calling `decompose_step` twice |
 | `smoke_set.jsonl` | The 22 cases, each carrying its bucket, its role in the decision, and the review flags of the decomposition it came from |
@@ -111,8 +112,9 @@ deviation of 0.0011. Two consequences, both handed forward in code:
   decimals, so every clean step, the restatement blind spot at 0.9961, and the missed
   negation at 0.9995 all print `1.00 (uncalibrated)`. A confidence column reading 1.00 on
   every row is exactly the polished tree design.md §3.4 exists to prevent. The raw float is
-  on `RenderPremise.step_score_value`; the fix is M9-T1's, and the requirement is recorded
-  in `verity/presentation/__init__.py` so it is inherited rather than rediscovered.
+  on `RenderPremise.step_score_value`, and M9-T1 reads it: `verity/presentation/console.py`
+  draws no bar and prints the stored precision, with the caveat below generated from this
+  record rather than retyped.
 
 ### 3. The shipped gate is inert
 

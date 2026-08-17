@@ -1,0 +1,106 @@
+{
+  "bundles": {},
+  "groundings": [],
+  "id": "graph_ce1f489a32f64ddf",
+  "metadata": {
+    "caps": [],
+    "config_hash": null,
+    "created_at": "2026-08-16T20:25:37.256957Z",
+    "depth_budget": 3,
+    "run_id": null
+  },
+  "premises": {
+    "prem_951229b677022948": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_951229b677022948",
+      "premise_type": "definitional",
+      "termination_reason": null,
+      "text": "For an organ, to 'use' a portion of it means that portion is engaged in performing some function."
+    },
+    "prem_9c7118e01f2bda77": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_9c7118e01f2bda77",
+      "premise_type": "background",
+      "termination_reason": null,
+      "text": "The proportion of the brain that is functionally engaged is essentially the same across healthy adult humans, so a single figure characterizes the species."
+    },
+    "prem_b610af50cc665c1d": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_b610af50cc665c1d",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Damage to or surgical removal of the brain regions that are not functionally engaged produces no detectable deficit in perception, movement, cognition, or behavior."
+    },
+    "prem_beffd0caee9f496b": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_beffd0caee9f496b",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "The metabolic energy consumed by the human brain corresponds to the activity of about one tenth of its tissue rather than the whole organ."
+    },
+    "prem_c9def9fe4b9ac658": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_c9def9fe4b9ac658",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Functional neuroimaging of humans performing cognitive, sensory, and motor tasks reveals measurable activation confined to roughly one tenth of total brain volume, with the rest showing no task-related activity."
+    },
+    "prem_f44c821d051fcce6": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_f44c821d051fcce6",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Approximately ten percent of the neurons in a human brain are engaged in functional activity, and the remaining ninety percent are never engaged."
+    }
+  },
+  "root_claim": {
+    "claim_type": null,
+    "created_at": "2026-08-16T20:24:55.904151Z",
+    "decontextualization": null,
+    "id": "claim_7e31fcb6f363e6a7",
+    "source_text": "Motivational article.",
+    "text": "Humans use only ten percent of their brains."
+  },
+  "schema_version": 1,
+  "steps": [
+    {
+      "ablation_deltas": {},
+      "conclusion_id": "claim_7e31fcb6f363e6a7",
+      "created_at": "2026-08-16T20:25:37.256239Z",
+      "depth": 0,
+      "id": "step_c87981b2d65c7419",
+      "premise_ids": [
+        "prem_f44c821d051fcce6",
+        "prem_c9def9fe4b9ac658",
+        "prem_b610af50cc665c1d",
+        "prem_951229b677022948",
+        "prem_beffd0caee9f496b",
+        "prem_9c7118e01f2bda77"
+      ],
+      "score": {
+        "basis": null,
+        "calibration": "uncalibrated",
+        "scorer": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli@b3546ea+concat-v1",
+        "value": 0.9961
+      }
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "bundles": {},
+  "groundings": [],
+  "id": "graph_a7082f0bf50f31fa",
+  "metadata": {
+    "caps": [],
+    "config_hash": null,
+    "created_at": "2026-08-16T20:25:20.669966Z",
+    "depth_budget": 3,
+    "run_id": null
+  },
+  "premises": {
+    "prem_4230cecf5f623084": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_4230cecf5f623084",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "The faster weight loss observed with daily dark chocolate consumption has been reproduced in more than one independent human study population."
+    },
+    "prem_5279089774b2028e": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_5279089774b2028e",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Cocoa flavanols present in dark chocolate increase resting energy expenditure or reduce intestinal fat absorption in humans."
+    },
+    "prem_7813c4d03376fff6": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_7813c4d03376fff6",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Participants assigned to dark chocolate in that trial did not consume fewer total daily calories or expend more exercise energy than the comparison group."
+    },
+    "prem_d7557db19613fb7f": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_d7557db19613fb7f",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "In that trial, the group consuming dark chocolate daily reduced body weight over a shorter period than the group following the same diet without chocolate."
+    },
+    "prem_f833eed9baf65e43": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_f833eed9baf65e43",
+      "premise_type": "statistical",
+      "termination_reason": null,
+      "text": "The between-group difference in rate of weight loss in that chocolate trial met conventional thresholds for statistical significance and was not attributable to chance in a small sample."
+    },
+    "prem_fbd038c1d1b30eb4": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_fbd038c1d1b30eb4",
+      "premise_type": "definitional",
+      "termination_reason": null,
+      "text": "To accelerate weight loss means to increase the amount of body weight lost per unit of time relative to a comparison condition."
+    },
+    "prem_fcadb6e1e5a3dfc9": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_fcadb6e1e5a3dfc9",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "A randomized controlled trial assigned overweight adults to a reduced-carbohydrate diet plus a daily fixed dose of dark chocolate or to the same diet without chocolate."
+    }
+  },
+  "root_claim": {
+    "claim_type": null,
+    "created_at": "2026-08-16T20:24:55.904108Z",
+    "decontextualization": null,
+    "id": "claim_ef53618aa5c83151",
+    "source_text": "Health section of a national newspaper.",
+    "text": "Eating dark chocolate accelerates weight loss."
+  },
+  "schema_version": 1,
+  "steps": [
+    {
+      "ablation_deltas": {},
+      "conclusion_id": "claim_ef53618aa5c83151",
+      "created_at": "2026-08-16T20:25:20.669162Z",
+      "depth": 0,
+      "id": "step_4b74b1c2c9e2fed3",
+      "premise_ids": [
+        "prem_fcadb6e1e5a3dfc9",
+        "prem_d7557db19613fb7f",
+        "prem_f833eed9baf65e43",
+        "prem_7813c4d03376fff6",
+        "prem_5279089774b2028e",
+        "prem_fbd038c1d1b30eb4",
+        "prem_4230cecf5f623084"
+      ],
+      "score": {
+        "basis": null,
+        "calibration": "uncalibrated",
+        "scorer": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli@b3546ea+concat-v1",
+        "value": 0.9985
+      }
+    }
+  ]
+}

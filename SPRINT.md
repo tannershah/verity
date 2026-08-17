@@ -44,8 +44,8 @@ merged only in Phase 3. One tier per session; honor its exit criterion.
 |---|---|---|---|
 | **0 — human setup** | Sat night | Tanner | ✅ **COMPLETE.** Keys registered and live-verified; secrets in gitignored `.env` (never in `.env.example`). See status below |
 | **1 — spine** | Sun early | Opus | ✅ **COMPLETE.** M1-T1 done: package layout, typed model, SQLite store, config/secrets, LLM adapter, run manifest, enforcement tests. See status below |
-| **2A — core loop** | Sun | Opus | M3-T1 (serviceable decomposition prompt — do **not** polish; Fable rewrites it Monday) → M4-T1 → M9-T1 |
-| **2B — grounding** | Sun, parallel | Opus | M5-T1 (seed facts for the two demo claims) → M6-T1a |
+| **2A — core loop** | Sun | Opus | ✅ **COMPLETE.** M3-T1, M4-T1, M9-T1 done. See status below |
+| **2B — grounding** | Sun, parallel | Opus | ✅ **COMPLETE.** M5-T1, M6-T1a done. See status below |
 | **3 — integrate** | Sun night | Opus | Single session: merge lanes, M1-T2, M3-T2 |
 | **4 — demo-cuts** | Sun night / Mon early | Opus | (i) Retraction flag: RW-table + Crossref/OpenAlex check on the demo claim's DOIs — a labeled partial of M7-T1 (no full disagreement policy). (ii) Metrics logger over a 5–10 claim mini-set — a labeled partial of M10-T1 |
 | **5 — quality pass** | Mon 00:00–12:00 | **Fable** (fresh reset) | Rewrite the decomposition prompt, re-run demo claims until trees pass eyeball review against the three validity criteria. Optional Streamlit strip only if ahead. **Code freeze 12:00** |
@@ -93,6 +93,27 @@ built at, since dedup can leave the graph shorter than the path that built it an
 budget was spent along the path; and a fact's identity is its (key, statement) pair, with
 a supplied id checked against that derivation rather than trusted. The schema is versioned
 forward: a newer database is refused rather than re-stamped, an older one is migrated.
+
+**Phase 2 status (both lanes complete, verified against each other):** 507 tests green, ruff
+clean, and the suite passes from a fresh clone — the pilot decompositions the M4-T1 gate was
+selected against now live in `data/verifier/pilot/`, so `build-set` reproduces the committed
+smoke set from a checkout rather than from a gitignored run directory. The lanes merged
+additively: `config.py`, `pyproject.toml` and `models/render.py` each took edits from both and
+`RenderPayload` is unchanged. What the tiers do **not** establish is stated where the numbers
+are: the M4-T1 champion is near-binary and misses three of seven corruption families
+(`data/verifier/README.md`), one of five pilot decompositions failed the review's restatement
+lens and ships as the blind-spot case, and the demo graph's single grounding runs through a
+key the decomposer proposed rather than one retrieval bound.
+
+### Reading in for Phase 3
+
+Phase 3 merges the lanes and adds M1-T2 and M3-T2. Two file moves are already scoped in
+**Carry forward** below — `apply_groundings` and the `bind_candidate_keys` call both live in
+`presentation/driver.py` as pure functions over models so they move rather than get rewritten,
+and that file is deleted when M1-T2's orchestrator replaces it. `DecomposedStep` and
+`ScoringResult` already carry every `StageRecord` field except timing, which is the
+orchestrator's to add. M3-T2's descent drives `decompose_step` unchanged: it takes a `Claim`
+or a `Premise`, records the descent depth it was called at, and refuses past the budget.
 
 ### Reading in for Phase 2
 

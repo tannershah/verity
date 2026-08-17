@@ -701,10 +701,11 @@ def test_terminal_control_sequences_never_reach_the_terminal():
 
 
 def test_a_premise_cannot_break_out_of_its_gutter_with_its_own_newlines():
+    """The layout owns line breaks. A premise supplying its own would put text where no
+    tree glyph precedes it, so the newline becomes a space and the row stays one row."""
     out = render_to_text(payload_of(scored(0.74, text="First line\nSecond line")))
-    body = [line for line in out.splitlines() if "Second line" in line]
-    assert body and body[0].lstrip().startswith(("└", "│", "├")) is False or True
-    assert "First line Second line" in out.replace("\n", " ").replace("   ", " ")
+    assert "First line Second line" in out
+    assert not any(line.startswith("Second line") for line in out.splitlines())
 
 
 def test_footer_continuation_lines_stay_indented():

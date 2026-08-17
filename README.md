@@ -47,7 +47,7 @@ src/verity/presentation/  the terminal render — tree layout, the scorer's own 
 src/verity/           keys, ids, config, secrets, thresholds, and one package per unbuilt module
 seed/                 the curated facts and the key-resolution record they were checked against
 data/demo/            one real graph, committed so the render runs on a fresh clone with no key
-data/verifier/        the smoke set, the decomposition review it rests on, and the selection record
+data/verifier/        the pilot decompositions, the review that ruled on them, the smoke set built from both, and the selection record
 tests/                enforcement tests for the hard constraints, plus the round-trip suite
 tests/fixtures/       recorded registry responses — verbatim, so the suite needs no network
 docs/                 current thinking — design, hypotheses, positioning, evaluation, open questions

@@ -34,13 +34,17 @@ SMOKE_SET = Path("data/verifier/smoke_set.jsonl")
 CASE_REVIEW = Path("data/verifier/case_review.json")
 NESTED_STEPS = Path("data/verifier/nested_steps.json")
 
-#: Stored pilot graphs the clean cases and corruptions are derived from.
+#: Stored pilot graphs the clean cases and corruptions are derived from. Committed
+#: alongside the review that ruled on them rather than left in the gitignored run
+#: directory: they are the stimulus a checkpoint was selected against, so `build()` — and
+#: the test asserting the committed set is what it produces — has to run from a clone.
+#: Named by claim; each file carries the graph id `case_review.json` keys on.
 PILOT_GRAPHS = {
-    "spinach": "data/runs/graph_5746363f432dc03d.json",
-    "mozart": "data/runs/graph_58e02f44046b72f3.json",
-    "chocolate": "data/runs/graph_a7082f0bf50f31fa.json",
-    "goldfish": "data/runs/graph_ca402e4af73680de.json",
-    "brains": "data/runs/graph_ce1f489a32f64ddf.json",
+    "spinach": "data/verifier/pilot/spinach.json",
+    "mozart": "data/verifier/pilot/mozart.json",
+    "chocolate": "data/verifier/pilot/chocolate.json",
+    "goldfish": "data/verifier/pilot/goldfish.json",
+    "brains": "data/verifier/pilot/brains.json",
 }
 
 

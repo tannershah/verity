@@ -34,12 +34,12 @@ from verity.verifier.scoring import score_graph
 #: the review passed, so a nested case cannot inherit its parent's contamination.
 NESTED_TARGETS = (
     (
-        "data/runs/graph_5746363f432dc03d.json",
+        "data/verifier/pilot/spinach.json",
         "The overstated iron figure for spinach was reproduced in food composition tables, "
         "textbooks, and popular media for decades before being corrected.",
     ),
     (
-        "data/runs/graph_58e02f44046b72f3.json",
+        "data/verifier/pilot/mozart.json",
         "The post-listening cognitive gains attributed to Mozart are not fully explained by "
         "general arousal, mood elevation, or practice effects that any preferred stimulus "
         "would produce.",

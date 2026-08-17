@@ -1,0 +1,106 @@
+{
+  "bundles": {},
+  "groundings": [],
+  "id": "graph_58e02f44046b72f3",
+  "metadata": {
+    "caps": [],
+    "config_hash": null,
+    "created_at": "2026-08-16T20:25:45.454247Z",
+    "depth_budget": 3,
+    "run_id": null
+  },
+  "premises": {
+    "prem_0ace65f964892cb4": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_0ace65f964892cb4",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "The cognitive test gains observed after Mozart listening reflect general intelligence as measured by full-scale IQ rather than being confined to a narrow spatial-temporal task."
+    },
+    "prem_2817116e016e80a4": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_2817116e016e80a4",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "The post-listening cognitive gains attributed to Mozart are not fully explained by general arousal, mood elevation, or practice effects that any preferred stimulus would produce."
+    },
+    "prem_54537fefb9f265b9": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_54537fefb9f265b9",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Randomized experiments assigning children to Mozart listening versus control conditions rule out preexisting ability differences as the explanation for post-exposure test score gaps."
+    },
+    "prem_8aed91ae3e9a9663": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_8aed91ae3e9a9663",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Cognitive test score increases following Mozart listening persist long enough to constitute a change in measured IQ rather than dissipating within minutes."
+    },
+    "prem_a521cfcda8863e14": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_a521cfcda8863e14",
+      "premise_type": "empirical-citable",
+      "termination_reason": null,
+      "text": "Children who listen to Mozart's music score higher on standardized IQ tests afterward than children in control conditions without such music exposure."
+    },
+    "prem_d198f0c591d88035": {
+      "bound_key": null,
+      "candidate_key": null,
+      "evidence_state": "unverified",
+      "evidence_state_provisional": true,
+      "id": "prem_d198f0c591d88035",
+      "premise_type": "definitional",
+      "termination_reason": null,
+      "text": "To say that an activity raises a person's IQ is to say that performing the activity causes a durable increase in that person's measured general intelligence."
+    }
+  },
+  "root_claim": {
+    "claim_type": null,
+    "created_at": "2026-08-16T20:24:55.904163Z",
+    "decontextualization": null,
+    "id": "claim_973b41fbb7bbf486",
+    "source_text": "Parenting magazine.",
+    "text": "Listening to Mozart raises a child's IQ."
+  },
+  "schema_version": 1,
+  "steps": [
+    {
+      "ablation_deltas": {},
+      "conclusion_id": "claim_973b41fbb7bbf486",
+      "created_at": "2026-08-16T20:25:45.453266Z",
+      "depth": 0,
+      "id": "step_1fbd22d51c08850f",
+      "premise_ids": [
+        "prem_a521cfcda8863e14",
+        "prem_54537fefb9f265b9",
+        "prem_0ace65f964892cb4",
+        "prem_8aed91ae3e9a9663",
+        "prem_2817116e016e80a4",
+        "prem_d198f0c591d88035"
+      ],
+      "score": {
+        "basis": null,
+        "calibration": "uncalibrated",
+        "scorer": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli@b3546ea+concat-v1",
+        "value": 0.9995
+      }
+    }
+  ]
+}
