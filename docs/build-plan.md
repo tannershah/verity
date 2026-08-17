@@ -65,7 +65,11 @@ tier's slot in the §3 ordering, with the artifacts that exist by then.
   caching; deterministic replay of any run from its manifest; failure isolation (a
   stage error yields a partial graph, not a crash). Replaces the throwaway driver
   written during M9-T1's session.
-  *Exit:* re-running an unchanged claim is a cache hit end-to-end.
+  *Exit:* re-running an unchanged claim spends nothing and returns a byte-identical graph.
+  Not "a cache hit end-to-end": two stages decline the stage cache on design grounds —
+  `ground`, because grounding is non-monotonic (design §4.2), and `bind`, whose cache is the
+  transport's — so half the pipeline re-executes every time and each declining stage records
+  why in the run.
 - **T3 — Batch and recompute.** Batch runner over claim sets (M10-T1 consumes this);
   dirty-subgraph recompute after a KB status change (M8-T2 consumes this); every
   external fact stamped with access time (feeds M5-T3's re-validation).
@@ -316,11 +320,40 @@ tier's slot in the §3 ordering, with the artifacts that exist by then.
 - **T1 — Retraction layer.** Three-source design: the **local Retraction Watch
   table** (built in M10-T1; `RetractionNature` filtered — the file mixes
   retractions, corrections, EoCs) as ground truth, cross-checked with **Crossref
-  `update-to`** (type + `source: publisher | retraction-watch`) and **OpenAlex
+  `updated-by`** (type + `source: publisher | retraction-watch`) and **OpenAlex
   `is_retracted`** (documented false-positive history — arXiv:2403.13339). Policy:
   RW-table or both-API agreement → `retracted`; single API source →
   `retraction-flagged-unconfirmed`; disagreements logged. Applied to every evidence
   item and fact.
+
+  **`updated-by`, not `update-to`** — the two name opposite ends of one link, and the
+  earlier draft named the wrong end. `updated-by` lists the notices that update *this*
+  work; `update-to` lists what this work updates, which is the notice's side. Measured
+  against the committed corpus: a publisher-filed correction appears only in
+  `updated-by` (`10.1371/journal.pmed.0020124`), so an `update-to` reader sees nothing
+  on a work that was corrected and would miss a publisher-filed retraction the same way;
+  and a Cochrane review carries `update-to: new_version` because it *is* the new version,
+  which read as a notice-on-this-work is backwards. A work may carry several entries, so
+  the test is that some entry is a retraction, never string equality on a joined field.
+
+  **The verdict asymmetry is deliberate.** `retracted` needs the RW table or both APIs;
+  `clean` needs one source that answered and found nothing. The two directions are not
+  symmetric because the costs are not: a missed retraction is the failure the module
+  exists to prevent, and a false flag is bounded by the ≤5% threshold M10-T4b measures.
+
+  **Resolving the exit criterion's ambiguity:** "a disagreement case renders as flagged"
+  is scoped to the **API cross-check**. The RW table is decisive where it has a record —
+  the other reading would leave the RW leg unreachable whenever an API disagrees, which
+  contradicts the policy sentence above it. A disagreement stays visible on the record
+  (`EvidenceQuality.has_retraction_disagreement`) whichever way the cut falls.
+
+  **What "three-source agreement" does and does not claim.** The sources are consulted
+  independently; their evidence is not always independent. Crossref carries
+  Retraction-Watch-sourced updates verbatim — for `10.3823/1654` its `updated-by` entry
+  is `source: retraction-watch, record-id: 17524`, the same RW record — and OpenAlex
+  ingests Crossref. So agreement between the two APIs can be one primary record and its
+  echo. The provenance is recorded and reported rather than counted as a second vote;
+  the verdict is unaffected, since the underlying record belongs to the stronger leg.
   *Exit:* known-retracted DOI test set classified correctly; a disagreement case
   renders as flagged, not retracted.
 - **T2 — Study design and registered N.** PubMed MeSH publication types → design
@@ -524,8 +557,10 @@ evaluation §2 — levers do not reopen a recorded fail.
 **Mechanism note.** "Grounds" requires a key on both sides: the premise side gets its
 key from M6-T3's key attribution (top supporting evidence item above the stance
 floor), or in M3-T4 mode from injected alethiology facts; the fact side from M5-T2
-promotion. Exact-key match of a premise's bound key to a fact that is IN and in a
-grounding-eligible tier — `verified-primary` or `corroborated-multi-secondary`
+promotion. **The rows are one per leaf**, not one per premise: a premise the descent
+expanded terminated nothing, so grounding is attempted over `ClaimGraph.leaves()` and that
+is the denominator this rate is computed against. Exact-key match of a premise's bound key
+to a fact that is IN and in a grounding-eligible tier — `verified-primary` or `corroborated-multi-secondary`
 ([evaluation.md](evaluation.md) §2) — = grounded.
 
 **Denominator note.** `unverifiable-by-design` terminals (definitional/background
