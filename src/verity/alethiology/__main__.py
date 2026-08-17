@@ -2,6 +2,7 @@
 
     python -m verity.alethiology verify-keys --from-seed
     python -m verity.alethiology verify-keys doi:10.1136/bmj.283.6307.1671 --refresh
+    python -m verity.alethiology verify-keys --from-seed --refresh --cache-mode replay
     python -m verity.alethiology seed --check
     python -m verity.alethiology seed
 
@@ -20,6 +21,7 @@ from verity.alethiology.verify_keys import verify
 from verity.config import load_config
 from verity.keys import ExternalKey
 from verity.retrieval import retraction_watch as rw
+from verity.retrieval.http import CacheMode
 from verity.store.db import open_db
 
 
@@ -35,6 +37,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     verify_cmd.add_argument(
         "--refresh", action="store_true", help="re-read keys already in the artifact"
+    )
+    verify_cmd.add_argument(
+        "--cache-mode",
+        choices=[mode.value for mode in CacheMode],
+        default=None,
+        help=(
+            "where the registry bytes may come from; `replay` re-reads the committed "
+            "fixtures instead of the network, which is how the artifact is re-recorded "
+            "after a parser change without the API moving underneath it"
+        ),
     )
     verify_cmd.add_argument("--seed", type=Path, default=config.paths.alethiology_seed)
     verify_cmd.add_argument("--artifact", type=Path, default=config.paths.key_resolution)
@@ -57,7 +69,12 @@ def main(argv: list[str] | None = None) -> int:
                 keys += [row.external_key() for row in read_seed(args.seed)]
             if not keys:
                 parser.error("give at least one key, or --from-seed")
-            report = verify(keys, args.artifact, refresh=args.refresh)
+            report = verify(
+                keys,
+                args.artifact,
+                refresh=args.refresh,
+                cache_mode=CacheMode(args.cache_mode) if args.cache_mode else None,
+            )
             state = "rewritten" if report.written else "unchanged"
             print(
                 f"{args.artifact} ({state}): {len(report.artifact.resolutions)} key(s) "

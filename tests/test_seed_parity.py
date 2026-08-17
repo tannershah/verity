@@ -32,7 +32,7 @@ from pathlib import Path
 import pytest
 
 from verity.alethiology import verify_keys
-from verity.alethiology.resolution import KeyResolution, ResolutionArtifact
+from verity.alethiology.resolution import REGISTRY_SOURCES, KeyResolution, ResolutionArtifact
 from verity.alethiology.seed import read_seed
 from verity.alethiology.seed._gate import assess
 from verity.alethiology.seed._row import SeedFact
@@ -306,3 +306,56 @@ def test_an_unreachable_key_never_erases_the_entry_it_already_had(tmp_path: Path
     assert report.unrecordable
     assert str(key) in report.artifact.resolutions, "a network failure deleted a good entry"
     assert artifact_path.read_text() == recorded
+
+
+def test_a_replay_refresh_re_reads_the_fixtures_rather_than_the_network(
+    rows: list[SeedFact], committed: ResolutionArtifact, tmp_path: Path
+) -> None:
+    """`--refresh --cache-mode replay` is how the artifact is re-recorded after a parser
+    change: `refresh` says which entries may be rewritten, `cache_mode` says where the
+    bytes come from, and only separating them makes the re-record offline.
+
+    Two properties, and the second is the one that makes the first usable. It reaches no
+    network — the module's poisoned socket is the enforcement. And what it writes is
+    *reproducible*: a cache hit replays the fixture's `fetched_at` rather than restamping
+    it, so two refreshes agree to the microsecond on every registry reading and the diff of
+    a re-record is what the parser changed and nothing else. Only values generated locally
+    move between refreshes — the Retraction Watch read, which the table cannot date, and a
+    not-applicable reading, whose time is all the time there is.
+
+    Reproducible is not the same as equal to what is committed. The artifact was recorded
+    before the fixtures were, so a replay refresh moves each registry `checked_at` forward
+    once, to the time the recording it now reads was actually taken. Content is what must
+    not move, and content is what this compares.
+    """
+    keys = sorted({row.external_key() for row in rows}, key=str)
+
+    def refresh_into(name: str) -> ResolutionArtifact:
+        artifact_path = tmp_path / name
+        artifact_path.write_text(ARTIFACT_PATH.read_text(encoding="utf-8"), encoding="utf-8")
+        report = verify_keys.verify(
+            keys,
+            artifact_path,
+            refresh=True,
+            cache_mode=CacheMode.REPLAY,
+            table=rw.SAMPLE_TABLE,
+        )
+        assert not report.unrecordable, (
+            "the committed fixtures no longer settle every seed key"
+        )
+        return ResolutionArtifact.load(artifact_path)
+
+    first, second = refresh_into("first.json"), refresh_into("second.json")
+
+    for rendered in sorted(str(key) for key in keys):
+        before, after = committed.resolutions[rendered], first.resolutions[rendered]
+        assert sorted(before.readings) == sorted(after.readings), rendered
+        for source in sorted(before.readings):
+            assert content(before.readings[source]) == content(after.readings[source]), (
+                f"{rendered} {source}"
+            )
+            if source in REGISTRY_SOURCES and after.readings[source].found:
+                assert (
+                    after.readings[source].checked_at
+                    == second.resolutions[rendered].readings[source].checked_at
+                ), f"{rendered} {source} stamped a clock instead of replaying the fixture's"

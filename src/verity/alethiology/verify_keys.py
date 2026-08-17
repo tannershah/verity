@@ -21,6 +21,7 @@ Run it when a key is added to the seed, never as part of a normal run, and after
 
     python -m verity.alethiology verify-keys --from-seed
     python -m verity.alethiology verify-keys doi:10.1136/bmj.283.6307.1671
+    python -m verity.alethiology verify-keys --from-seed --refresh --cache-mode replay
 
 **Nothing unchecked reaches the artifact.** Two claims a resolution cannot make are refused
 here rather than written and discovered later. When a source could have answered and did
@@ -163,9 +164,21 @@ def verify(
     *,
     refresh: bool = False,
     client: HttpClient | None = None,
+    cache_mode: CacheMode | None = None,
     table: Path | None = None,
 ) -> VerifyReport:
     """Resolve `keys` into the artifact, keeping existing entries unless `refresh`.
+
+    **`refresh` and `cache_mode` are two decisions that used to be one.** `refresh` says
+    which *artifact* entries may be rewritten; `cache_mode` says where the *bytes* behind
+    them may come from. Conflating them meant a re-verification could only be a live one,
+    so re-recording the artifact after a parser change had to go back to the network — and
+    a live re-read moves both the parser's output and the API's, which is the confusion
+    `tests/test_seed_parity.py` exists to prevent. Passing `replay` resolves from the
+    committed fixtures instead, which is deterministic: a cache hit replays `fetched_at`
+    rather than restamping it, so every registry reading reproduces to the microsecond and
+    the only values that move are the ones generated locally — the Retraction Watch read,
+    which the table cannot date, and a not-applicable reading, whose time is all there is.
 
     **A key that could not be checked is not written.** Every unrecordable reading is
     returned instead, so the curator is told "2 key(s) could not be checked" rather than
@@ -178,7 +191,11 @@ def verify(
     non-zero. Existing entries are never removed either, so a `--refresh` that finds a key
     unreachable keeps the reading it already had and reports the failure.
     """
-    client = client or build_client(mode=CacheMode.REFRESH if refresh else CacheMode.LIVE)
+    # An explicit mode wins over the one `refresh` implies. Without that precedence
+    # `--refresh --cache-mode replay` would silently fetch, which is the one combination
+    # the flag exists for.
+    mode = cache_mode or (CacheMode.REFRESH if refresh else CacheMode.LIVE)
+    client = client or build_client(mode=mode)
     existing = (
         ResolutionArtifact.load(artifact_path).resolutions if artifact_path.exists() else {}
     )
