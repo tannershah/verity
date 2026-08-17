@@ -29,12 +29,20 @@ from pathlib import Path
 
 from pydantic import BaseModel, ValidationError
 
-#: The working cache: gitignored, disposable, safe to delete at any time.
+#: The two roots resolve differently, and the rule is which of them is *source*.
+#:
+#: A committed recording is source: it is checked in, it is what a replay is checked
+#: against, and it must be found from the module rather than from wherever the process was
+#: launched — a CWD-relative path would silently read a different tree per invocation, and
+#: `verity.retrieval.http._client.FIXTURE_ROOT` resolves its own fixtures the same way.
+#:
+#: The working cache is workspace state, not source. It follows the working directory,
+#: matching `RetrievalConfig.cache_dir`, which is the same decision made where a user can
+#: also override it. Launching from a subdirectory therefore starts a fresh cache instead
+#: of reading one from elsewhere in the tree: that costs a re-run and can never produce a
+#: wrong answer, which is the direction this codebase resolves cache ambiguity in
+#: everywhere else.
 WORKING_ROOT = Path(".cache/verity")
-
-#: Committed recordings, resolved from this file rather than the working directory — a
-#: recording is part of the source, and a CWD-relative path would silently read a
-#: different tree depending on where the process was launched.
 COMMITTED_ROOT = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "recordings"
 
 

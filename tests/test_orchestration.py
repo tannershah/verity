@@ -28,7 +28,7 @@ from verity.llm.stub import StubAdapter
 from verity.models.common import PremiseType, TmsStatus
 from verity.orchestration import replay_run, run_claim, store_outcome
 from verity.orchestration.context import graph_fingerprint
-from verity.orchestration.stages import PIPELINE
+from verity.orchestration.stages import PIPELINE, VERIFIER_ABSENT_NOTE
 from verity.retrieval.http import CacheMode
 from verity.store.db import open_db
 from verity.store.facts import save_fact
@@ -130,6 +130,13 @@ def _run(workspace, *, adapter=None, now=NOW, **kwargs):
     return outcome, stub
 
 
+def _run_all(workspace, **kwargs):
+    """The full four stages, over committed fixtures and a scorer that needs no checkpoint."""
+    config, _, _ = workspace
+    kwargs.setdefault("scorer_factory", lambda: _FakeScorer(_pinned_spec(config)))
+    return _run(workspace, score=True, bind=True, cache_mode=CacheMode.REPLAY, **kwargs)
+
+
 # -- the exit criterion ----------------------------------------------------------------
 
 
@@ -141,17 +148,22 @@ def test_re_running_an_unchanged_claim_is_a_cache_hit_end_to_end(workspace):
     and the graph that comes out is byte-identical rather than merely equivalent.
     """
     config, conn, _ = workspace
-    first, stub = _run(workspace)
+    first, stub = _run_all(workspace)
     store_outcome(conn, first)
     assert first.graph is not None
+    assert [s.status for s in first.manifest.stages] == ["ok"] * 4, (
+        "all four stages must actually run, or the criterion is asserted over less than the "
+        "pipeline the README describes"
+    )
     calls_after_first = len(stub.calls)
     assert calls_after_first == 1
 
-    second, stub_two = _run(workspace, adapter=stub, now=LATER)
+    second, _ = _run_all(workspace, adapter=stub, now=LATER)
     assert len(stub.calls) == calls_after_first, "the second run reached the provider"
     assert second.fully_cached
     assert second.reached_nothing_external
-    assert {s.name: s.status for s in second.manifest.stages}["decompose"] == "cache-hit"
+    statuses = {s.name: s.status for s in second.manifest.stages}
+    assert statuses["decompose"] == "cache-hit" and statuses["verify"] == "cache-hit"
     assert second.graph is not None
     assert graph_to_json(second.graph) == graph_to_json(first.graph), (
         "byte-identical, not identical-modulo-fields"
@@ -454,6 +466,87 @@ def test_an_undeclared_error_propagates_rather_than_being_swallowed(workspace):
         )
 
 
+def test_a_refusal_reports_what_this_run_spent_not_what_the_call_once_cost(workspace):
+    """A `DecompositionError` carries the usage of the envelope that produced it — real
+    money the first time and the *recorded* figure on every replayed call after, from a
+    field that cannot tell the two apart. The cassette can, so it is the authority on both
+    paths; and a refusal that spent money must not report `reached_nothing_external`, which
+    is the property the exit criterion's "spends nothing" claim is read off.
+    """
+    config, conn, _ = workspace
+    from verity.decomposition.backward_chain import PURPOSE
+
+    paid = _proposal()
+    # A proposal that materializes to nothing: the call happens and is paid for, then the
+    # decomposer refuses.
+    refusing = StubAdapter(structured={PURPOSE: ProposedDecomposition(premises=[])})
+
+    first, _ = _run(workspace, adapter=refusing)
+    decompose = next(s for s in first.manifest.stages if s.name == "decompose")
+    assert decompose.status == "error"
+    assert decompose.llm_calls == 1, "the provider was called and the record must say so"
+    assert not first.reached_nothing_external, "money was spent; the run must not deny it"
+
+    second, _ = _run(workspace, adapter=refusing, now=LATER)
+    replayed = next(s for s in second.manifest.stages if s.name == "decompose")
+    assert replayed.status == "error"
+    assert replayed.llm_calls == 0 and replayed.cache_hits == 1
+    assert second.manifest.total_usage.cost_usd == 0.0, "a replayed call cost this run nothing"
+    assert second.reached_nothing_external
+    assert paid is not None  # keeps the fixture's intent legible
+
+
+def test_a_stage_failure_reaches_the_surface_a_reader_sees(workspace):
+    """Stage errors land in `manifest.errors`, and nothing renders that. Without a note the
+    run draws an unscored column and says nothing about why — which is indistinguishable
+    from a scorer that ran and refused."""
+    config, conn, _ = workspace
+
+    def _absent():
+        raise ImportError("No module named 'torch'")
+
+    outcome, _ = _run(workspace, score=True, scorer_factory=_absent)
+    verify = next(s for s in outcome.manifest.stages if s.name == "verify")
+    assert verify.status == "error"
+    assert VERIFIER_ABSENT_NOTE in outcome.notes, (
+        "the note exists in the codebase; the pipeline has to be what emits it"
+    )
+    assert "torch" not in " ".join(outcome.notes), "the traceback's words, not the reader's"
+
+
+def test_an_isolated_failure_says_what_the_stored_graph_loses(workspace):
+    """The same failure the per-stage checkpoint was withdrawn to prevent, in the branch
+    that was left uncovered: an errored stage still yields a graph, `store_outcome` still
+    writes it, and a checkpoint that failed to load would replace a scored graph with an
+    unscored one."""
+    config, conn, _ = workspace
+    scored, stub = _run(
+        workspace, score=True, scorer_factory=lambda: _FakeScorer(_pinned_spec(config))
+    )
+    store_outcome(conn, scored)
+    assert any(step.score is not None for step in scored.graph.steps)
+
+    def _absent():
+        raise ImportError("No module named 'torch'")
+
+    # A cold stage cache, which is what a fresh machine has — with a warm one the verify
+    # entry is served and the absent checkpoint is never reached, so the cache happens to
+    # shield the loss it must not be relied on to shield.
+    second, _ = _run(
+        workspace,
+        adapter=stub,
+        now=LATER,
+        score=True,
+        scorer_factory=_absent,
+        use_stage_cache=False,
+    )
+    store_outcome(conn, second)
+    assert not any(step.score is not None for step in second.graph.steps)
+    assert any("carried scores" in note for note in second.notes), (
+        "the store silently lost its scores"
+    )
+
+
 def test_no_stage_isolates_a_bare_value_error(workspace):
     """`pydantic.ValidationError` is a `ValueError`, so a stage that declared `ValueError`
     would swallow a `ClaimGraph` invariant violation — the single failure that must always
@@ -471,8 +564,8 @@ def test_no_stage_isolates_a_bare_value_error(workspace):
 
 
 def test_a_skipped_stage_says_what_the_stored_graph_loses(workspace):
-    """Storage is one row per claim, so this run's graph replaces the previous one. A
-    stated loss rather than a silent one."""
+    """The other cause of the same loss: not requested, rather than failed. Both reach the
+    one check that compares what is about to be stored against what is stored."""
     config, conn, cache = workspace
     from verity.verifier.base import ScorerSpec
     from verity.verifier.scoring import score_graph
@@ -485,7 +578,7 @@ def test_a_skipped_stage_says_what_the_stored_graph_loses(workspace):
     save_graph(conn, scored)
 
     second, _ = _run(workspace, adapter=stub, now=LATER, score=False)
-    assert any("skipped scoring" in note for note in second.notes)
+    assert any("carried scores" in note for note in second.notes)
 
 
 # -- caps, notes and the records they live on -------------------------------------------
@@ -608,6 +701,59 @@ def test_a_stage_nobody_ran_is_not_a_reproduction(workspace):
     assert not verify.matches
     assert verify not in report.drifted, "not comparable is not drift either"
     assert report.reproduced
+
+
+def test_a_stage_this_machine_cannot_run_is_incomplete_not_drift(workspace):
+    """The reviewer follows the README's base install, which has no `verifier` extra — so
+    `verify` raises `ImportError`, produces no digest, and must not read as the strongest
+    negative signal the tool has. A missing optional dependency is a fact about the machine;
+    drift is a fact about the code, and only the second is a defect."""
+    config, conn, cache = workspace
+    first, stub = _run(
+        workspace, score=True, scorer_factory=lambda: _FakeScorer(_pinned_spec(config))
+    )
+    store_outcome(conn, first)
+
+    def _absent():
+        raise ImportError("No module named 'torch'")
+
+    from verity.orchestration.replay import replay_run as _replay
+
+    # The cassette must still serve — `replay_run` turns off the *stage* cache, which is
+    # what makes verify re-execute. An empty cache would starve decompose instead, and the
+    # test would pass for the wrong reason.
+    report = _replay(
+        first.manifest.run_id, conn=conn, cache=cache, scorer_factory=_absent
+    )
+    assert report.verdict == "incomplete"
+    assert not report.drifted, "an absent optional dependency is not drift"
+    assert report.graph_matches is None, "an unfinished comparison is not a mismatch"
+    assert any("verify" in why for why in report.partial_because)
+
+
+def test_a_corrupt_cache_entry_is_a_miss(workspace):
+    """An entry whose digest and payload disagree would put a hash describing no graph into
+    the manifest — and that hash is what a replay compares against, so a corrupt entry would
+    surface as drift in code that never changed."""
+    import json
+
+    config, conn, cache = workspace
+    first, stub = _run(workspace)
+    store_outcome(conn, first)
+
+    entries = [
+        p for p in (Path(str(cache._roots[0]))).rglob("*.json") if "stage" in str(p)
+    ]
+    assert entries, "the decompose stage must have written an entry"
+    payload = json.loads(entries[0].read_text())
+    payload["output_hash"] = "0" * 64
+    entries[0].write_text(json.dumps(payload))
+
+    second, _ = _run(workspace, adapter=stub, now=LATER)
+    assert not second.fully_cached, "a tampered entry was served"
+    decompose = next(s for s in second.manifest.stages if s.name == "decompose")
+    assert decompose.status == "ok", "the stage recomputed rather than being served"
+    assert decompose.output_hash != "0" * 64, "the tampered digest reached the manifest"
 
 
 def test_replay_refuses_a_run_it_cannot_reconstruct(workspace):

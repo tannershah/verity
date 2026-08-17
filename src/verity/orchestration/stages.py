@@ -97,6 +97,17 @@ class Stage(Protocol):
         """Do the work."""
         ...
 
+    def explain(self, error: Exception) -> str:
+        """An isolated failure, in the words a reader of the rendered tree needs.
+
+        Required rather than optional, because a stage error otherwise reaches only
+        `RunManifest.errors`, which nothing renders. A run whose checkpoint is not installed
+        would then draw an unscored column and say nothing about why — which is what the
+        column looks like when a scorer ran and refused, so the two would be
+        indistinguishable on the one surface a reviewer sees.
+        """
+        ...
+
 
 class DecomposeStage:
     name = "decompose"
@@ -143,6 +154,9 @@ class DecomposeStage:
             counts={"steps": len(steps), "premises": len(built.premises)},
             notes=_decomposition_notes(built, ctx),
         )
+
+    def explain(self, error: Exception) -> str:
+        return f"the decomposer produced no graph — {type(error).__name__}: {error}"
 
 
 class VerifyStage:
@@ -196,6 +210,15 @@ class VerifyStage:
             counts={"scored": result.scored, "unscored": result.unscored},
             note=note,
         )
+
+    def explain(self, error: Exception) -> str:
+        # The reader-facing sentence, not the traceback's. "No module named 'torch'" beside
+        # an unscored tree tells a reviewer nothing they can act on; this names the install
+        # that fixes it. Everything else keeps its own message, since a scorer that loaded
+        # and refused is a different fact about the run.
+        if isinstance(error, ImportError):
+            return VERIFIER_ABSENT_NOTE
+        return f"no step carries a score — {type(error).__name__}: {error}"
 
 
 class BindStage:
@@ -263,6 +286,16 @@ class BindStage:
             ),
         )
 
+    def explain(self, error: Exception) -> str:
+        # Load-bearing rather than cosmetic: without binding, no premise carries a bound key
+        # and `Alethiology.ground` answers `NO_BOUND_KEY` for every one of them. The
+        # grounding column then reads empty because nothing was asked, not because nothing
+        # grounded, and only this sentence distinguishes the two.
+        return (
+            f"no candidate key was checked against a registry, so nothing could ground — "
+            f"{type(error).__name__}: {error}"
+        )
+
 
 class GroundStage:
     name = "ground"
@@ -278,6 +311,10 @@ class GroundStage:
         return content_hash(
             self.name,
             ctx.source_digest,
+            # Included for the same reason the other three include it, even though this
+            # stage is never cached: a digest that omits the configuration is a trap for
+            # whoever changes `cacheable` without re-reading how the key is built.
+            ctx.config_hash,
             sorted(
                 (p.id, str(p.bound_key))
                 for p in graph.premises.values()
@@ -317,6 +354,12 @@ class GroundStage:
             counts=counts,
             notes=notes,
             attempts=tuple(attempts),
+        )
+
+    def explain(self, error: Exception) -> str:
+        return (
+            f"the alethiology was not consulted, so no premise is grounded — "
+            f"{type(error).__name__}: {error}"
         )
 
 

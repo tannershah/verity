@@ -152,13 +152,18 @@ def cmd_replay(args) -> int:
         print(f"  {mark} {stage.stage:<10} {detail}")
     for why in report.partial_because:
         print(f"  partial: {why}")
+    for note in report.notes:
+        print(f"  note: {note}")
     if report.grounding_moved:
         print("  the alethiology has moved since this run; the grounding differs")
     if report.drifted:
         print(f"  DRIFT in {', '.join(s.stage for s in report.drifted)}", file=sys.stderr)
         return 1
-    print("  reproduced" if report.reproduced else "  did not reproduce")
-    return 0 if report.reproduced else 1
+    # Only drift is a failure. An incomplete replay is a fact about this machine — most
+    # often the absent `verifier` extra — and exiting non-zero for it would make a reviewer
+    # on the README's base install read a missing optional dependency as a broken tool.
+    print(f"  {report.verdict}")
+    return 0
 
 
 def cmd_runs(args) -> int:

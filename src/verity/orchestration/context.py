@@ -110,6 +110,11 @@ class RunContext:
         return self._adapter
 
     @property
+    def cassette_calls_so_far(self) -> int:
+        """How many calls the cassette has logged. The slice point a stage's spend starts at."""
+        return 0 if self._adapter is None else len(self._adapter.calls)
+
+    @property
     def cassette(self) -> CassetteAdapter | None:
         """The cassette, if a stage has caused one to be built. Never builds one itself.
 

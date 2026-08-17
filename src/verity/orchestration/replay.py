@@ -16,10 +16,15 @@ Grounding is non-monotonic (design.md §4.2): if the alethiology has moved since
 the same code on the same inputs legitimately reaches a different answer. The report keeps
 that separate from a decompose, verify or bind hash that moved, which is drift.
 
-**Verify is the one stage replay may serve from cache.** Re-executing it needs the ~2GB
-`verifier` extra, and requiring that of the reviewer the reproducibility claim exists for
-would make the claim unexercisable. When it is served, or cannot run at all, the report
-says the replay was partial and why.
+**A stage that could not run is not a stage that disagreed.** The reviewer this claim
+exists for follows the README's base install, which has no `verifier` extra — so `verify`
+raises `ImportError`, produces no digest, and an earlier version reported that as *drift*:
+a missing optional dependency emitting the strongest negative signal the tool has. Three
+outcomes are therefore distinguished rather than two. `reproduced` means every comparable
+stage matched and nothing was left unchecked; `drifted` means code moved and is the only
+failure; `incomplete` means this machine could not re-execute part of the run, which is a
+statement about the environment. An incomplete replay also declines to compare the whole
+graph — a graph missing a stage's output is an unfinished comparison, not a mismatch.
 """
 
 from __future__ import annotations
@@ -56,9 +61,10 @@ class StageComparison(VerityModel):
     matches: bool = False
     #: True for `ground`, whose inputs are a store that is allowed to have changed.
     may_differ: bool = False
-    #: False when the recorded run produced no digest for this stage — it was skipped or it
-    #: failed. Two absent hashes are not a reproduction, and letting them compare equal
-    #: would report a stage nobody ran as one that reproduced.
+    #: False when either side produced no digest — the stage was skipped, or it failed on
+    #: one of the two machines. Two absent hashes must not compare equal (a stage nobody ran
+    #: would read as reproduced), and one absent hash must not compare unequal (a stage this
+    #: machine could not run would read as drift).
     comparable: bool = True
 
 
@@ -84,8 +90,26 @@ class ReplayReport(VerityModel):
         return any(s.comparable and s.may_differ and not s.matches for s in self.stages)
 
     @property
+    def incomplete(self) -> bool:
+        """Whether this machine could not re-execute part of the run.
+
+        A statement about the environment, not about the code — kept apart from `drifted`
+        because conflating them makes an absent optional dependency indistinguishable from
+        a regression.
+        """
+        return bool(self.partial_because)
+
+    @property
+    def verdict(self) -> str:
+        if self.drifted:
+            return "drifted"
+        if self.incomplete or self.graph_matches is None:
+            return "incomplete"
+        return "reproduced" if self.graph_matches else "drifted"
+
+    @property
     def reproduced(self) -> bool:
-        return not self.drifted and self.graph_matches is not False
+        return self.verdict == "reproduced"
 
 
 def replay_run(
@@ -94,6 +118,7 @@ def replay_run(
     conn: sqlite3.Connection,
     cache: BlobCache | None = None,
     db_override: bool = False,
+    scorer_factory=None,
 ) -> ReplayReport:
     """Re-execute the run `run_id` recorded, and compare what comes out."""
     manifest = load_manifest(conn, run_id)
@@ -117,6 +142,7 @@ def replay_run(
         conn=conn,
         now=manifest.started_at,
         cache=cache or BlobCache.open(writable=False),
+        scorer_factory=scorer_factory,
         score="verify" in requested,
         bind="bind" in requested,
         cache_mode=CacheMode.REPLAY,
@@ -127,7 +153,12 @@ def replay_run(
 
     report = ReplayReport(run_id=run_id, notes=list(outcome.notes))
     if db_override:
-        report.partial_because.append(
+        # A note, not a partial. `partial_because` means "this machine could not re-execute
+        # something", and an overridden store prevents nothing from re-executing — it only
+        # changes which alethiology `ground` read, and `ground` is already the stage allowed
+        # to differ. Filing it as a partial would make every `--db` replay report
+        # `incomplete`, which is the noise that hides a genuinely incomplete one.
+        report.notes.append(
             "the store was overridden, so the alethiology this replay read is not the one "
             "the run recorded"
         )
@@ -136,26 +167,29 @@ def replay_run(
     for stage in manifest.stages:
         name = stage.name
         replayed = fresh.get(name)
-        if replayed is not None and replayed.status == "cache-hit" and name == "verify":
-            report.partial_because.append(
-                "verify was served from the stage cache rather than re-executed"
-            )
         if replayed is not None and replayed.status == "error":
-            report.partial_because.append(f"{name} could not run: {replayed.error}")
-        comparable = stage.output_hash is not None
+            # The recorded run got a digest out of this stage and this machine did not, so
+            # there is nothing to compare — an environment gap, not a disagreement.
+            report.partial_because.append(
+                f"{name} could not be re-executed here: {replayed.error}"
+            )
+        replayed_hash = replayed.output_hash if replayed else None
+        comparable = stage.output_hash is not None and replayed_hash is not None
         report.stages.append(
             StageComparison(
                 stage=name,
                 recorded=stage.output_hash,
-                replayed=replayed.output_hash if replayed else None,
-                matches=comparable
-                and bool(replayed and replayed.output_hash == stage.output_hash),
+                replayed=replayed_hash,
+                matches=comparable and replayed_hash == stage.output_hash,
                 may_differ=name not in DETERMINISTIC,
                 comparable=comparable,
             )
         )
 
     stored = load_graph(conn, manifest.graph_ids[0]) if manifest.graph_ids else None
-    if stored is not None and outcome.graph is not None:
+    if stored is not None and outcome.graph is not None and not report.incomplete:
+        # Left `None` when the replay was incomplete: a graph missing the output of a stage
+        # this machine could not run differs from the stored one for a reason that says
+        # nothing about whether the code reproduces.
         report.graph_matches = graph_fingerprint(stored) == graph_fingerprint(outcome.graph)
     return report

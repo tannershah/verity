@@ -57,6 +57,15 @@ def source_digest() -> str:
                 content_hash(path.read_bytes().decode("utf-8", errors="surrogateescape")),
             )
         )
+    if not parts:
+        # A digest over nothing is a constant, and a constant key never moves — so the whole
+        # "the cache key moves when the code moves" guarantee would void, silently, in
+        # exactly the deployments where the source is not on disk as `.py` (a zipimport, a
+        # frozen bundle). Refusing is the only outcome that cannot be mistaken for working.
+        raise RuntimeError(
+            f"no Python source found under {SOURCE_ROOT}; the stage cache cannot be keyed "
+            "on code that is not readable, and a digest over nothing would never invalidate"
+        )
     return content_hash(parts)
 
 

@@ -245,6 +245,13 @@ Phase 5's rewrite invalidates every one recorded before it — so a reviewer can
 recorded demo with no API key, the way `tests/fixtures/http/` already does for the
 registries.
 
+**Phase 5's demo re-record is now load-bearing, not cosmetic.** The README advertises
+`verity replay`, and `data/demo/spinach.json` cannot demonstrate it: it predates the run
+clock (its `root_claim.created_at` is 11ms off the rest of the graph) and no shipped store
+holds its manifest, so there is nothing to replay it *from*. The re-record has to be a
+`python -m verity run` against a **committed store** — graph plus manifest plus cassette —
+or the command a reviewer is told to try has no artifact to try it on.
+
 **Removed with Phase 5's demo re-record:** `PathsConfig.runs_dir` and the auto-write to
 `data/runs/`. The store is authoritative and `--out` covers the file case; the removal
 moves `config_hash()` and therefore every run id and stage-cache key, so it belongs in the
