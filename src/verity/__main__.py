@@ -159,6 +159,13 @@ def cmd_replay(args) -> int:
     if report.drifted:
         print(f"  DRIFT in {', '.join(s.stage for s in report.drifted)}", file=sys.stderr)
         return 1
+    if report.unexplained_divergence:
+        print(
+            "  DRIFT: the graph differs while every stage that was compared matched and "
+            "the alethiology did not move",
+            file=sys.stderr,
+        )
+        return 1
     # Only drift is a failure. An incomplete replay is a fact about this machine — most
     # often the absent `verifier` extra — and exiting non-zero for it would make a reviewer
     # on the README's base install read a missing optional dependency as a broken tool.

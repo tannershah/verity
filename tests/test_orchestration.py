@@ -686,6 +686,7 @@ def test_replay_separates_drift_from_the_alethiology_moving(workspace, seeded_fa
 
     assert report.grounding_moved
     assert not report.drifted, "only the store moved; no code did"
+    assert report.verdict != "drifted", "a moved store is not drift"
 
 
 def test_a_stage_nobody_ran_is_not_a_reproduction(workspace):
@@ -729,6 +730,71 @@ def test_a_stage_this_machine_cannot_run_is_incomplete_not_drift(workspace):
     assert not report.drifted, "an absent optional dependency is not drift"
     assert report.graph_matches is None, "an unfinished comparison is not a mismatch"
     assert any("verify" in why for why in report.partial_because)
+
+
+def test_a_drift_verdict_always_cites_something(workspace, seeded_fact):
+    """The invariant, over every route that reaches a verdict rather than over one of them.
+
+    Three separate paths reached `drifted` with an empty `drifted` list: a stage this
+    machine could not run, a stage the *recording* could not run, and — the documented good
+    case — an alethiology that moved. Each was a graph difference being read as drift
+    without anything to attribute it to. A verdict of drift now names a stage or names the
+    divergence.
+    """
+    config, conn, cache = workspace
+    save_fact(conn, seeded_fact)
+
+    def _absent():
+        raise ImportError("No module named 'torch'")
+
+    healthy = lambda: _FakeScorer(_pinned_spec(config))  # noqa: E731
+    first, stub = _run_all(workspace)
+    store_outcome(conn, first)
+
+    reports = [
+        # clean
+        replay_run(first.manifest.run_id, conn=conn, cache=cache, scorer_factory=healthy),
+        # this machine cannot run a stage the recording did
+        replay_run(first.manifest.run_id, conn=conn, cache=cache, scorer_factory=_absent),
+    ]
+    # the store moved under a recorded run
+    save_fact(conn, seeded_fact.model_copy(update={"status": TmsStatus.OUT}))
+    reports.append(
+        replay_run(first.manifest.run_id, conn=conn, cache=cache, scorer_factory=healthy)
+    )
+
+    for report in reports:
+        if report.verdict == "drifted":
+            assert report.drifted or report.unexplained_divergence, (
+                "a drift verdict must name a stage or name the divergence"
+            )
+
+
+def test_a_replay_that_produced_more_than_the_recording_is_also_incomplete(workspace):
+    """The mirror of the case above, and just as reachable: run the demo before installing
+    the `verifier` extra, install it, replay. The replay produced *more* than the recording,
+    not something different — so keying the comparison on either side's status rather than
+    on which side has a digest left this reporting `drifted` with an empty `drifted` list:
+    a failure verdict citing no stage."""
+    config, conn, cache = workspace
+
+    def _absent():
+        raise ImportError("No module named 'torch'")
+
+    recorded, stub = _run(workspace, score=True, scorer_factory=_absent)
+    store_outcome(conn, recorded)
+    assert not any(step.score is not None for step in recorded.graph.steps)
+
+    healthy = replay_run(
+        recorded.manifest.run_id,
+        conn=conn,
+        cache=cache,
+        scorer_factory=lambda: _FakeScorer(_pinned_spec(config)),
+    )
+    assert healthy.verdict == "incomplete"
+    assert not healthy.drifted, "a verdict of drift must always cite a stage"
+    assert healthy.graph_matches is None
+    assert any("verify" in why for why in healthy.partial_because)
 
 
 def test_a_corrupt_cache_entry_is_a_miss(workspace):

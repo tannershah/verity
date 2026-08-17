@@ -105,7 +105,7 @@ are: the M4-T1 champion is near-binary and misses three of seven corruption fami
 lens and ships as the blind-spot case, and the demo graph's single grounding runs through a
 key the decomposer proposed rather than one retrieval bound.
 
-**Phase 3 status (M1-T2 complete; M3-T2 is what remains):** 541 tests green, ruff clean.
+**Phase 3 status (M1-T2 complete; M3-T2 is what remains):** 550 tests green, ruff clean.
 `presentation/driver.py` is gone; `apply_groundings` moved to `verity.alethiology.apply` and
 the binder call into the bind stage. The pipeline is `python -m verity run | replay | render |
 runs`, and the render surface no longer composes anything.
