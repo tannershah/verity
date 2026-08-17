@@ -38,9 +38,6 @@ from verity.decomposition.backward_chain import (
 from verity.llm.base import LLMAdapter
 from verity.models.claim import Claim
 
-#: Stage label. Keys the manifest and names the pass in run logs.
-PURPOSE = "decompose:claim"
-
 
 def decompose_claim(
     claim: Claim,

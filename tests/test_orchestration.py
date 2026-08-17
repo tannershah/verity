@@ -854,7 +854,7 @@ def test_the_cassette_re_validates_rather_than_restoring(workspace, tmp_path):
     replay = CassetteAdapter(None, config=config.llm, cache=cache, mode=CassetteMode.REPLAY)
     second = replay.structured(request, ProposedDecomposition)
     assert second.parsed == first.parsed
-    assert replay.hits == 1
+    assert replay.usage_since().hits == 1
     assert len(stub.calls) == 1
 
     # A schema whose name has moved is a miss, not a call nobody can reproduce.

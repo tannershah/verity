@@ -1,7 +1,6 @@
 """The orchestrator: run the stages, cache what may be cached, record what happened.
 
-Replaces the throwaway driver M9-T1 wrote. What it adds beyond composition is four things,
-and the ordering at the end of `run_claim` is where three of them meet.
+Replaces the throwaway driver M9-T1 wrote. Four things it adds beyond composition.
 
 **Caching is per stage, and two stages decline it** — see `stages.py` for why. A hit skips
 the work and reports zero spend, because a cache hit costs nothing; what the work
@@ -9,17 +8,25 @@ the work and reports zero spend, because a cache hit costs nothing; what the wor
 did not pay.
 
 **Failure isolation is not a bare `except`.** Each stage declares the exceptions it
-isolates; those are recorded and the pipeline continues with the graph as it stands.
-Everything else propagates, because swallowing a `ValidationError` out of `ClaimGraph`
-would hide the invariant violation the type system exists to surface. That is affordable
-precisely because the cassette holds the provider answers: a crash costs a re-run of
-deterministic code, not another call.
+isolates; those are recorded, explained to the reader, and the pipeline continues with the
+graph as it stands. Everything else propagates, because swallowing a `ValidationError` out
+of `ClaimGraph` would hide the invariant violation the type system exists to surface. That
+is affordable precisely because the cassette holds the provider answers: a crash costs a
+re-run of deterministic code, not another call.
 
-**Nothing stored is degraded by a failed run.** The graph is written once, at the end of a
-run that produced one — deliberately not checkpointed per stage. `ClaimGraph.id` derives
-from the root claim alone and `save_graph` upserts on it, so a per-stage checkpoint would
-let a run that crashed at `verify` overwrite the previous fully-scored graph with an
-unscored one. The isolation mechanism would have been the data loss.
+A stage that ran and a stage that failed take the same path through `_record`. A failure is
+a completion with no output, not a different kind of event, and the one time they had
+separate builders the failure path silently skipped every piece of bookkeeping the success
+path did.
+
+**A failed run stores nothing; a failed stage stores what it has, and says what that
+cost.** The graph is written once, at the end of a run that produced one — deliberately not
+checkpointed per stage, since `ClaimGraph.id` derives from the root claim alone and
+`save_graph` upserts on it, so a checkpoint would let a run that crashed at `verify`
+overwrite a fully-scored graph with an unscored one. But an *isolated* stage failure still
+yields a graph, and that graph still replaces the stored one, so `_report_lost_output`
+compares what is about to be written against what is there. Storage is one row per claim;
+the loss is the caller's to accept, never the run's to hide.
 
 **The graph is stamped only when its content changed.** A re-run that computed nothing
 adopts the stored stamp and is byte-identical; anything else takes this run's. That makes
@@ -31,7 +38,7 @@ from __future__ import annotations
 
 import sqlite3
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
@@ -43,7 +50,7 @@ from verity.cache import BlobCache
 from verity.config import VerityConfig
 from verity.export import graph_from_json, graph_to_json
 from verity.ids import content_hash, make_id
-from verity.llm.cassette import CassetteMode
+from verity.llm.cassette import CassetteMode, CassetteUsage
 from verity.models.claim import Claim, ClaimGraph
 from verity.models.common import CapRecord, utc_now
 from verity.models.manifest import (
@@ -101,7 +108,6 @@ class RunOutcome:
     graph: ClaimGraph | None = None
     attempts: tuple[GroundingAttempt, ...] = ()
     refusal: Exception | None = None
-    stage_results: dict[str, StageResult] = field(default_factory=dict)
 
     @property
     def notes(self) -> list[str]:
@@ -237,6 +243,7 @@ def _execute(
         record, result, error = _run_stage(stage, ctx, graph)
         manifest.stages.append(record)
         if result is None:
+            assert error is not None, "a stage with no result must have raised"
             if stage.name == "decompose":
                 # Kept as the exception itself, not re-raised from its message: a caller
                 # reporting a refusal prints the type and the usage of the call that
@@ -247,11 +254,10 @@ def _execute(
             # machine-readable record and nothing renders it; a run whose scorer is not
             # installed must say so where the tree is drawn, or it shows an unscored
             # column with no explanation at all.
-            manifest.notes.append(stage.explain(error) if error else f"{stage.name} failed")
+            manifest.notes.append(stage.explain(error))
             continue
 
         graph = result.graph
-        outcome.stage_results[stage.name] = result
         manifest.notes.extend(result.notes)
         if result.attempts:
             outcome.attempts = result.attempts
@@ -280,10 +286,8 @@ def _run_stage(
         if served is not None:
             return (*served, None)
 
-    # Where this stage's calls begin. Cassette counters are cumulative across the run, so a
-    # stage that read the totals would report every earlier stage's spend as its own — and
-    # `RunManifest.total_usage`, which sums the stages, would multiply it. Harmless while
-    # only `decompose` calls a provider; wrong the moment M2-T1 or M3-T3 adds a second.
+    # Where this stage's calls begin; see `CassetteAdapter.usage_since` for why a span
+    # rather than a running total.
     first_call = ctx.cassette_calls_so_far
 
     try:
@@ -405,12 +409,12 @@ def _record(
     it had reached nothing external in the one case where it had reached the provider and
     paid. Everything that describes *how a stage ran* is therefore computed once, here.
     """
-    spent, replayed, provider_calls, hits, truncated = _accounting(ctx, first_call, result)
+    calls = _accounting(ctx, first_call, result)
     note = result.note if result else None
-    if hits:
+    if calls.hits:
         served = (
-            f"{hits} provider call(s) replayed from the cassette "
-            f"(recorded cost ${replayed.cost_usd:.4f})"
+            f"{calls.hits} provider call(s) replayed from the cassette "
+            f"(recorded cost ${calls.replayed.cost_usd:.4f})"
         )
         note = served if note is None else f"{note}. {served}"
     if not stage.cacheable and stage.uncacheable_because:
@@ -430,9 +434,9 @@ def _record(
         status="error" if error is not None else "ok",
         error=f"{type(error).__name__}: {error}" if error is not None else None,
         #: Calls that actually reached the provider. A replayed one is a `cache_hit`.
-        llm_calls=provider_calls,
-        usage=spent,
-        cache_hits=(result.cache_hits if result else 0) + hits,
+        llm_calls=calls.provider_calls,
+        usage=calls.spent,
+        cache_hits=(result.cache_hits if result else 0) + calls.hits,
         caps=result.caps if result else [],
         counts=result.counts if result else {},
         note=note,
@@ -440,47 +444,28 @@ def _record(
         cache_key=cache_key,
         output_hash=result.output_hash if result else None,
         llm_settings=result.llm_settings if result else None,
-        truncated_calls=truncated,
+        truncated_calls=calls.truncated,
     )
 
 
-def _accounting(
-    ctx: RunContext, first_call: int, result: StageResult | None
-) -> tuple[Usage, Usage, int, int, int]:
-    """What *this stage's* calls cost this run, and what its replayed ones cost before.
+def _accounting(ctx: RunContext, first_call: int, result: StageResult | None) -> CassetteUsage:
+    """What *this stage's* calls cost this run, over the span it opened.
 
-    `(spent, replayed, provider calls, cassette hits, truncated)`. Sliced from `first_call`
-    rather than read off the cassette's running totals, so a second provider-calling stage
-    cannot report the first one's spend as its own and have `RunManifest.total_usage`
-    multiply it.
-
-    The cassette is the authority on both counts, on the success path and the failure path
-    alike: a `DecompositionError` carries the usage of the *envelope* that produced it, and
-    on a replayed call that envelope is the recorded one — real money the first time and
-    zero every time after, from a field that cannot tell the difference.
+    The cassette is the authority on the success path and the failure path alike: a
+    `DecompositionError` carries the usage of the *envelope* that produced it, and on a
+    replayed call that envelope is the recorded one — real money the first time and zero
+    every time after, from a field that cannot tell the difference.
     """
     adapter = ctx.cassette
     if adapter is None:
-        # No provider was ever constructed, so nothing was called through one. A stage that
+        # No provider was ever constructed, so nothing went through one. A stage that
         # nonetheless reports calls is a hand-wired test double; take it at its word.
-        return (
-            result.usage if result else Usage(),
-            Usage(),
-            result.llm_calls if result else 0,
-            0,
-            result.truncated_calls if result else 0,
+        return CassetteUsage(
+            spent=result.usage if result else Usage(),
+            provider_calls=result.llm_calls if result else 0,
+            truncated=result.truncated_calls if result else 0,
         )
-    spent, replayed = Usage(), Usage()
-    provider_calls = hits = truncated = 0
-    for call in adapter.calls[first_call:]:
-        if call.hit:
-            replayed = replayed + call.usage
-            hits += 1
-        else:
-            spent = spent + call.usage
-            provider_calls += 1
-        truncated += int(call.truncated)
-    return spent, replayed, provider_calls, hits, truncated
+    return adapter.usage_since(first_call)
 
 
 def _skipped(stage: Stage, why: str) -> StageRecord:

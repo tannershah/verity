@@ -101,6 +101,22 @@ class CassetteCall(VerityModel):
     truncated: bool = False
 
 
+class CassetteUsage(VerityModel):
+    """What a span of calls cost this run, and what its replayed ones cost before.
+
+    A cache hit costs nothing, so `spent` excludes it — a total that added both would
+    report money this run did not pay. `replayed` is kept beside it rather than discarded,
+    because "served from cache; the recorded run cost $X" is what makes a free run legible.
+    """
+
+    spent: Usage = Field(default_factory=Usage)
+    replayed: Usage = Field(default_factory=Usage)
+    #: Calls that reached the provider. A replayed one is a `hit`, never one of these.
+    provider_calls: int = 0
+    hits: int = 0
+    truncated: int = 0
+
+
 class CassetteAdapter:
     """An `LLMAdapter` that records provider answers and replays them.
 
@@ -128,35 +144,26 @@ class CassetteAdapter:
 
     # -- accounting ------------------------------------------------------------------
 
-    @property
-    def spent(self) -> Usage:
-        """What this run actually paid. A replayed call contributes nothing."""
-        total = Usage()
-        for call in self.calls:
-            if not call.hit:
-                total = total + call.usage
-        return total
+    def usage_since(self, first_call: int = 0) -> CassetteUsage:
+        """What the calls from `first_call` onward cost. The only accounting entry point.
 
-    @property
-    def replayed(self) -> Usage:
-        """What the replayed calls originally cost, for the record rather than the total."""
-        total = Usage()
-        for call in self.calls:
+        Deliberately span-based rather than a set of cumulative properties. Cumulative
+        totals read correctly while exactly one stage calls a provider and silently
+        misattribute the moment a second does — every such stage would report the run's
+        running total as its own, and `RunManifest.total_usage`, which sums the stages,
+        would multiply it. A caller that must pass a starting point cannot make that
+        mistake by omission.
+        """
+        usage = CassetteUsage()
+        for call in self.calls[first_call:]:
             if call.hit:
-                total = total + call.usage
-        return total
-
-    @property
-    def hits(self) -> int:
-        return sum(1 for call in self.calls if call.hit)
-
-    @property
-    def provider_calls(self) -> int:
-        return sum(1 for call in self.calls if not call.hit)
-
-    @property
-    def truncated_calls(self) -> int:
-        return sum(1 for call in self.calls if call.truncated)
+                usage.replayed = usage.replayed + call.usage
+                usage.hits += 1
+            else:
+                usage.spent = usage.spent + call.usage
+                usage.provider_calls += 1
+            usage.truncated += int(call.truncated)
+        return usage
 
     # -- internals -------------------------------------------------------------------
 

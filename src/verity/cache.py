@@ -61,10 +61,6 @@ class BlobCache:
         working = Path(working_root or WORKING_ROOT)
         return cls([working, COMMITTED_ROOT], [working] if writable else [])
 
-    @classmethod
-    def read_only(cls, *, working_root: Path | None = None) -> BlobCache:
-        return cls.open(working_root=working_root, writable=False)
-
     def path_for(self, root: Path, namespace: str, key: str) -> Path:
         return root / namespace / key[:2] / f"{key}.json"
 

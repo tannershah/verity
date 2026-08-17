@@ -3,9 +3,9 @@
 **Replay is not a cache read.** It pins the clock to the run's own, forces the cassette to
 replay-only and the HTTP client to `REPLAY`, and then **turns the stage cache off** — so
 every deterministic line runs again against the provider answers the original run received.
-A replay that reproduces the graph has re-derived it. A replay that does not has found
-drift, which is the whole point: a stage cache trusted at replay time would report success
-for a codebase that had silently changed underneath its stored results.
+A replay that reproduces the graph has re-derived it, which is the whole point: a stage
+cache trusted at replay time would report success for a codebase that had silently changed
+underneath its stored results.
 
 **Replay writes nothing.** Storage is one row per claim, so a divergent replay that wrote
 would overwrite the artifact it was checking with the wrong version of it. Its product is a
@@ -41,8 +41,9 @@ from verity.base import VerityModel
 from verity.cache import BlobCache
 from verity.config import VerityConfig
 from verity.llm.cassette import CassetteMode
+from verity.models.manifest import RunManifest
 from verity.orchestration.context import graph_fingerprint
-from verity.orchestration.pipeline import run_claim
+from verity.orchestration.pipeline import RunOutcome, run_claim
 from verity.retrieval.http import CacheMode
 from verity.store.graphs import load_graph
 from verity.store.manifests import load_manifest
@@ -188,48 +189,55 @@ def replay_run(
             "the run recorded"
         )
 
-    fresh = {stage.name: stage for stage in outcome.manifest.stages}
-    for stage in manifest.stages:
-        name = stage.name
-        replayed = fresh.get(name)
-        replayed_hash = replayed.output_hash if replayed else None
-        comparable = stage.output_hash is not None and replayed_hash is not None
-
-        # Keyed on which side produced a digest, not on either side's status — status is
-        # only a proxy for that, and reading it in one direction is what left the mirror
-        # case reporting `drifted` with an empty `drifted` list. One side having output the
-        # other does not means the two machines were not in the same condition, whichever
-        # side is the richer one: the recording was made without the `verifier` extra and
-        # this machine has it, or the reverse. Neither is a disagreement about a result.
-        # Both sides empty is not a partial — a stage neither run produced was expected of
-        # neither.
-        if stage.output_hash is not None and replayed_hash is None:
-            report.partial_because.append(
-                f"{name} could not be re-executed here"
-                + (f": {replayed.error}" if replayed and replayed.error else "")
-            )
-        elif stage.output_hash is None and replayed_hash is not None:
-            report.partial_because.append(
-                f"{name} produced output here that the recorded run did not, so there is "
-                "nothing to compare it against"
-                + (f" (the run recorded: {stage.error})" if stage.error else "")
-            )
-
-        report.stages.append(
-            StageComparison(
-                stage=name,
-                recorded=stage.output_hash,
-                replayed=replayed_hash,
-                matches=comparable and replayed_hash == stage.output_hash,
-                may_differ=name not in DETERMINISTIC,
-                comparable=comparable,
-            )
-        )
+    _compare_stages(manifest, outcome, report)
 
     stored = load_graph(conn, manifest.graph_ids[0]) if manifest.graph_ids else None
     if stored is not None and outcome.graph is not None and not report.incomplete:
         # Left `None` when the replay was incomplete: a graph missing the output of a stage
-        # this machine could not run differs from the stored one for a reason that says
-        # nothing about whether the code reproduces.
+        # one side could not run differs from the other for a reason that says nothing
+        # about whether the code reproduces.
         report.graph_matches = graph_fingerprint(stored) == graph_fingerprint(outcome.graph)
     return report
+
+
+def _compare_stages(
+    manifest: RunManifest, outcome: RunOutcome, report: ReplayReport
+) -> None:
+    """Digest against digest, per stage, recording what could not be compared and why.
+
+    Keyed on which side produced a digest, never on either side's status — status is only a
+    proxy for that, and reading it in one direction is what left the mirror case reporting
+    `drifted` with an empty `drifted` list. One side having output the other does not means
+    the two machines were not in the same condition, whichever side is the richer one: the
+    recording was made without the `verifier` extra and this machine has it, or the reverse.
+    Neither is a disagreement about a result. Both sides empty is not a partial — a stage
+    neither run produced was expected of neither.
+    """
+    fresh = {stage.name: stage for stage in outcome.manifest.stages}
+    for stage in manifest.stages:
+        replayed = fresh.get(stage.name)
+        replayed_hash = replayed.output_hash if replayed else None
+
+        if stage.output_hash is not None and replayed_hash is None:
+            report.partial_because.append(
+                f"{stage.name} could not be re-executed here"
+                + (f": {replayed.error}" if replayed and replayed.error else "")
+            )
+        elif stage.output_hash is None and replayed_hash is not None:
+            report.partial_because.append(
+                f"{stage.name} produced output here that the recorded run did not, so "
+                "there is nothing to compare it against"
+                + (f" (the run recorded: {stage.error})" if stage.error else "")
+            )
+
+        comparable = stage.output_hash is not None and replayed_hash is not None
+        report.stages.append(
+            StageComparison(
+                stage=stage.name,
+                recorded=stage.output_hash,
+                replayed=replayed_hash,
+                matches=comparable and replayed_hash == stage.output_hash,
+                may_differ=stage.name not in DETERMINISTIC,
+                comparable=comparable,
+            )
+        )
