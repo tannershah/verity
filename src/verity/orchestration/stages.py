@@ -30,6 +30,7 @@ from pydantic import Field
 from verity.alethiology.apply import apply_groundings
 from verity.alethiology.grounding import GroundingAttempt
 from verity.base import VerityModel
+from verity.config import DecompositionConfig
 from verity.decomposition.backward_chain import assemble_graph
 from verity.decomposition.descent import decompose_claim
 from verity.decomposition.errors import DecompositionError
@@ -43,6 +44,9 @@ from verity.retrieval.binder import BindingOutcome, bind_candidate_keys
 from verity.retrieval.errors import RetrievalError
 from verity.verifier.errors import ScorerIdentityError, VerifierError
 from verity.verifier.registry import UnknownCheckpointError
+
+#: Arities listed by name in the out-of-range note before it switches to a count.
+_ARITY_EXAMPLES = 5
 
 VERIFIER_ABSENT_NOTE = (
     "the entailment scorer is not installed, so no step carries a score — "
@@ -386,47 +390,68 @@ def _decomposition_notes(graph: ClaimGraph, ctx: RunContext) -> list[str]:
             "measures nothing about the decomposition"
         )
 
+    notes.extend(_arity_notes(graph, config))
+    notes.extend(_descent_notes(graph, config))
+    return notes
+
+
+def _arity_notes(graph: ClaimGraph, config: DecompositionConfig) -> list[str]:
+    """Out-of-range arity, summarized.
+
+    Stored and reported, never corrected (build-plan.md M3-T1): it is a measurement about
+    the decomposer. Summarized rather than listed per step, because a descent can produce a
+    dozen and a dozen near-identical lines is how a reader stops reading the notes.
+    """
     oversized = [
         step
         for step in graph.steps
         if not config.min_premises <= step.arity <= config.max_premises
     ]
-    if oversized:
-        # Stored and reported, never corrected (build-plan.md M3-T1): out-of-range arity is
-        # a measurement about the decomposer. Summarized rather than listed per step,
-        # because a descent can produce a dozen and a dozen near-identical lines is how a
-        # reader stops reading the notes.
-        arities = ", ".join(str(step.arity) for step in oversized[:5])
-        more = f" (+{len(oversized) - 5} more)" if len(oversized) > 5 else ""
-        notes.append(
-            f"{len(oversized)} of {len(graph.steps)} step(s) have arity outside the "
-            f"configured {config.min_premises}-{config.max_premises} range: {arities}{more}"
-        )
+    if not oversized:
+        return []
+    shown = ", ".join(str(step.arity) for step in oversized[:_ARITY_EXAMPLES])
+    more = (
+        f" (+{len(oversized) - _ARITY_EXAMPLES} more)"
+        if len(oversized) > _ARITY_EXAMPLES
+        else ""
+    )
+    return [
+        f"{len(oversized)} of {len(graph.steps)} step(s) have arity outside the configured "
+        f"{config.min_premises}-{config.max_premises} range: {shown}{more}"
+    ]
 
+
+def _descent_notes(graph: ClaimGraph, config: DecompositionConfig) -> list[str]:
+    """What the descent did, and the two things a reader would otherwise misread.
+
+    A shallow tree is the decomposer typing its premises terminal, not a descent that
+    failed; and an absent `grounded` bucket is a fact about the stage order, since nothing
+    is bound while the descent runs. Empty for a graph produced by a tier that recorded no
+    terminations at all, which is the honest output for one.
+    """
     leaves = graph.leaves()
     if not any(premise.termination_reason for premise in leaves):
-        return notes
+        return []
 
     mix: dict[str, int] = {}
     for premise in leaves:
         if premise.termination_reason is not None:
             key = premise.termination_reason.value
             mix[key] = mix.get(key, 0) + 1
+
     expanded = sum(1 for step in graph.steps if step.conclusion_id != graph.root_claim.id)
-    notes.append(
+    terminals = ", ".join(f"{count} {reason}" for reason, count in sorted(mix.items()))
+    predicate = "/".join(kind.value for kind in config.recurse_on)
+    return [
         f"the descent expanded {expanded} of {len(graph.premises)} premises to depth "
         f"{graph.recorded_depth()} against a budget of {config.depth_budget}; terminals: "
-        + ", ".join(f"{count} {reason}" for reason, count in sorted(mix.items()))
-        + f". Recursion ran on premises typed {'/'.join(t.value for t in config.recurse_on)}"
-        + ", so a shallow tree means the decomposer typed its premises terminal, not that "
-        "the descent failed. A mix is only comparable against a run with the same predicate"
-    )
-    notes.append(
+        f"{terminals}. Recursion ran on premises typed {predicate}, so a shallow tree means "
+        "the decomposer typed its premises terminal, not that the descent failed. A mix is "
+        "only comparable against a run with the same predicate",
         "`grounded` is structurally unreachable in this pipeline order — nothing is bound "
         "while the descent runs — so an absent grounded bucket is a fact about the stage "
-        "order, not about the alethiology (M6-T3 moves it)"
-    )
-    return notes
+        "order, not about the alethiology (M6-T3 moves it)",
+    ]
 
 
 #: The pipeline, in order. A stage's position is a dependency, not a preference: binding

@@ -18,7 +18,7 @@ tree depth is the typing guidance in `prompt.py`, not this loop. The run reports
 fan-out so a flat tree is legible as "every premise was terminal" rather than as "recursion
 failed".
 
-**Classification is a total function of the configured predicate**, in this order:
+**Classification is total**, in this order:
 
     premise_type is None                  → refuse (impossible through the wire schema)
     restates the root claim               → decomposition-refused (restates-root-claim)
@@ -135,11 +135,10 @@ class DescentOutcome(VerityModel):
     #: Every call this descent issued, including the ones that refused. The cassette is the
     #: authority when there is one; this is what the stage reports without it.
     usage: Usage = Field(default_factory=Usage)
+    #: Calls issued, including the ones that refused. Deliberately not derivable from
+    #: `counts`: a premise the descent declined to expand cost nothing, so the refusal
+    #: tallies do not add up to the calls made.
     calls: int = 0
-
-    @property
-    def expanded(self) -> int:
-        return len(self.steps)
 
 
 def terminal_reason(
@@ -291,7 +290,7 @@ def decompose_claim(
             usage = getattr(error, "usage", None)
             if usage is not None:
                 outcome.usage = outcome.usage + usage
-            if node.id == claim.id:
+            if root:
                 raise
             sub = _REFUSAL_SUB_REASONS.get(type(error).__name__, "other")
             refusals[sub] = refusals.get(sub, 0) + 1
@@ -373,9 +372,11 @@ def decompose_claim(
         )
 
     outcome.counts = {
+        # `steps` is the count of nodes expanded — one step per expansion — under the key
+        # the manifest already used at M3-T1. A second key for the same number invites a
+        # reader to look for the difference between them.
         "steps": len(outcome.steps),
         "premises": len(premises),
-        "expanded": len(expanded),
         **{f"terminal:{reason}": count for reason, count in sorted(terminal_mix.items())},
         **{f"refused:{sub}": count for sub, count in sorted(refusals.items())},
     }

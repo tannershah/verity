@@ -112,7 +112,6 @@ class Costed(Scripted):
 
 # A three-level descent: one statistical premise per level is the recursion candidate, and
 # everything else terminates on its own type.
-ROOT = "The published iron figure for spinach was overstated tenfold."
 MID = "A reported value ten times the correct one is a decimal shifted one place."
 DEEP = "Two published values for one quantity differ by exactly a factor of ten."
 
@@ -166,7 +165,7 @@ def test_the_descent_expands_what_the_predicate_names_and_nothing_else():
     graph = _graph(outcome)
 
     assert adapter.asked == [CLAIM.text, MID, DEEP], "breadth-first, in proposal order"
-    assert outcome.expanded == 3
+    assert len(outcome.steps) == 3
     assert graph.recorded_depth() == 3 == graph.metadata.depth_budget
     assert _mix(graph) == {
         TerminationReason.CITATION_SHAPED: 2,
@@ -191,12 +190,12 @@ def test_widening_the_predicate_changes_what_the_buckets_mean():
     wide, _ = _descend(script, config=WIDENED)
 
     assert _mix(_graph(narrow)) == {TerminationReason.CITATION_SHAPED: 1}
-    assert narrow.expanded == 1
+    assert len(narrow.steps) == 1
 
     wide_mix = _mix(_graph(wide, config=WIDENED))
     assert TerminationReason.CITATION_SHAPED not in wide_mix
     assert wide_mix == {TerminationReason.BUDGET_EXIT: 1}
-    assert wide.expanded == 3
+    assert len(wide.steps) == 3
 
 
 def test_a_premise_the_predicate_would_not_expand_records_its_own_reason_at_the_budget():
@@ -396,7 +395,7 @@ def test_a_refusal_below_the_root_terminates_its_branch_and_the_call_is_still_co
     outcome, _ = _descend(adapter=Costed({CLAIM.text: TREE[CLAIM.text], MID: _d()}))
     graph = _graph(outcome)
 
-    assert outcome.calls == 2 and outcome.expanded == 1
+    assert outcome.calls == 2 and len(outcome.steps) == 1
     assert outcome.usage.cost_usd == pytest.approx(0.02), (
         "a descent that refuses a branch and reports only what it kept under-reports itself"
     )

@@ -13,6 +13,9 @@ venv/
 *.egg-info/
 
 .cache/
+# Session transcripts and their cost logs. Git carries the history; a pass record in the
+# tree is process narration, which CLAUDE.md keeps out of the repository.
+runs/
 # Bulk downloads, the database, and run logs stay out; versioned claim sets, the
 # verifier's smoke set and selection record, and the demo graph do not — those are the
 # evidence a gate ran and the artifact the quickstart renders without a key.
