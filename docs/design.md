@@ -145,7 +145,9 @@ Entailment steps are **native n-ary — SETTLED**: 3–7 premises per step, no b
 
 **A terminal says why it stopped, and only a terminal does.** The termination vocabulary
 splits in two. *Epistemic* reasons — grounded, citation-shaped, unverifiable-by-design —
-are conclusions about the premise, and are the only ones the grounding partition may read;
+are conclusions about the premise: they follow from its type, never from a producer's
+configuration, because the grounding partition reads them as claims about what could verify
+it. They are the only ones that partition may read;
 *descent-imposed* ones — budget-exit, cap-exit, decomposition-refused — say the descent
 would have gone further and did not, which is silent on whether an identifier could verify
 the premise, so applicability falls through to premise type there. A reason is recorded for

@@ -22,18 +22,23 @@ failed".
 
     premise_type is None                  → refuse (impossible through the wire schema)
     restates the root claim               → decomposition-refused (restates-root-claim)
-    premise_type in UNGROUNDABLE_TYPES    → unverifiable-by-design  (no budget spent)
-    premise_type not in config.recurse_on → citation-shaped
+    premise_type not in config.recurse_on → its INTRINSIC_TERMINALS reason
     child depth >= depth_budget           → budget-exit
     the node cap has been reached         → cap-exit
     otherwise                             → expand
 
-Three of those orderings are load-bearing. *Terminal is relative to the predicate*, not a
-property of the type: widening `recurse_on` moves `empirical-citable` from the
-`citation-shaped` bucket into the expandable set, so a premise that then stops at the budget
-records `budget-exit` honestly and `citation-shaped` cannot occur at all. The two settings
-therefore produce two mixes that are **not comparable**, which is why the predicate travels
-in `config_hash()` and the manifest. *Restatement precedes everything* because a premise
+**Configuration decides whether a premise is expanded; its type decides what it is called
+when it stops.** `citation-shaped` and `unverifiable-by-design` are consumed as claims about
+the premise — `applicability` reads the first as "a source could settle this" — so only
+`INTRINSIC_TERMINALS` writes them, and a knob can never label an arithmetic premise citable.
+What `recurse_on` does change is which types are *candidates*: widening it moves
+`empirical-citable` into the expandable set, so a premise that then stops at the budget
+records `budget-exit` and the `citation-shaped` bucket cannot occur at all. Two settings
+therefore give two mixes that are **not comparable**, which is why the predicate travels in
+`config_hash()` and the manifest. A type with no intrinsic terminal cannot be declined at
+all: `DecompositionConfig` refuses such a predicate, which is what makes the lookup total.
+
+Two orderings are load-bearing besides. *Restatement precedes everything* because a premise
 reproducing the claim has descended nowhere — calling it citation-shaped would assert that a
 source can settle a composite claim, and would put it in the citable grounding denominator;
 placing it first also keeps `decomposition-refused` partitionable by
@@ -86,7 +91,7 @@ from verity.ids import normalize_text
 from verity.llm.base import LLMAdapter, LLMRefusalError
 from verity.models.claim import Claim, Premise
 from verity.models.common import (
-    UNGROUNDABLE_TYPES,
+    INTRINSIC_TERMINALS,
     CapRecord,
     TerminationReason,
     utc_now,
@@ -142,6 +147,16 @@ def terminal_reason(
 ) -> TerminationReason | None:
     """Why this premise stops here, or None if the predicate would expand it.
 
+    **Configuration decides whether a premise is expanded; the type decides what it is
+    called when it stops.** The two are separate on purpose. `citation-shaped` and
+    `unverifiable-by-design` are consumed as claims about the premise —
+    `alethiology.grounding.applicability` reads the first as "a source could settle this"
+    when partitioning the grounding denominators — so only `INTRINSIC_TERMINALS` may write
+    them. `recurse_on` chooses which types descend, and a type it declines falls back to
+    the terminal its own meaning carries. A type with no such terminal cannot be declined:
+    `DecompositionConfig` refuses that predicate, which is what makes the lookup below
+    total rather than a lookup with a fallback nobody can name.
+
     Raises on an untyped premise rather than guessing. `ProposedPremise.premise_type` is
     required and `_materialize` is the only path into a descent, so an untyped premise
     reaching this point is a producer defect, not a policy question — and neither answer
@@ -158,11 +173,9 @@ def terminal_reason(
         )
     if restating:
         return TerminationReason.DECOMPOSITION_REFUSED
-    if premise.premise_type in UNGROUNDABLE_TYPES:
-        return TerminationReason.UNVERIFIABLE_BY_DESIGN
-    if premise.premise_type not in config.recurse_on:
-        return TerminationReason.CITATION_SHAPED
-    return None
+    if premise.premise_type in config.recurse_on:
+        return None
+    return INTRINSIC_TERMINALS[premise.premise_type]
 
 
 def _upstream(
@@ -249,10 +262,14 @@ def decompose_claim(
             ancestors=path,
             upstream_statements=_upstream(adjacency, statements, node.id),
         )
-        assert {normalize_text(a.text) for a in path} <= context.upstream_statements, (
-            "the expansion path must be upstream of the node it reached; a guard that "
-            "lost it would stop refusing the cycles the path check already caught"
-        )
+        # Raised rather than asserted: `python -O` strips `assert`, and this is the check
+        # that caught the descent building a node into its own ancestor chain. An invariant
+        # worth writing is worth surviving an optimized interpreter.
+        if not {normalize_text(a.text) for a in path} <= context.upstream_statements:
+            raise RuntimeError(
+                f"the expansion path above {node.id} is not upstream of it; a guard that "
+                "lost the path would stop refusing the cycles the path check already caught"
+            )
 
         try:
             result = decompose_step(
@@ -279,9 +296,6 @@ def decompose_claim(
             sub = _REFUSAL_SUB_REASONS.get(type(error).__name__, "other")
             refusals[sub] = refusals.get(sub, 0) + 1
             record(node.id, TerminationReason.DECOMPOSITION_REFUSED)
-            outcome.notes.append(
-                f"a branch was not decomposed ({sub}): {_excerpt(node.text)}"
-            )
             continue
 
         outcome.calls += 1
@@ -317,6 +331,18 @@ def decompose_claim(
                 continue
             queue.append((premise, depth + 1, child_path))
 
+    if refusals:
+        # One line, and no model text. Per-branch notes repeated the excerpt the arity note
+        # was aggregated to avoid, and every one of them carried a statement the decomposer
+        # wrote — the run's only free-text channel for untrusted content. Nothing is lost:
+        # *which* premises refused is on the graph as `decomposition-refused` terminals, and
+        # the restatement partition among them is `ClaimGraph.restating_premise_ids()`.
+        breakdown = ", ".join(f"{count} {sub}" for sub, count in sorted(refusals.items()))
+        outcome.notes.append(
+            f"{sum(refusals.values())} branch(es) were not decomposed ({breakdown}); they "
+            "are the `decomposition-refused` terminals on the graph"
+        )
+
     dropped = terminal_mix.get(TerminationReason.CAP_EXIT.value, 0)
     if dropped:
         outcome.caps.append(
@@ -337,10 +363,14 @@ def decompose_claim(
         )
 
     unaccounted = set(premises) - expanded - set(outcome.terminations)
-    assert not unaccounted, (
-        f"{len(unaccounted)} premise(s) neither decomposed nor terminated: "
-        f"{sorted(unaccounted)[:3]}"
-    )
+    if unaccounted:
+        # `ClaimGraph` would catch this too, two layers up and as a message about a graph.
+        # Raised here so it names the descent's own bookkeeping, and so `-O` cannot remove
+        # the only check that reads in the vocabulary of the thing that went wrong.
+        raise RuntimeError(
+            f"{len(unaccounted)} premise(s) neither decomposed nor terminated: "
+            f"{sorted(unaccounted)[:3]}"
+        )
 
     outcome.counts = {
         "steps": len(outcome.steps),
@@ -351,8 +381,3 @@ def decompose_claim(
     }
     return outcome
 
-
-def _excerpt(text: str, limit: int = 120) -> str:
-    """A statement, short enough for a note. Model text, so it is trimmed not trusted."""
-    collapsed = " ".join(text.split())
-    return collapsed if len(collapsed) <= limit else f"{collapsed[: limit - 1]}…"

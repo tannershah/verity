@@ -18,7 +18,11 @@ from pydantic import BaseModel, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from verity.ids import content_hash
-from verity.models.common import UNGROUNDABLE_TYPES, PremiseType
+from verity.models.common import (
+    RECURSION_REQUIRED_TYPES,
+    UNGROUNDABLE_TYPES,
+    PremiseType,
+)
 
 
 class DecompositionConfig(BaseModel):
@@ -59,17 +63,27 @@ class DecompositionConfig(BaseModel):
 
     @model_validator(mode="after")
     def _canonicalize_recursion_predicate(self) -> DecompositionConfig:
-        """Sort and deduplicate, and refuse the types that terminate by design.
+        """Sort and deduplicate, and refuse a predicate the vocabulary cannot describe.
 
         Canonicalized because this reaches `config_hash()`: two spellings of one predicate
         must hash alike, or a replay rebuilding the config from a JSON list would compute a
         key the recorded run never used. Deduplicated for the same reason.
 
-        `definitional` and `background` are refused rather than ignored. build-plan.md M3-T2
-        terminates them as `unverifiable-by-design` without spending depth budget, because
-        no paper-shaped key can verify them — a configuration asking the descent to expand
-        them states a contradiction, and silently honouring one half of it is how a run
-        comes to have been governed by a rule nobody can read off its manifest.
+        Two refusals, and both keep configuration out of the epistemic vocabulary.
+
+        `definitional` and `background` cannot be expanded: they terminate as
+        `unverifiable-by-design` without spending depth budget, because no paper-shaped key
+        can verify them. A configuration asking the descent into them states a
+        contradiction, and honouring one half of it silently is how a run comes to have been
+        governed by a rule nobody can read off its manifest.
+
+        A type with no intrinsic terminal — `statistical`, which no paper settles and which
+        "unverifiable" is nonetheless false of — *must* be expanded, because the only label
+        left for it would be an epistemic one the configuration is not entitled to write.
+        `applicability` reads `citation-shaped` as "a source could settle this", so a
+        predicate that excluded `statistical` would put a knob's decision into the citable
+        grounding denominator. Turning recursion off entirely is `depth_budget = 1`, which
+        says so directly.
         """
         illegal = sorted(t.value for t in self.recurse_on if t in UNGROUNDABLE_TYPES)
         if illegal:
@@ -77,6 +91,13 @@ class DecompositionConfig(BaseModel):
                 f"recurse_on lists {illegal}, which terminate as unverifiable-by-design: "
                 "no external identifier can verify them, so a descent into them spends "
                 "budget it can never ground"
+            )
+        missing = sorted(t.value for t in RECURSION_REQUIRED_TYPES - set(self.recurse_on))
+        if missing:
+            raise ValueError(
+                f"recurse_on omits {missing}, which carry no terminal of their own — the "
+                "descent could only stop them by writing an epistemic reason configuration "
+                "is not entitled to write. Set depth_budget=1 to stop descending at all"
             )
         self.recurse_on = tuple(sorted(set(self.recurse_on), key=lambda t: t.value))
         return self

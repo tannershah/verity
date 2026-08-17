@@ -708,6 +708,24 @@ def test_terminal_control_sequences_never_reach_the_terminal():
     assert "Before" in out and "after" in out
 
 
+def test_nothing_this_surface_prints_carries_a_control_sequence():
+    """Asserted over the whole surface rather than per field, because the defect is a
+    forgotten call site rather than a wrong one. Notes are the case that opened it: a note
+    is assembled by a stage, a stage's string can quote an exception that quotes model
+    output, and the note loop was the one emitter not passing through `sanitize` — while
+    `CachedStage.notes` persists it, so a hostile string is replayed on every later cache
+    hit, including runs that make no provider call at all.
+    """
+    hostile = "\x1b[2J\x1b[HInjected banner.\x07"
+    out = render_to_text(
+        payload_of(scored(0.74, text=hostile)),
+        notes=[f"a stage said: {hostile}"],
+    )
+    assert not any(ord(ch) < 0x20 and ch != "\n" for ch in out)
+    assert "\x7f" not in out
+    assert "Injected banner." in out, "the words survive; only the styling is removed"
+
+
 def test_a_premise_cannot_break_out_of_its_gutter_with_its_own_newlines():
     """The layout owns line breaks. A premise supplying its own would put text where no
     tree glyph precedes it, so the newline becomes a space and the row stays one row."""

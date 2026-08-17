@@ -70,17 +70,6 @@ class PremiseType(StrEnum):
     BACKGROUND = "background"
 
 
-#: Premise types no external identifier can verify. Two tiers read this and they must read
-#: one definition: M3-T2 terminates them as `unverifiable-by-design` without spending depth
-#: budget (build-plan.md M3-T2), and M5's grounding partition excludes them from the
-#: supplementary citable-only denominator (build-plan.md §4). It lives here rather than in
-#: either consumer because a second copy is how the headline and supplementary
-#: grounding rates come to be computed over two different partitions.
-UNGROUNDABLE_TYPES: frozenset[PremiseType] = frozenset(
-    {PremiseType.DEFINITIONAL, PremiseType.BACKGROUND}
-)
-
-
 class TerminationReason(StrEnum):
     """Why a branch stopped descending (M3-T2). Reported per run, never inferred.
 
@@ -128,6 +117,40 @@ EPISTEMIC_TERMINATIONS: frozenset[TerminationReason] = frozenset(
         TerminationReason.CITATION_SHAPED,
         TerminationReason.UNVERIFIABLE_BY_DESIGN,
     }
+)
+
+#: The terminal a premise type carries *by what the type means*, independent of any run's
+#: configuration. This is the whole bridge between the two vocabularies, and it is a map
+#: rather than a pair of conditionals because the epistemic reasons are consumed as claims
+#: about the premise: `applicability` reads `citation-shaped` as "a source could settle
+#: this", so nothing but the type is entitled to write it. A type absent from this map has
+#: no honest terminal of its own — `statistical` is the case, since no paper settles
+#: arithmetic and yet "unverifiable" is false of it — and `DecompositionConfig` therefore
+#: requires such a type to be recursable, so the descent never has to invent a label for it.
+#:
+#: Adding a fifth `PremiseType` forces that choice rather than defaulting to one: give it an
+#: intrinsic terminal here, or the configuration validator refuses every predicate that
+#: omits it.
+INTRINSIC_TERMINALS: dict[PremiseType, TerminationReason] = {
+    PremiseType.EMPIRICAL_CITABLE: TerminationReason.CITATION_SHAPED,
+    PremiseType.DEFINITIONAL: TerminationReason.UNVERIFIABLE_BY_DESIGN,
+    PremiseType.BACKGROUND: TerminationReason.UNVERIFIABLE_BY_DESIGN,
+}
+
+#: Premise types no external identifier can verify. Derived from the map above rather than
+#: listed again: two tiers read this — M3-T2 terminates them without spending depth budget,
+#: M5's grounding partition excludes them from the supplementary citable-only denominator
+#: (build-plan.md §4) — and a second literal is how the headline and supplementary rates
+#: come to be computed over two different partitions.
+UNGROUNDABLE_TYPES: frozenset[PremiseType] = frozenset(
+    kind
+    for kind, reason in INTRINSIC_TERMINALS.items()
+    if reason is TerminationReason.UNVERIFIABLE_BY_DESIGN
+)
+
+#: Types the descent cannot terminate on its own authority, so a predicate must expand them.
+RECURSION_REQUIRED_TYPES: frozenset[PremiseType] = frozenset(
+    kind for kind in PremiseType if kind not in INTRINSIC_TERMINALS
 )
 
 

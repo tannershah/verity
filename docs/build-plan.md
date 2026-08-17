@@ -121,18 +121,25 @@ tier's slot in the §3 ordering, with the artifacts that exist by then.
   at the shallowest depth it is reached and never reclassified. Caps are reported per
   run (**no silent caps**, evaluation §6).
 
-  **The predicate is configuration, not a constant.** `citation-shaped` is the
-  `empirical-citable` type, whose definition — "a specific study, dataset, or registry
-  entry could verify it" — *is* the predicate; `DecompositionConfig.recurse_on`
-  (default: `statistical`) names what descends. It reaches `config_hash()` and the
-  manifest snapshot because it decides tree depth, cost, and the termination mix, and
-  because **a mix is only readable against the predicate in its own manifest**:
-  widening it does not deepen the same tree, it moves `empirical-citable` out of the
-  `citation-shaped` bucket, which then cannot occur at all. Two settings give two
-  non-comparable mixes, never one metric at two settings. Listing a
-  definitional/background type is refused — they terminate as
-  `unverifiable-by-design` without burning depth budget, since no paper-shaped key can
-  verify them (see §4 for how they count).
+  **Configuration decides what is expanded; the type decides what a terminal is
+  called.** `DecompositionConfig.recurse_on` (default: `statistical`) names which types
+  descend, and it reaches `config_hash()` and the manifest snapshot because it decides
+  tree depth, cost, and the termination mix — **a mix is only readable against the
+  predicate in its own manifest**: widening it does not deepen the same tree, it moves
+  `empirical-citable` into the expandable set, so the `citation-shaped` bucket cannot
+  occur at all. Two settings give two non-comparable mixes, never one metric at two
+  settings.
+
+  The predicate may not write an epistemic terminal. `citation-shaped` and
+  `unverifiable-by-design` are consumed as claims about the premise — M5's applicability
+  partition reads the first as "a source could settle this" — so they come from a type→
+  reason map and never from a knob, or a configuration choice would enter the
+  pre-registered citable denominator. Two predicates are therefore refused rather than
+  honoured in part: one listing `definitional`/`background`, which terminate without
+  burning depth budget because no paper-shaped key can verify them (§4); and one
+  omitting a type that carries no terminal of its own — `statistical`, which no paper
+  settles and which "unverifiable" is nonetheless false of. Declining to descend at all
+  is `depth_budget = 1`, which says so directly.
 
   **Termination reasons are six, in two kinds.** Epistemic — `grounded`,
   `citation-shaped`, `unverifiable-by-design` — describe the premise, and are the only

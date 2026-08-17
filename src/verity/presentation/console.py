@@ -257,6 +257,14 @@ def render(
     `notes` are run-level facts the payload cannot carry — that the verifier was not
     installed, for instance, which is why every score reads `unscored`. They print with
     the footer so an absence always has a stated cause.
+
+    **Notes are sanitized on the way out, like row text.** A note is assembled by a stage
+    rather than by this tier, and a stage's string can quote an exception message that
+    quotes model output — so it is text this tier did not author, which is exactly the
+    condition `layout.sanitize` exists for. Sanitizing here rather than where each note is
+    built covers every producer at once, including the ones that do not exist yet, and
+    matches how premise text is handled: the artifact records what was said, the display is
+    where it stops being able to style the page.
     """
     console = console or Console()
     view = layout.build(payload)
@@ -269,4 +277,4 @@ def render(
     for line in _footer(view, gate=gate, selection_path=selection_path):
         _emit(console, line)
     for note in notes:
-        _emit(console, Text(f"note  {note}", style="yellow"))
+        _emit(console, Text(f"note  {layout.sanitize(note)}", style="yellow"))

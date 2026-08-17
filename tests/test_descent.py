@@ -16,6 +16,7 @@ import unicodedata
 from datetime import UTC, datetime
 
 import pytest
+from pydantic import ValidationError
 
 from verity.config import DecompositionConfig
 from verity.decomposition import (
@@ -256,6 +257,33 @@ def test_grounded_is_never_emitted_by_a_descent():
     assert not any(r is TerminationReason.GROUNDED for r in outcome.terminations.values())
 
 
+def test_configuration_cannot_write_an_epistemic_terminal_it_has_no_standing_to_write():
+    """`citation-shaped` is consumed as a claim about the premise — `applicability` reads it
+    as "a source could settle this" when partitioning the grounding denominators — so it is
+    written by the type and never by the predicate. A knob that could name an arithmetic
+    premise citable would put its own decision into a pre-registered denominator.
+
+    The predicate therefore cannot decline a type that carries no terminal of its own: the
+    configuration is refused, rather than the descent inventing a label at classification
+    time. Declining to descend at all is `depth_budget=1`, which says so directly.
+    """
+    from verity.models.common import INTRINSIC_TERMINALS
+
+    for kind, reason in INTRINSIC_TERMINALS.items():
+        assert (
+            terminal_reason(
+                Premise(text=f"A {kind.value} premise.", premise_type=kind),
+                restating=False,
+                config=DecompositionConfig(recurse_on=(PremiseType.STATISTICAL,)),
+            )
+            is reason
+        ), "a declined type falls back to the terminal its own meaning carries"
+
+    for predicate in ((), (PremiseType.EMPIRICAL_CITABLE,)):
+        with pytest.raises(ValidationError, match="carry no terminal of their own"):
+            DecompositionConfig(recurse_on=predicate)
+
+
 def test_an_untyped_premise_is_a_producer_defect_and_not_a_policy_question():
     """The wire schema requires a type, so this cannot arise through `_materialize`. It
     raises a `ValueError` rather than a `DecompositionError` deliberately: the stage
@@ -376,7 +404,7 @@ def test_a_refusal_below_the_root_terminates_its_branch_and_the_call_is_still_co
     assert graph.premises[Premise(text=MID).id].termination_reason is (
         TerminationReason.DECOMPOSITION_REFUSED
     )
-    assert any("was not decomposed (empty)" in note for note in outcome.notes)
+    assert any("1 branch(es) were not decomposed (1 empty)" in n for n in outcome.notes)
 
 
 def test_a_refusal_at_the_root_propagates_because_there_is_no_graph_without_it():
@@ -594,6 +622,37 @@ def test_the_committed_pilots_record_the_fan_out_the_default_predicate_produces(
 
 
 # -- the assembly contract ----------------------------------------------------------------
+
+
+def test_an_epistemic_reason_must_describe_the_premise_the_graph_will_store():
+    """The descent classifies against the step that first proposed a premise, and the merge
+    keeps the first-seen annotation — they agree only because both read one list in one
+    order. That coupling is invisible, and a plausible edit (sorting steps for determinism)
+    would break it by storing a premise typed `empirical-citable` under a reason saying
+    nothing could cite it. Checked at assembly, where it is a property of the result rather
+    than of the traversal.
+    """
+    outcome, _ = _descend()
+    reversed_steps = list(reversed(outcome.steps))
+
+    # Unchanged order still assembles: the check is on agreement, not on ordering.
+    assemble_graph(
+        CLAIM, reversed_steps, config=CONFIG, terminations=outcome.terminations, now=FIXED
+    )
+
+    citable = next(
+        pid
+        for pid, reason in outcome.terminations.items()
+        if reason is TerminationReason.UNVERIFIABLE_BY_DESIGN
+    )
+    with pytest.raises(ValueError, match="which its type does not carry"):
+        assemble_graph(
+            CLAIM,
+            outcome.steps,
+            config=CONFIG,
+            terminations={**outcome.terminations, citable: TerminationReason.CITATION_SHAPED},
+            now=FIXED,
+        )
 
 
 def test_a_reason_naming_a_premise_the_graph_does_not_hold_is_refused():

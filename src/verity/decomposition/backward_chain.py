@@ -59,7 +59,13 @@ from verity.ids import content_hash, normalize_text
 from verity.keys import ExternalKey, InvalidKeyError
 from verity.llm.base import LLMAdapter, LLMRequest
 from verity.models.claim import Claim, ClaimGraph, EntailmentStep, GraphMetadata, Premise
-from verity.models.common import CapRecord, TerminationReason, utc_now
+from verity.models.common import (
+    EPISTEMIC_TERMINATIONS,
+    INTRINSIC_TERMINALS,
+    CapRecord,
+    TerminationReason,
+    utc_now,
+)
 from verity.models.manifest import LLMSettings, Usage
 
 #: Stage label. Scripts the stub, keys the manifest, and names the call in run logs.
@@ -385,11 +391,23 @@ def _merge_premises(
 def _apply_terminations(
     premises: dict[str, Premise], terminations: dict[str, TerminationReason]
 ) -> dict[str, Premise]:
-    """Write each reason onto the merged node, refusing one that names no premise.
+    """Write each reason onto the merged node, refusing one the merged node contradicts.
 
-    A reason for a premise the graph does not hold is not harmless: it means the producer's
-    bookkeeping and its output disagree about which nodes exist, and the check that every
-    terminal carries a reason would then pass on a map describing a different tree.
+    Two disagreements, both silent without this.
+
+    A reason for a premise the graph does not hold means the producer's bookkeeping and its
+    output disagree about which nodes exist, and the check that every terminal carries a
+    reason would then pass over a map describing a different tree.
+
+    An *epistemic* reason must still describe the premise the graph will store. A descent
+    classifies against the first step that proposed a premise while the merge keeps the
+    first-seen annotation, so the two agree only because both read the same list in the same
+    order — an invisible coupling that a plausible edit (sorting steps for determinism)
+    would break by storing a premise typed `empirical-citable` under a reason that says
+    nothing could cite it. Checked here against `INTRINSIC_TERMINALS` rather than in
+    `ClaimGraph`, because a recorded reason disagreeing with a type is legitimate for
+    producers that did not derive one from the other — `applicability` documents that the
+    recorded decision wins — and illegitimate only for the producer that did.
     """
     stray = sorted(set(terminations) - set(premises))
     if stray:
@@ -397,6 +415,16 @@ def _apply_terminations(
             f"termination reasons name {len(stray)} premise(s) this graph does not hold: "
             f"{stray[:3]}"
         )
+    for premise_id, reason in terminations.items():
+        if reason not in EPISTEMIC_TERMINATIONS:
+            continue
+        kind = premises[premise_id].premise_type
+        if kind is None or INTRINSIC_TERMINALS.get(kind) is not reason:
+            raise ValueError(
+                f"premise {premise_id} is typed {kind} and terminated as {reason.value}, "
+                "which its type does not carry; an epistemic terminal describes the premise "
+                "the graph stores, not the one whichever step happened to be classified"
+            )
     return {
         pid: (
             premise
