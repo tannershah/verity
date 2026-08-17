@@ -5,8 +5,10 @@ This directory is the demo's record: verbatim terminal output captured on
 file is the output of one command, and every command runs offline on a fresh
 clone with no API key (recorded LLM answers and registry responses are
 committed with the repo; the one live LLM call behind each claim's first-ever
-decomposition cost a few cents and was recorded then). The root README's "See
-it run" section has the commands to reproduce all of it.
+decomposition cost a few cents and was recorded then). The code blocks below
+are excerpts quoted from those files so the output can be read in place — the
+.txt files remain the complete, untrimmed record. The root README's "See it
+run" section has the commands to reproduce all of it.
 
 ## The two demo claims, and why these two
 
@@ -61,7 +63,18 @@ three retraction sources — Retraction Watch's bulk table, Crossref's
 update metadata, and OpenAlex's `is_retracted` flag — and writes the result
 onto each fact. Final tally, printed in the capture: **27 facts clean, 6
 flagged retracted** (five resting on the chocolate-hoax DOI, one on a
-retracted hesperidin trial, PMID 31844967). Two subtleties visible in the
+retracted hesperidin trial, PMID 31844967).
+
+```text
+rows:            33
+  by scope:      {'chocolate-hoax': 14, 'spinach-iron': 19}
+  by key type:   {'doi': 30, 'pmid': 3}
+  by tier:       {'single-secondary': 6, 'verified-primary': 27}
+grounding-eligible facts: 27
+...
+  clean: 27, retracted: 6, unchanged: 33
+```
+ Two subtleties visible in the
 output: two papers carry Crossref *correction* notices that the checker
 correctly reports as `notice-not-retraction` rather than lumping them in with
 retractions, and PMID-keyed facts show `crossref — crossref indexes DOIs, and
@@ -73,11 +86,17 @@ not yet propagate its flag to premises standing on it.
 ### `01-retraction-check.txt` — one identifier, three sources
 
 The same check pointed at a single identifier: `verity.quality check
-doi:10.3823/1654`. Output: verdict `retracted`, with each source's own reading
-beside it, and then the line that keeps the agreement honest —
+doi:10.3823/1654`. The whole verdict block:
 
-> a registry check cites record-id=17524 — that is a Retraction Watch record
-> seen again, not a second source
+```text
+doi:10.3823/1654  retracted
+  crossref          retracted  (updated-by=retraction source=retraction-watch record-id=17524)
+  openalex          retracted  (is_retracted=true)
+  retraction-watch  retracted  (nature=Retraction record-id=17524 table=data/retraction_watch.csv)
+  a registry check cites record-id=17524 — that is a Retraction Watch record seen again, not a second source
+```
+
+The last line is the one that keeps the agreement honest.
 
 Crossref's retraction notice for this DOI is itself sourced from Retraction
 Watch (same record id), and OpenAlex ingests Crossref — so "three sources
@@ -93,6 +112,65 @@ the product's core design decision, printed on every render. Each premise row
 shows the step's entailment score (`0.9995` here, tilde-marked as
 uncalibrated), a `Δ if removed` column (unmeasured yet — shown as `—` rather
 than faked), an evidence state, and a grounding status.
+
+```text
+CLAIM  A misplaced decimal point made spinach famous as an iron-rich
+       food.
+       Verity issues no verdict on this claim. Every number below scores
+       one step.
+
+                                   step     Δ if  evidence
+                                entail.  removed  state        grounding
+├─ Spinach is widely reputed   0.9995 ~        —  unverified*  not grounded
+│  in popular culture and
+│  nutrition writing to be an
+│  exceptionally rich dietary
+│  source of iron.
+│    citation-shaped
+├─ A nineteenth-century        0.9995 ~        —  unverified*  not grounded
+│  published chemical
+│  analysis reported
+│  spinach's iron content as
+│  roughly ten times the
+│  value obtained by later
+│  analyses.
+│    citation-shaped
+├─ The tenfold discrepancy in  0.9995 ~        —  unverified*  not grounded
+│  the published spinach iron
+│  figure originated from a
+│  decimal point being placed
+│  one position to the right
+│  of its correct location.
+│    citation-shaped
+├─ The inflated spinach iron   0.9995 ~        —  unverified*  not grounded
+│  figure was reproduced in
+│  subsequent food
+│  composition tables,
+│  textbooks, and popular
+│  media rather than being
+│  corrected before wide
+│  circulation.
+│    citation-shaped
+├─ Spinach's measured iron     0.9995 ~        —  unverified*  not grounded
+│  content, about 2 to 3
+│  milligrams per 100 grams
+│  fresh weight, is
+│  comparable to that of many
+│  other leafy vegetables and
+│  not exceptional.
+│    citation-shaped
+└─ Spinach's public            0.9995 ~        —  unverified*  not grounded
+   reputation as an iron-rich
+   food arose from the
+   circulated inflated iron
+   figure rather than from
+   independent observation or
+   promotion.
+     citation-shaped
+
+6 premises · 6 rows · 1 step · graph depth 1 (traversal depth) · alethiology
+   read 2026-08-17 19:08Z
+```
 
 The result, honestly: **six premises, one step, depth 1, and nothing
 grounds.** All six premises terminated `citation-shaped` (they are the kind of
@@ -112,7 +190,16 @@ pinned, the recorded LLM answers are replayed, the stage cache is off, and
 each stage's output digest is compared against the stored run. The capture
 shows all four stage digests matching and the verdict **`reproduced`** — with
 `ANTHROPIC_API_KEY` unset and the working caches moved aside, so every answer
-demonstrably came from the committed recordings. One printed note is worth
+demonstrably came from the committed recordings.
+
+```text
+  = decompose  72d9603b267ca2f3c7aa5f8514c5fb3424ca866ca8ece08bd9cd39cef4776f35
+  = verify     89af5e77714bd0b70fc1f005b2cc102b32e3d27e1984f1bae10f6cbe051142b5
+  = bind       89af5e77714bd0b70fc1f005b2cc102b32e3d27e1984f1bae10f6cbe051142b5
+  = ground     a78eb018d000f40be2e5f64055041b96cdc7eb4c2e398ab91e9ae0036f225244
+  ...
+  reproduced
+``` One printed note is worth
 noticing: the replay says the store it read was overridden relative to the
 one the run recorded — the tool reports the substitution rather than letting
 it pass silently.
@@ -129,7 +216,152 @@ no greater than T and B is strictly greater than T, then A is less than B"*.
 The termination accounting is printed beside the tree: 2 branches stopped at
 the depth budget (`budget-exit`), 7 at citation-shaped statements, 6 at
 statements marked `unverifiable-by-design` (definitions and arithmetic that
-no citation could or should settle).
+no citation could or should settle). Quoted as rendered at 80 columns — a few
+long labels wrap mid-word:
+
+```text
+CLAIM  Eating dark chocolate accelerates weight loss.
+       Verity issues no verdict on this claim. Every number below scores
+       one step.
+
+                                   step     Δ if  evidence
+                                entail.  removed  state        grounding
+├─ Dark chocolate with a high   0.999 ~        —  unverified*  not grounded
+│  cocoa solids content
+│  contains cocoa flavanols
+│  and other polyphenols at
+│  concentrations
+│  substantially greater than
+│  those in milk chocolate.
+│    citation-shaped
+├─ Ingestion of cocoa           0.999 ~        —  unverified*  not grounded
+│  flavanols increases
+│  satiety and reduces ad
+│  libitum energy intake at
+│  subsequent meals in
+│  controlled feeding
+│  studies.
+│    citation-shaped
+├─ Cocoa flavanol intake        0.999 ~        —  unverified*  not grounded
+│  increases resting energy
+│  expenditure and whole-body
+│  fat oxidation in human
+│  metabolic measurements.
+│    citation-shaped
+├─ For a typical serving of     0.999 ~        —  unverified*  not grounded
+│  dark chocolate, the
+│  calories it supplies are
+│  fewer than the reduction
+│  in total daily energy
+│  intake that its
+│  consumption produces.
+│  ├─ A typical serving of     0.9995 ~        —  unverified*  not grounded
+│  │  dark chocolate is about
+│  │  30 grams and supplies
+│  │  roughly 170
+│  │  kilocalories.
+│  │    citation-shaped
+│  ├─ In controlled feeding    0.9995 ~        —  unverified*  not grounded
+│  │  studies, consuming a
+│  │  serving of dark
+│  │  chocolate as a preload
+│  │  lowers energy intake at
+│  │  the following meal by
+│  │  more than 200
+│  │  kilocalories compared
+│  │  with no preload.
+│  │    citation-shaped
+│  ├─ The suppression of food  0.9995 ~        —  unverified*  not grounded
+│  │  intake that follows
+│  │  dark chocolate
+│  │  consumption is not
+│  │  offset by extra eating
+│  │  during the remainder of
+│  │  the same day.
+│  │    citation-shaped
+│  ├─ The measured reduction   0.9995 ~        —  unverified*  not grounded
+│  │  in total daily energy
+│  │  intake attributed to
+│  │  dark chocolate
+│  │  consumption is
+│  │  calculated from intake
+│  │  of foods other than the
+│  │  chocolate itself.
+│  │    unverifiable-by-desig
+│  │    n
+│  └─ A value of roughly 170   0.9995 ~        —  unverified*  not grounded
+│     kilocalories is smaller
+│     than a value exceeding
+│     200 kilocalories.
+│     ├─ The phrase "roughly    0.998 ~        —  unverified*  not grounded
+│     │  170 kilocalories"
+│     │  designates a
+│     │  quantity no greater
+│     │  than 180
+│     │  kilocalories.
+│     │    unverifiable-by-de
+│     │    sign
+│     ├─ The phrase "a value    0.998 ~        —  unverified*  not grounded
+│     │  exceeding 200
+│     │  kilocalories"
+│     │  designates a
+│     │  quantity strictly
+│     │  greater than 200
+│     │  kilocalories.
+│     │    unverifiable-by-de
+│     │    sign
+│     ├─ 180 kilocalories is    0.998 ~        —  unverified*  not grounded
+│     │  less than 200
+│     │  kilocalories.
+│     │    budget-exit
+│     ├─ Two quantities both    0.998 ~        —  unverified*  not grounded
+│     │  expressed in
+│     │  kilocalories are
+│     │  measured on the same
+│     │  scale and can be
+│     │  compared directly by
+│     │  magnitude.
+│     │    unverifiable-by-de
+│     │    sign
+│     └─ For any quantities A   0.998 ~        —  unverified*  not grounded
+│        and B and threshold
+│        T, if A is no
+│        greater than T and B
+│        is strictly greater
+│        than T, then A is
+│        less than B.
+│          budget-exit
+├─ A larger daily energy        0.999 ~        —  unverified*  not grounded
+│  deficit, produced by lower
+│  energy intake combined
+│  with higher energy
+│  expenditure, results in a
+│  faster rate of body weight
+│  loss over time.
+│    unverifiable-by-design
+├─ In randomized controlled     0.999 ~        —  unverified*  not grounded
+│  trials of adults following
+│  a reduced-calorie diet,
+│  groups assigned to consume
+│  dark chocolate daily lost
+│  body weight at a greater
+│  rate than control groups
+│  consuming no dark
+│  chocolate.
+│    citation-shaped
+└─ To accelerate weight loss    0.999 ~        —  unverified*  not grounded
+   means to increase the
+   amount of body weight lost
+   per unit of time relative
+   to a comparison condition.
+     unverifiable-by-design
+
+17 premises · 17 rows · 3 steps · graph depth 3 (traversal depth) ·
+   alethiology read 2026-08-17 19:22Z
+
+note  the descent expanded 2 of 17 premises to depth 3 against a budget of 3;
+   terminals: 2 budget-exit, 7 citation-shaped, 6 unverifiable-by-design.
+```
 
 And the miss, kept deliberately: `no-candidate-key 17`. The decomposer
 volunteered no identifier on any premise, so nothing bound, nothing grounded —
