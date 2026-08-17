@@ -41,16 +41,51 @@ class DecompositionConfig(BaseModel):
 class VerifierConfig(BaseModel):
     """M4. The threshold is an inference-time gate, not an evaluation threshold."""
 
-    model_id: str = "lytang/MiniCheck-Flan-T5-Large"
+    #: M4-T1's champion, selected under the rule fixed before scoring — see
+    #: `data/verifier/selection.json` for the numbers and `data/verifier/README.md` for
+    #: what they do and do not establish. Changing this invalidates `entailment_threshold`
+    #: below, which is scorer-relative.
+    model_id: str = "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli"
+    #: **Scorer-relative, a placeholder, and — against the champion — inert.** Measured on
+    #: the M4-T1 smoke set, this checkpoint is bimodal: clean steps land in 0.9971-0.9995
+    #: and caught-corrupt steps in 0.0001-0.0033, with nothing between. Every step in every
+    #: demo tree clears 0.50, and any value in (0.01, 0.99) would classify identically, so
+    #: the knob has no operating range to tune. M3-T3 inherits a gate that never fires and
+    #: should not read that as every step being sound. Its basis arrives with M4-T3's ROC;
+    #: the smoke set is not permitted to fit it.
     entailment_threshold: float = 0.50
     #: Leave-one-out drop above which a premise counts as load-bearing (M4-T2).
+    #: **Out of scale against the champion, and M4-T2 must reset it before pruning.** The
+    #: champion's clean-case dynamic range is 0.0024, so most deltas sit near zero. Two
+    #: measured points: dropping a load-bearing premise moved a step 0.9995 -> 0.4172
+    #: (delta 0.58), dropping a non-load-bearing one moved it 0.9986 -> 0.9985
+    #: (delta 0.0001). The gap is real but the floor between them is not 0.10 by anything
+    #: measured — and M4-T2 prunes what falls below this and loops it back into M3, so a
+    #: floor set too high deletes load-bearing premises. This is what M4-T2's ~20
+    #: hand-labelled sanity check exists to set.
     ablation_delta: float = 0.10
     #: NLI checkpoints disagree on label order; verified at init rather than assumed.
+    #: Turning this off is recorded in every score the scorer produces, not just here.
     verify_label_order_at_init: bool = True
+    #: Override for the checkpoint's commit. `None` — the default — uses the per-checkpoint
+    #: pin recorded in `verity.verifier.registry`, which is the commit M4-T1 measured each
+    #: candidate at. It cannot be pinned here instead: one field cannot name the right
+    #: commit for two different checkpoints, and the bake-off loads both.
+    revision: str | None = None
+    #: CPU by default, deliberately. MPS and CUDA produce different floats for the same
+    #: input, and a score that depends on which device happened to be free is not the
+    #: replayable number M1-T2 rests on.
+    device: str = "cpu"
 
 
 class RetrievalConfig(BaseModel):
-    """M6. Every bound here is reported in the run manifest."""
+    """M6. Every bound here is reported in the run manifest.
+
+    Cache mode is deliberately absent: it is a per-run argument recorded in the fetch log,
+    not configuration. Putting it here would fold it into `config_hash()` and make a mode
+    flip invalidate every M1-T2 stage cache, when where the bytes came from is not part of
+    what a stage computed.
+    """
 
     top_k: int = 10
     per_source_cap: int = 20

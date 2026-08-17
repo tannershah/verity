@@ -1,0 +1,260 @@
+{
+  "what": "M4-T1 checkpoint selection: the off-the-shelf entailment gate.",
+  "decision": {
+    "rule": "champion = higher separation, where separation = mean(clean) - mean(corrupt); ties broken by larger mean clean->probe drop; a checkpoint whose mean clean->probe drop does not exceed the clean-case range is recorded as failing the probe and is disqualified. Fixed before any score was computed.",
+    "rule_defect": "The probe test compares a drop against a spread, so each checkpoint's bar is its own clean-case variance rather than a shared threshold. Applied as written because it was fixed before the scores existed; the champion is unchanged under every variant tried. Repair belongs to M4-T3, against a real curve rather than a guess.",
+    "champion": "deberta-nli",
+    "eligible": [
+      "deberta-nli"
+    ],
+    "disqualified_probe_drop_below_own_clean_range": [
+      "minicheck"
+    ],
+    "ranking": [
+      "deberta-nli"
+    ],
+    "selection_failed": false,
+    "note": "Selected under the rule fixed before scoring."
+  },
+  "scorers": {
+    "minicheck": {
+      "checkpoint": "lytang/MiniCheck-Flan-T5-Large",
+      "revision": "96eafd01cee2d16cf81aaa2fb226b14f422a37b3",
+      "recipe": "concat-v1",
+      "max_input_tokens": 2048,
+      "device": "cpu",
+      "label_order_verified": true
+    },
+    "deberta-nli": {
+      "checkpoint": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli",
+      "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7",
+      "recipe": "concat-v1",
+      "max_input_tokens": 512,
+      "device": "cpu",
+      "label_order_verified": true
+    }
+  },
+  "summaries": {
+    "minicheck": {
+      "n_clean": 6,
+      "n_corrupt": 4,
+      "mean_clean": 0.8394,
+      "mean_corrupt": 0.4963,
+      "separation": 0.343,
+      "min_max_margin": -0.826,
+      "clean_range": 0.8412,
+      "clean_stdev": 0.3401,
+      "mean_probe_drop": 0.8269,
+      "probe_bar_is_own_clean_range": 0.8412,
+      "probe_drop_exceeds_own_clean_range": false,
+      "diagnostics": {
+        "premise_dropped": [
+          0.2901,
+          0.9791
+        ],
+        "irrelevant_injected": [
+          0.9782,
+          0.985
+        ],
+        "inconsistent_premise_set": [
+          0.8779
+        ],
+        "blind_spot": [
+          0.6738
+        ]
+      }
+    },
+    "deberta-nli": {
+      "n_clean": 6,
+      "n_corrupt": 4,
+      "mean_clean": 0.9986,
+      "mean_corrupt": 0.2515,
+      "separation": 0.7472,
+      "min_max_margin": -0.0024,
+      "clean_range": 0.0024,
+      "clean_stdev": 0.0011,
+      "mean_probe_drop": 0.9711,
+      "probe_bar_is_own_clean_range": 0.0024,
+      "probe_drop_exceeds_own_clean_range": true,
+      "diagnostics": {
+        "premise_dropped": [
+          0.4172,
+          0.9985
+        ],
+        "irrelevant_injected": [
+          0.999,
+          0.9995
+        ],
+        "inconsistent_premise_set": [
+          0.9985
+        ],
+        "blind_spot": [
+          0.9961
+        ]
+      }
+    }
+  },
+  "per_case": {
+    "clean-root-spinach": {
+      "label": "clean",
+      "role": "deciding",
+      "source": "spinach root step, depth 0",
+      "minicheck": 0.978,
+      "deberta-nli": 0.9995
+    },
+    "clean-root-mozart": {
+      "label": "clean",
+      "role": "deciding",
+      "source": "mozart root step, depth 0",
+      "minicheck": 0.9865,
+      "deberta-nli": 0.9995
+    },
+    "clean-root-chocolate": {
+      "label": "clean",
+      "role": "deciding",
+      "source": "chocolate root step, depth 0",
+      "minicheck": 0.986,
+      "deberta-nli": 0.9985
+    },
+    "clean-root-goldfish": {
+      "label": "clean",
+      "role": "deciding",
+      "source": "goldfish root step, depth 0",
+      "minicheck": 0.964,
+      "deberta-nli": 0.9971
+    },
+    "clean-nested-spinach": {
+      "label": "clean",
+      "role": "deciding",
+      "source": "spinach nested step, depth 1",
+      "minicheck": 0.9764,
+      "deberta-nli": 0.9995
+    },
+    "clean-nested-mozart": {
+      "label": "clean",
+      "role": "deciding",
+      "source": "mozart nested step, depth 1",
+      "minicheck": 0.1453,
+      "deberta-nli": 0.9976
+    },
+    "probe-spinach-root-with-mozart": {
+      "label": "probe",
+      "role": "probe",
+      "source": "spinach root conclusion, mozart root premises",
+      "minicheck": 0.0103,
+      "deberta-nli": 0.0175
+    },
+    "probe-mozart-root-with-goldfish": {
+      "label": "probe",
+      "role": "probe",
+      "source": "mozart root conclusion, goldfish root premises",
+      "minicheck": 0.0055,
+      "deberta-nli": 0.0037
+    },
+    "probe-chocolate-root-with-spinach": {
+      "label": "probe",
+      "role": "probe",
+      "source": "chocolate root conclusion, spinach root premises",
+      "minicheck": 0.0068,
+      "deberta-nli": 0.0003
+    },
+    "probe-goldfish-root-with-chocolate": {
+      "label": "probe",
+      "role": "probe",
+      "source": "goldfish root conclusion, chocolate root premises",
+      "minicheck": 0.0136,
+      "deberta-nli": 0.0037
+    },
+    "probe-spinach-nested-with-goldfish": {
+      "label": "probe",
+      "role": "probe",
+      "source": "spinach nested conclusion, goldfish root premises",
+      "minicheck": 0.0127,
+      "deberta-nli": 0.0072
+    },
+    "probe-mozart-nested-with-spinach": {
+      "label": "probe",
+      "role": "probe",
+      "source": "mozart nested conclusion, spinach root premises",
+      "minicheck": 0.0257,
+      "deberta-nli": 0.1327
+    },
+    "corrupt-negated-spinach": {
+      "label": "corrupt-premise-negated",
+      "role": "deciding",
+      "source": "spinach root, decimal-origin premise negated",
+      "minicheck": 0.9409,
+      "deberta-nli": 0.0033
+    },
+    "corrupt-negated-spinach-nested": {
+      "label": "corrupt-premise-negated",
+      "role": "deciding",
+      "source": "spinach nested, published-correction premise negated",
+      "minicheck": 0.9713,
+      "deberta-nli": 0.9995
+    },
+    "corrupt-overreach-goldfish": {
+      "label": "corrupt-conclusion-overreach",
+      "role": "deciding",
+      "source": "goldfish root premises, conclusion strengthened",
+      "minicheck": 0.0537,
+      "deberta-nli": 0.0029
+    },
+    "corrupt-overreach-chocolate": {
+      "label": "corrupt-conclusion-overreach",
+      "role": "deciding",
+      "source": "chocolate root premises, conclusion strengthened",
+      "minicheck": 0.0194,
+      "deberta-nli": 0.0001
+    },
+    "diagnostic-inconsistent-mozart": {
+      "label": "diagnostic-inconsistent-premise-set",
+      "role": "diagnostic",
+      "source": "mozart root, effect premise negated",
+      "minicheck": 0.8779,
+      "deberta-nli": 0.9985
+    },
+    "diagnostic-dropped-spinach": {
+      "label": "diagnostic-premise-dropped",
+      "role": "diagnostic",
+      "source": "spinach root minus the decimal-origin premise",
+      "minicheck": 0.2901,
+      "deberta-nli": 0.4172
+    },
+    "diagnostic-dropped-mozart": {
+      "label": "diagnostic-premise-dropped",
+      "role": "diagnostic",
+      "source": "mozart root minus the effect premise",
+      "minicheck": 0.9791,
+      "deberta-nli": 0.9985
+    },
+    "diagnostic-injected-spinach": {
+      "label": "diagnostic-irrelevant-injected",
+      "role": "diagnostic",
+      "source": "spinach root plus one goldfish premise",
+      "minicheck": 0.9782,
+      "deberta-nli": 0.999
+    },
+    "diagnostic-injected-mozart": {
+      "label": "diagnostic-irrelevant-injected",
+      "role": "diagnostic",
+      "source": "mozart root plus one chocolate premise",
+      "minicheck": 0.985,
+      "deberta-nli": 0.9995
+    },
+    "blindspot-brains": {
+      "label": "blind-spot",
+      "role": "blind-spot",
+      "source": "humans-use-10% root step",
+      "minicheck": 0.6738,
+      "deberta-nli": 0.9961
+    }
+  },
+  "caveats": [
+    "N=22 rejects a visibly broken checkpoint; it does not establish the winner is better than the loser. That is M4-T3's ROC.",
+    "Cases were produced by decomposition prompt m3t1-backward-chain-v1 and the champion was NOT re-checked against any later rewrite of it.",
+    "Both eligible negation cases come from one claim (spinach, root and nested), because only 2 of 7 reviewed decompositions are negation-eligible. The negation evidence spans a single claim.",
+    "MiniCheck is run without the reference implementation's chunk-and-max aggregation, so published MiniCheck numbers do not describe this recipe.",
+    "Scores are uncalibrated. The entailment_threshold is a placeholder whose basis arrives with M4-T3 and was not fitted on this set."
+  ]
+}

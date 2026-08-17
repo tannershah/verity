@@ -1,0 +1,141 @@
+{
+  "what": "Eyeball review of the five pilot decompositions and the two nested steps against the three validity criteria (design.md §3.2), performed before any case was labelled clean for the M4-T1 smoke set.",
+  "why": "The smoke set's clean cases are unreviewed decomposer output being used as the reference class a checkpoint is selected against. A decomposition containing a premise that entails the conclusion in one hop scores near 1.0 for a reason that has nothing to do with the checkpoint's quality. ClaimGraph.restating_premise_ids() does not catch these, because they are not verbatim.",
+  "reviewed_by": "builder, disclosed as a bias per evaluation.md §2",
+  "premise_references": "Premises are referenced by a quoted opening phrase, never by ordinal. The stored graph order and the scorer's canonical order (sorted by derived premise id) differ, so an ordinal in this file would mis-map onto smoke_set.jsonl.",
+  "lenses": [
+    "joint sufficiency: premises jointly entail the conclusion",
+    "verifiability descent: each premise strictly easier to verify than the conclusion",
+    "non-redundancy: every premise load-bearing",
+    "restatement: does any single premise, alone or with a definitional premise, entail the conclusion",
+    "presupposition: does any premise presuppose or independently assert the content another premise asserts"
+  ],
+  "why_the_presupposition_lens_is_listed_separately": "It was applied unevenly in the first pass — goldfish was flagged for it and mozart was not — and the case it missed is the one whose negation produced an anomalous score and a published finding that turned out to be unsupported. It is now applied to every case, and it is the lens that decides whether a case is eligible for the negation corruption.",
+  "cases": [
+    {
+      "id": "spinach-root",
+      "graph": "graph_5746363f432dc03d",
+      "claim": "A misplaced decimal point made spinach famous as an iron-rich food.",
+      "verdict": "pass",
+      "bucket": "clean",
+      "joint_sufficiency": "holds: 'The tenfold overstatement ... originated from a decimal point' + 'The overstated iron figure ... was reproduced' + 'Popular belief ... emerged after the erroneous figure' + the definitional premise entail the claim",
+      "verifiability_descent": "holds; every premise is citable, the decimal-origin premise most directly (Rekdal 2014 is about exactly this)",
+      "non_redundancy": "holds. 'Published analyses ... reported a value approximately ten times higher' and 'Raw spinach contains roughly 2.7 mg' are jointly required to establish the tenfold gap and neither is sufficient alone",
+      "restatement": "clear. The decimal-origin premise covers decimal -> overstatement, not decimal -> fame",
+      "presupposition": "'The overstated iron figure ... was reproduced' and 'Popular belief ... emerged after the erroneous figure' both presuppose the overstatement, which 'Published analyses ... reported' asserts. That is ordinary chaining, not duplication: the presupposed content is asserted once and only once",
+      "negation_eligible": true,
+      "negation_target": "The tenfold overstatement of spinach's iron content ... originated from a decimal point placed one position too far to the right",
+      "negation_uniqueness": "No other premise asserts or presupposes the decimal-point cause. Negating it removes the claim's causal core outright",
+      "flags": []
+    },
+    {
+      "id": "mozart-root",
+      "graph": "graph_58e02f44046b72f3",
+      "claim": "Listening to Mozart raises a child's IQ.",
+      "verdict": "pass",
+      "bucket": "clean",
+      "joint_sufficiency": "holds",
+      "verifiability_descent": "holds",
+      "non_redundancy": "DEFECT. 'Cognitive test score increases following Mozart listening persist long enough to constitute a change in measured IQ' presupposes the increases, and 'The cognitive test gains observed after Mozart listening reflect general intelligence' presupposes the gains. Together with the definitional premise those two entail the claim, which leaves 'Children who listen to Mozart's music score higher on standardized IQ tests afterward' not strictly load-bearing",
+      "restatement": "no single premise entails the claim alone",
+      "presupposition": "FLAGGED. The effect is asserted once and presupposed twice more. This was missed in the first pass",
+      "negation_eligible": false,
+      "negation_uniqueness": "FAILS. Negating the effect premise leaves two premises still presupposing the effect. The result is an internally inconsistent set that still contains a sub-entailment of the conclusion, not a set that fails to entail it — so a high score is defensible rather than an error",
+      "flags": [
+        "presupposition: the effect is carried by three premises, one asserting and two presupposing",
+        "non-redundancy: the explicit effect premise is not strictly load-bearing given the other two"
+      ]
+    },
+    {
+      "id": "chocolate-root",
+      "graph": "graph_a7082f0bf50f31fa",
+      "claim": "Eating dark chocolate accelerates weight loss.",
+      "verdict": "pass",
+      "bucket": "clean",
+      "joint_sufficiency": "holds",
+      "verifiability_descent": "holds; the trial premises point at a specific work, which is the grounding target the prompt steers toward",
+      "non_redundancy": "DEFECT. 'Cocoa flavanols ... increase resting energy expenditure or reduce intestinal fat absorption' is a mechanism the claim does not require; removing it leaves the entailment intact",
+      "restatement": "clear; the trial premise is strictly narrower than the claim",
+      "presupposition": "FLAGGED. 'The faster weight loss observed with daily dark chocolate consumption has been reproduced' presupposes the faster weight loss, and 'The between-group difference in rate of weight loss ... met conventional thresholds' presupposes the difference, both asserted by 'In that trial, the group consuming dark chocolate daily reduced body weight over a shorter period'",
+      "negation_eligible": false,
+      "negation_uniqueness": "FAILS, for the same reason as mozart-root",
+      "flags": [
+        "non-redundancy: the mechanism premise is not load-bearing; expect M4-T2's ablation to find it",
+        "presupposition: the effect is carried by three premises",
+        "decontextualization: three premises say 'that trial', which the prompt's standalone rule forbids"
+      ]
+    },
+    {
+      "id": "goldfish-root",
+      "graph": "graph_ca402e4af73680de",
+      "claim": "Goldfish have a memory span of three seconds.",
+      "verdict": "pass",
+      "bucket": "clean",
+      "joint_sufficiency": "holds: the two conditioning premises plus the definitional premise entail the claim, with the species-generalisation premise carrying it from laboratory fish to goldfish",
+      "verifiability_descent": "holds",
+      "non_redundancy": "DEFECT. 'Goldfish show no capacity for spatial learning' and 'The goldfish brain lacks the neural structures' are a consequence and a mechanism; removing either leaves the entailment intact",
+      "restatement": "no single premise entails the claim alone",
+      "presupposition": "FLAGGED. 'The three-second retention limit measured in laboratory goldfish is characteristic of the species as a whole' presupposes the three-second limit it generalises",
+      "negation_eligible": false,
+      "negation_uniqueness": "FAILS. Negating either conditioning premise leaves the generalisation premise presupposing the limit",
+      "flags": [
+        "non-redundancy: two premises are not load-bearing",
+        "presupposition: the species-generalisation premise presupposes the limit it generalises"
+      ]
+    },
+    {
+      "id": "brains-root",
+      "graph": "graph_ce1f489a32f64ddf",
+      "claim": "Humans use only ten percent of their brains.",
+      "verdict": "fail",
+      "bucket": "blind-spot",
+      "joint_sufficiency": "holds, and trivially so, which is the problem",
+      "verifiability_descent": "fails",
+      "non_redundancy": "fails: with the neuron-proportion premise present, the lesion and metabolic premises carry no load",
+      "restatement": "FAILS. 'Approximately ten percent of the neurons in a human brain are engaged in functional activity, and the remaining ninety percent are never engaged' together with the definitional 'to use a portion of it means that portion is engaged in performing some function' entails the claim in one hop. The neuroimaging premise has the same shape over brain volume",
+      "presupposition": "subsumed by the restatement failure",
+      "negation_eligible": false,
+      "flags": [
+        "near-restatement: invisible to restating_premise_ids(), which matches verbatim text only"
+      ],
+      "consequence": "excluded from the clean set. Retained in the blind-spot bucket, where a near-1.0 score is the correct entailment answer to a decomposition failure and counts neither for nor against a checkpoint."
+    },
+    {
+      "id": "spinach-nested",
+      "source": "depth-1 step under spinach-root, conclusion is a Premise",
+      "conclusion": "The overstated iron figure for spinach was reproduced in food composition tables, textbooks, and popular media for decades before being corrected.",
+      "verdict": "pass",
+      "bucket": "clean",
+      "joint_sufficiency": "holds: the three venue premises (tables, textbooks, mass media) plus 'A published correction ... appeared at least several decades after' plus the definitional span premise entail the conclusion",
+      "verifiability_descent": "holds",
+      "non_redundancy": "holds; each venue premise covers a distinct conjunct of the conclusion",
+      "restatement": "clear",
+      "presupposition": "the venue premises presuppose the elevated figure, which the first two premises assert. Asserted once; ordinary chaining",
+      "negation_eligible": true,
+      "negation_target": "A published correction identifying the spinach iron value as roughly tenfold too high appeared at least several decades after the erroneous figure first entered reference works",
+      "negation_uniqueness": "No other premise asserts that a correction was published. 'The true iron content of fresh spinach is approximately 2-4 mg per 100 g' asserts the correct value but not that a correction reached the literature, and the definitional premise is a conditional that asserts no revision of its own. Negating it removes the conclusion's 'before being corrected' clause outright",
+      "flags": []
+    },
+    {
+      "id": "mozart-nested",
+      "source": "depth-1 step under mozart-root, conclusion is a Premise",
+      "conclusion": "The post-listening cognitive gains attributed to Mozart are not fully explained by general arousal, mood elevation, or practice effects that any preferred stimulus would produce.",
+      "verdict": "pass",
+      "bucket": "clean",
+      "joint_sufficiency": "holds: one premise per alternative explanation, plus the background premise naming the three mechanisms as exhaustive",
+      "verifiability_descent": "holds",
+      "non_redundancy": "holds",
+      "restatement": "clear",
+      "presupposition": "the exclusion premises presuppose a Mozart advantage, asserted once by 'Listening to a Mozart sonata produces a measurable short-term improvement'. Ordinary chaining",
+      "negation_eligible": false,
+      "negation_uniqueness": "FAILS on the arousal premise: 'Listener-preference-matched control stimuli ... do not produce cognitive gains equal to those of the Mozart condition' overlaps its content closely enough that negating the matched-arousal premise alone does not cleanly remove arousal-exclusion",
+      "flags": []
+    }
+  ],
+  "outcome": {
+    "clean": ["spinach-root", "mozart-root", "chocolate-root", "goldfish-root", "spinach-nested", "mozart-nested"],
+    "blind_spot": ["brains-root"],
+    "negation_eligible": ["spinach-root", "spinach-nested"],
+    "finding": "Presupposition-carrying premises are pervasive: three of the four clean root decompositions assert their conclusion's central content in more than one premise. That is what makes single-premise negation an unreliable corruption on this decomposer's output, and it is why negation eligibility is now a recorded per-case property rather than an assumption."
+  }
+}

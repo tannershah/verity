@@ -143,7 +143,8 @@ tier's slot in the §3 ordering, with the artifacts that exist by then.
 - **T1 — Off-the-shelf gate.** Local entailment scorer over concatenated premises →
   claim; candidates: **MiniCheck-Flan-T5-Large** (grounding-tuned, best sub-1B in
   its family) and **DeBERTa-v3-large NLI** (MoritzLaurer mnli-fever-anli-ling-wanli);
-  pick by a 10-case smoke set. Known caveats carried in code comments and metadata:
+  pick by a smoke set of clean, corrupted, and premise-independence cases, under a
+  decision rule fixed before the scores exist. Known caveats carried in code and metadata:
   concatenation is a workaround, not a validated multi-premise architecture; NLI
   label order varies per checkpoint and is verified at init. Configurable threshold;
   per-step score stored and rendered, labeled **uncalibrated** until T3

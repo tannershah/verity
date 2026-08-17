@@ -19,6 +19,14 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.5",
 ]
+# The local entailment scorer (M4). Kept out of the core dependencies so the test suite
+# runs with no ML stack: the backends import torch inside their constructors, and
+# `ScriptedScorer` needs neither. Installing this pulls ~5GB of checkpoints on first use.
+verifier = [
+    "torch>=2.2",
+    "transformers>=4.40",
+    "sentencepiece>=0.2",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/verity"]

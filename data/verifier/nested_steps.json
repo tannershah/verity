@@ -1,0 +1,50 @@
+[
+  {
+    "parent_graph": "graph_5746363f432dc03d",
+    "root_claim": "A misplaced decimal point made spinach famous as an iron-rich food.",
+    "conclusion": "The overstated iron figure for spinach was reproduced in food composition tables, textbooks, and popular media for decades before being corrected.",
+    "conclusion_id": "prem_7589ccd15d6f57a2",
+    "depth": 1,
+    "premises": [
+      "Published analyses of spinach iron content in the early twentieth century reported a value of roughly 35 mg of iron per 100 g of spinach.",
+      "The true iron content of fresh spinach is approximately 2\u20134 mg per 100 g, about one tenth of 35 mg per 100 g.",
+      "National and institutional food composition tables published across multiple decades listed spinach iron values of the order of tens of milligrams per 100 g.",
+      "Nutrition and dietetics textbooks repeated the elevated spinach iron figure taken from food composition tables in successive editions.",
+      "Newspapers, magazines, and cartoons promoted spinach as an exceptionally iron-rich food during the same period in which the elevated figure circulated in reference works.",
+      "A published correction identifying the spinach iron value as roughly tenfold too high appeared at least several decades after the erroneous figure first entered reference works.",
+      "A figure appearing continuously in reference tables, teaching texts, and mass-market publications over a span exceeding twenty years, and only afterwards revised, counts as having been reproduced for decades before being corrected."
+    ],
+    "premise_types": [
+      "empirical-citable",
+      "empirical-citable",
+      "empirical-citable",
+      "empirical-citable",
+      "empirical-citable",
+      "empirical-citable",
+      "definitional"
+    ]
+  },
+  {
+    "parent_graph": "graph_58e02f44046b72f3",
+    "root_claim": "Listening to Mozart raises a child's IQ.",
+    "conclusion": "The post-listening cognitive gains attributed to Mozart are not fully explained by general arousal, mood elevation, or practice effects that any preferred stimulus would produce.",
+    "conclusion_id": "prem_2817116e016e80a4",
+    "depth": 1,
+    "premises": [
+      "Listening to a Mozart sonata produces a measurable short-term improvement on spatial-temporal reasoning tasks relative to a silence or relaxation-instruction control condition.",
+      "In experiments comparing a Mozart excerpt against a non-musical or non-preferred auditory stimulus matched for arousal level, the Mozart condition yields higher spatial-task scores than the matched-arousal condition.",
+      "Studies that measure mood and arousal alongside spatial-task performance after music listening find that statistically controlling for mood and arousal does not eliminate the performance advantage of the Mozart condition.",
+      "Experimental designs for the Mozart effect that use different spatial-task items at each testing session, or counterbalance task order across conditions, remove repeated-exposure practice as an explanation for score differences between conditions.",
+      "Listener-preference-matched control stimuli, in which each participant hears a self-selected preferred piece instead of Mozart, do not produce cognitive gains equal to those of the Mozart condition.",
+      "Arousal, mood elevation, and practice effects are the principal non-music-specific mechanisms proposed to account for post-listening cognitive test gains."
+    ],
+    "premise_types": [
+      "empirical-citable",
+      "empirical-citable",
+      "empirical-citable",
+      "definitional",
+      "empirical-citable",
+      "background"
+    ]
+  }
+]

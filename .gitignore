@@ -13,6 +13,8 @@ venv/
 *.egg-info/
 
 .cache/
-# Bulk downloads, the database, and run logs stay out; versioned claim sets do not.
+# Bulk downloads, the database, and run logs stay out; versioned claim sets and the
+# verifier's smoke set and selection record do not — those are the evidence a gate ran.
 data/*
 !data/claimsets/
+!data/verifier/
