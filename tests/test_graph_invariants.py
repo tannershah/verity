@@ -18,7 +18,7 @@ import pytest
 from pydantic import ValidationError
 
 from verity.models.claim import Claim, ClaimGraph, EntailmentStep, GraphMetadata, Premise
-from verity.models.common import AblationDelta, CapRecord, Score
+from verity.models.common import AblationDelta, CapRecord, Score, TerminationReason
 from verity.models.evidence import EvidenceBundle
 from verity.models.fact import InMemoryFacts
 from verity.models.render import to_render_payload
@@ -450,6 +450,88 @@ def test_an_ablation_delta_can_be_negative():
     delta = AblationDelta(step_score=0.40, ablated_score=0.65, scorer="test")
     assert delta.delta == pytest.approx(-0.25)
     assert delta.label() == "-0.25 (uncalibrated)"
+
+
+# -- termination reasons belong to terminals, and to all of them ------------------
+
+
+def _two_level(**kinds) -> dict:
+    """A root step and a nested one, so `mid` is decomposed and `leaf`/`other` are not."""
+    claim = Claim(text="Root claim.")
+    mid = Premise(text="Middle.", termination_reason=kinds.get("mid"))
+    leaf = Premise(text="Deep leaf.", termination_reason=kinds.get("leaf"))
+    other = Premise(text="Shallow leaf.", termination_reason=kinds.get("other"))
+    return {
+        "root_claim": claim,
+        "premises": {p.id: p for p in (mid, leaf, other)},
+        "steps": [
+            EntailmentStep(conclusion_id=claim.id, premise_ids=[mid.id, other.id], depth=0),
+            EntailmentStep(conclusion_id=mid.id, premise_ids=[leaf.id], depth=1),
+        ],
+    }
+
+
+def test_a_premise_that_was_decomposed_cannot_claim_it_terminated():
+    """`RenderPremise.termination_reason` is projected for every edge, so a reason on an
+    internal node prints beside a premise the reader can see has children — and
+    `applicability` reads it as authoritative when partitioning the grounding denominators.
+    """
+    with pytest.raises(ValidationError, match="did not terminate"):
+        ClaimGraph(
+            **_two_level(
+                mid=TerminationReason.CITATION_SHAPED,
+                leaf=TerminationReason.BUDGET_EXIT,
+                other=TerminationReason.CITATION_SHAPED,
+            )
+        )
+
+
+def test_termination_reasons_are_recorded_for_every_terminal_or_for_none():
+    """The same rule as descent depth, and it fails the same way: M10-T1's mix has every
+    leaf as its denominator, so a gap silently deflates every rate computed against it."""
+    ClaimGraph(**_two_level())  # none: a graph from a tier that records no terminations
+    ClaimGraph(
+        **_two_level(
+            leaf=TerminationReason.BUDGET_EXIT, other=TerminationReason.CITATION_SHAPED
+        )
+    )
+    with pytest.raises(ValidationError, match="record one for every terminal or for none"):
+        ClaimGraph(**_two_level(leaf=TerminationReason.BUDGET_EXIT))
+
+
+def test_a_producer_that_prunes_a_step_supplies_the_reason_the_pruning_created():
+    """`build()` prunes what the root cannot reach and reports it, and that is all it can
+    honestly do. It cannot see *why* a step is missing, so stamping a terminal here would
+    invent one on behalf of a producer that may simply have forgotten — and the message has
+    to name the channel that fixes it, or the next producer reads a pydantic error instead.
+    """
+    parts = _two_level(
+        leaf=TerminationReason.BUDGET_EXIT, other=TerminationReason.CITATION_SHAPED
+    )
+    mid = next(p for p in parts["premises"].values() if p.text == "Middle.")
+    orphaned = {
+        **parts,
+        # The nested step is gone — a cap dropped it — so `mid` is now a leaf, and the leaf
+        # beneath it is unreachable and gets pruned.
+        "steps": parts["steps"][:1],
+    }
+    with pytest.raises(ValidationError, match=r"assemble_graph\(terminations="):
+        ClaimGraph.build(**orphaned)
+
+    repaired = {
+        **orphaned,
+        "premises": {
+            pid: (
+                p.model_copy(update={"termination_reason": TerminationReason.CAP_EXIT})
+                if pid == mid.id
+                else p
+            )
+            for pid, p in orphaned["premises"].items()
+        },
+    }
+    graph, caps = ClaimGraph.build(**repaired)
+    assert [c.name for c in caps] == ["unreachable_premises_pruned"]
+    assert graph.premises[mid.id].termination_reason is TerminationReason.CAP_EXIT
 
 
 # -- caps ------------------------------------------------------------------------

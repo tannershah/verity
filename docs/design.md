@@ -143,6 +143,17 @@ Entailment steps are **native n-ary — SETTLED**: 3–7 premises per step, no b
 
 **Node-scoped annotations have no such escape.** Premise type and candidate key belong to the statement rather than to a step, so two producers reaching one premise can disagree about them with nowhere else to put the disagreement. An absent annotation loses to a present one, which recovers information rather than choosing between claims; two present values that differ keep the first and record the loss. Resolving it by insertion order instead would silently move premise typing, and premise typing is what separates the headline grounding-rate denominator from the citable-only one reported beside it (build-plan §4) — a pre-registered metric would shift because of the order two steps happened to run in.
 
+**A terminal says why it stopped, and only a terminal does.** The termination vocabulary
+splits in two. *Epistemic* reasons — grounded, citation-shaped, unverifiable-by-design —
+are conclusions about the premise, and are the only ones the grounding partition may read;
+*descent-imposed* ones — budget-exit, cap-exit, decomposition-refused — say the descent
+would have gone further and did not, which is silent on whether an identifier could verify
+the premise, so applicability falls through to premise type there. A reason is recorded for
+every terminal or for none: the mix has every leaf as its denominator, so a gap deflates
+every rate computed against it. A premise that *was* decomposed carries none, because it
+did not terminate — a reason there would print beside a premise with visible children and
+would drive the grounding partition off a decision nothing made.
+
 **Depth is two numbers, and they are not interchangeable.** *Traversal depth* is where a node sits in the graph as it stands; it is derived, never stored, which is what keeps the reported depth and the rendered depth the same number. *Descent depth* is how far the decomposer had gone when it built a step, and it is recorded on the step because nothing can recover it afterwards: deduplicating premises by statement can leave a node reachable by a shorter route than the one that reached it. The budget is enforced along the descent and `budget-exit` fires there, so **the depth reported beside the budget-exit rate is the recorded one** — measuring depth off the shortened graph would put the two metrics over two different objects. A run that recorded no descent depth reports that it has none.
 
 **There is no root-aggregate field** — the absence is the enforcement. Renderers consume a projection of the graph that exposes per-premise rows and the claim's text, and nothing above them. That projection reads the alethiology as well as the graph: a recorded grounding is what a run concluded, and whether it still holds is a question only the fact store can answer (§4.2). Both readings reach the row, because the difference between them is the invalidation result.

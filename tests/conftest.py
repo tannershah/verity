@@ -152,10 +152,11 @@ def hand_built_graph(provenance: Provenance, seeded_fact: Fact) -> ClaimGraph:
         evidence_state=EvidenceState.VERIFIED,
         evidence_state_provisional=True,
     )
+    # Decomposed by `nested_step` below, so it carries no termination reason: a node that
+    # was decomposed did not terminate, and `ClaimGraph` refuses a graph that says it did.
     p_inflated = Premise(
         text="A widely circulated figure reported roughly ten times that amount.",
         premise_type=PremiseType.STATISTICAL,
-        termination_reason=TerminationReason.CITATION_SHAPED,
         candidate_key=None,
     )
     p_decimal = Premise(
@@ -163,7 +164,11 @@ def hand_built_graph(provenance: Provenance, seeded_fact: Fact) -> ClaimGraph:
         premise_type=PremiseType.DEFINITIONAL,
         termination_reason=TerminationReason.UNVERIFIABLE_BY_DESIGN,
     )
-    # One premise is decomposed further, so the graph exercises recursion.
+    # One premise is decomposed further, so the graph exercises recursion. This pairing —
+    # `empirical-citable` with `budget-exit` — is hand-built and legal, and under the
+    # default recursion predicate no descent produces it: a citable premise is terminal
+    # before the budget is consulted. It exists to give the metrics a budget-exit terminal
+    # to count, and should not be read as descent output.
     p_circulated = Premise(
         text="The inflated figure appeared in widely read secondary sources.",
         premise_type=PremiseType.EMPIRICAL_CITABLE,

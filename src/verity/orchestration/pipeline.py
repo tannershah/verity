@@ -293,19 +293,20 @@ def _run_stage(
     try:
         result = stage.run(ctx, graph)
     except stage.isolates as error:
+        calls = _accounting(ctx, first_call, None)
         return (
-            _record(
-                stage, ctx, started_at, elapsed(), digest, cache_key, first_call, error=error
-            ),
+            _record(stage, started_at, elapsed(), digest, cache_key, calls, error=error),
             None,
             error,
         )
 
-    record = _record(
-        stage, ctx, started_at, elapsed(), digest, cache_key, first_call, result=result
-    )
+    # One computation, used by both the record and the cache entry. Two would let the
+    # manifest report the provider calls this run made while the entry stored the calls the
+    # stage issued, and the cache-hit note then pairs one run's count with another's cost.
+    calls = _accounting(ctx, first_call, result)
+    record = _record(stage, started_at, elapsed(), digest, cache_key, calls, result=result)
     if cache_key is not None:
-        _store(ctx, stage, cache_key, result)
+        _store(ctx, stage, cache_key, result, calls)
     return record, result, None
 
 
@@ -368,7 +369,17 @@ def _serve(
     return record, result
 
 
-def _store(ctx: RunContext, stage: Stage, cache_key: str, result: StageResult) -> None:
+def _store(
+    ctx: RunContext, stage: Stage, cache_key: str, result: StageResult, calls: CassetteUsage
+) -> None:
+    """Record what producing this output costs from cold.
+
+    Not what the recording run happened to pay: a run whose own calls were replayed paid
+    nothing, and storing that would make every later hit report a saving of $0.0000 for work
+    that costs real money to produce. `spent + replayed` is the number the cache-hit note
+    means, and taking both halves from one accounting keeps the count and the cost describing
+    the same set of calls.
+    """
     ctx.cache.put(
         NAMESPACE,
         cache_key,
@@ -381,8 +392,8 @@ def _store(ctx: RunContext, stage: Stage, cache_key: str, result: StageResult) -
             notes=result.notes,
             note=result.note,
             caps=result.caps,
-            recorded_usage=result.usage,
-            recorded_llm_calls=result.llm_calls,
+            recorded_usage=calls.spent + calls.replayed,
+            recorded_llm_calls=calls.provider_calls + calls.hits,
             llm_settings=result.llm_settings,
             stored_at=utc_now(),
         ),
@@ -391,12 +402,11 @@ def _store(ctx: RunContext, stage: Stage, cache_key: str, result: StageResult) -
 
 def _record(
     stage: Stage,
-    ctx: RunContext,
     started_at: datetime,
     duration_ms: float,
     digest: str,
     cache_key: str | None,
-    first_call: int,
+    calls: CassetteUsage,
     *,
     result: StageResult | None = None,
     error: Exception | None = None,
@@ -407,9 +417,9 @@ def _record(
     event, and giving it its own builder is what made a refused run report the recorded cost
     of a replayed call as money spent while `llm_calls` stayed at zero — so the run claimed
     it had reached nothing external in the one case where it had reached the provider and
-    paid. Everything that describes *how a stage ran* is therefore computed once, here.
+    paid. Everything that describes *how a stage ran* is therefore computed once, in
+    `_run_stage`, and handed to this and to the cache entry alike.
     """
-    calls = _accounting(ctx, first_call, result)
     note = result.note if result else None
     if calls.hits:
         served = (

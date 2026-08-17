@@ -16,11 +16,14 @@ differing only by Unicode composition share an id and differ in text: dedup keye
 would miss the pair and `EntailmentStep` would then reject the step for listing a premise
 twice. Normalizing first makes stored text and identity agree, and dedup keys on the id.
 
-**Circularity is judged on statements, not on ids.** `verity.ids.normalize_text` is where
-this codebase draws the line on two spellings being one statement, so a premise that
-reproduces its conclusion or an ancestor in a different case is a restatement even though
-its id differs — and refuses, since a step that rests on its own conclusion is circular
-whether or not `ClaimGraph`'s id-level cycle check happens to catch it.
+**Circularity is judged on statements, not on ids, and against the graph rather than the
+path.** `verity.ids.normalize_text` is where this codebase draws the line on two spellings
+being one statement, so a premise that reproduces its conclusion in a different case is a
+restatement even though its id differs — and refuses, since a step that rests on its own
+conclusion is circular whether or not `ClaimGraph`'s id-level cycle check happens to catch
+it. The conclusion's *upstream* set (`DecompositionContext.upstream_statements`) extends
+that to every node the conclusion is reachable from, which is what a descent supplies and
+what catches a cycle closed across two branches rather than along one path.
 
 **Restatement of the root claim is kept, not repaired.** A premise identical to the root
 claim builds a valid graph — `Claim` and `Premise` ids differ by prefix, so there is no
@@ -36,6 +39,7 @@ genuine cycle and refuses instead.
 from __future__ import annotations
 
 import unicodedata
+from collections.abc import Sequence
 from datetime import datetime
 
 from pydantic import Field
@@ -55,7 +59,7 @@ from verity.ids import content_hash, normalize_text
 from verity.keys import ExternalKey, InvalidKeyError
 from verity.llm.base import LLMAdapter, LLMRequest
 from verity.models.claim import Claim, ClaimGraph, EntailmentStep, GraphMetadata, Premise
-from verity.models.common import CapRecord, utc_now
+from verity.models.common import CapRecord, TerminationReason, utc_now
 from verity.models.manifest import LLMSettings, Usage
 
 #: Stage label. Scripts the stub, keys the manifest, and names the call in run logs.
@@ -84,13 +88,33 @@ def normalize_display_text(text: str) -> str:
 class DecompositionContext(VerityModel):
     """Where the conclusion sits, for the prompt and for cycle detection.
 
-    `ancestors` is the premise chain above the conclusion. Their statements are what a
-    proposed premise would reproduce to close a cycle, and what the model reads to place
-    the target. Empty at the root.
+    Two fields, deliberately not one, because they answer different questions.
+
+    `ancestors` is the expansion path above the conclusion: what the model reads to place
+    the target, rendered into the prompt and therefore into the cache key. Empty at the
+    root.
+
+    `upstream_statements` is the soundness guard: the normalized statement of every node
+    from which the conclusion is reachable in the graph as it stands. Edges run
+    conclusion → premise, so adding `C → P` closes a cycle exactly when `C` is reachable
+    from `P` — that is, when `P` is upstream of `C`. The path is a subset of it, and the
+    difference is the cross-branch case a path check cannot see: root → {A, B}, expand B
+    into {A}, expand A into {B}. Neither call has the other on its path, and the cycle
+    surfaces only in `ClaimGraph`, after every call in the tree has been paid for.
+
+    **The root claim is never in this set.** `Claim` and `Premise` ids differ by prefix, so
+    a premise carrying the claim's text is a new node rather than an edge back to the root:
+    no cycle, and the restatement is kept and flagged rather than refused (see the module
+    docstring). Putting the root's statement here would silently repeal that rule.
+
+    Keeping the guard out of `ancestors` keeps prompt shaping and circularity independent:
+    conflated, a decision about how much context to show the model would quietly redefine
+    what counts as circular.
     """
 
     root_claim: Claim | None = None
     ancestors: tuple[Premise, ...] = ()
+    upstream_statements: frozenset[str] = frozenset()
 
 
 class DecomposedStep(VerityModel):
@@ -106,10 +130,12 @@ class DecomposedStep(VerityModel):
     #: changes what the step *is*.
     premises: dict[str, Premise] = Field(default_factory=dict)
     caps: list[CapRecord] = Field(default_factory=list)
-    #: A premise in this step reproduces the root claim. Structurally legal, and a
-    #: decomposition failure. The stored form is `ClaimGraph.restating_premise_ids()`;
-    #: this is the same fact in flight, for a descent deciding what to do next.
-    restates_root_claim: bool = False
+    #: Premises in this step that reproduce the root claim. Structurally legal, and a
+    #: decomposition failure. The stored form is `ClaimGraph.restating_premise_ids()`; this
+    #: is the same fact in flight, for a descent deciding what to do next — which needs the
+    #: ids rather than a flag, since re-deriving them by comparing normalized text would put
+    #: that rule in a third place alongside `_materialize` and the graph.
+    restating_premise_ids: tuple[str, ...] = ()
     usage: Usage = Field(default_factory=Usage)
     #: Read off the response envelope, never off config: a per-request override or a
     #: provider fallback makes them differ, and only the resolved values explain the output.
@@ -124,16 +150,26 @@ class DecomposedStep(VerityModel):
     #: premise differently — and typing is what splits the grounding-rate denominators.
     output_hash: str
 
+    @property
+    def restates_root_claim(self) -> bool:
+        """Whether any premise here reproduces the root claim."""
+        return bool(self.restating_premise_ids)
+
 
 def _materialize(
     proposal: ProposedDecomposition,
     *,
     conclusion: Conclusion,
     context: DecompositionContext,
-) -> tuple[dict[str, Premise], list[CapRecord], bool]:
+) -> tuple[dict[str, Premise], list[CapRecord], tuple[str, ...]]:
     """Wire types to graph nodes. Every hallucination is handled exactly here."""
     conclusion_statement = normalize_text(conclusion.text)
-    ancestor_statements = {normalize_text(ancestor.text) for ancestor in context.ancestors}
+    # Both, not either. The path check is what a caller supplying only `ancestors` relies
+    # on, and the upstream set is what catches the cross-branch case; a descent supplies a
+    # superset of the path, so the union costs nothing and a bug in the reachability
+    # computation cannot regress the case the path already covered.
+    circular = {normalize_text(ancestor.text) for ancestor in context.ancestors}
+    circular |= context.upstream_statements
     # A caller that passed no context still decomposed *something*; when that something is
     # the claim itself, a premise reproducing it is the same failure as at any other depth.
     root = context.root_claim or (conclusion if isinstance(conclusion, Claim) else None)
@@ -143,7 +179,7 @@ def _materialize(
     empty = 0
     duplicates = 0
     bad_keys = 0
-    restates_root = False
+    restating: list[str] = []
 
     for proposed in proposal.premises:
         text = normalize_display_text(proposed.text)
@@ -162,16 +198,14 @@ def _materialize(
                 bad_keys += 1
 
         statement = normalize_text(text)
-        if statement in ancestor_statements or (
+        if statement in circular or (
             statement == conclusion_statement and isinstance(conclusion, Premise)
         ):
             raise CyclicPremiseError(
-                f"a premise restates the conclusion or an ancestor of {conclusion.id}, "
-                f"which would rest the step on itself: {text!r}"
+                f"a premise restates the conclusion of {conclusion.id}, or a node the "
+                f"conclusion is reachable from, which would rest the step on itself: "
+                f"{text!r}"
             )
-        if statement == root_statement:
-            # Legal at any depth: the root is a `Claim`, so no premise id collides with it.
-            restates_root = True
 
         premise = Premise(
             text=text, premise_type=proposed.premise_type, candidate_key=candidate_key
@@ -180,6 +214,9 @@ def _materialize(
             duplicates += 1
             continue
         premises[premise.id] = premise
+        if statement == root_statement:
+            # Legal at any depth: the root is a `Claim`, so no premise id collides with it.
+            restating.append(premise.id)
 
     caps = [
         CapRecord(name=name, limit=0, applied=True, dropped=count)
@@ -196,7 +233,7 @@ def _materialize(
             f"no premise survived materialization for {conclusion.id} "
             f"({len(proposal.premises)} proposed, {empty} empty, {duplicates} duplicate)"
         )
-    return premises, caps, restates_root
+    return premises, caps, tuple(restating)
 
 
 def decompose_step(
@@ -251,7 +288,7 @@ def decompose_step(
                 "structured response still validates, so storing it would record a fact "
                 "about the token limit as a fact about the decomposer"
             )
-        premises, caps, restates_root = _materialize(
+        premises, caps, restating = _materialize(
             result.parsed, conclusion=conclusion, context=context
         )
     except DecompositionError as error:
@@ -272,7 +309,7 @@ def decompose_step(
         step=step,
         premises=premises,
         caps=caps,
-        restates_root_claim=restates_root,
+        restating_premise_ids=restating,
         usage=result.usage,
         llm_settings=LLMSettings(
             model=result.response.model,
@@ -291,7 +328,7 @@ def decompose_step(
             step.id,
             [premises[pid] for pid in sorted(premises)],
             caps,
-            restates_root,
+            sorted(restating),
         ),
     )
 
@@ -345,15 +382,55 @@ def _merge_premises(
     return premises, caps
 
 
+def _apply_terminations(
+    premises: dict[str, Premise], terminations: dict[str, TerminationReason]
+) -> dict[str, Premise]:
+    """Write each reason onto the merged node, refusing one that names no premise.
+
+    A reason for a premise the graph does not hold is not harmless: it means the producer's
+    bookkeeping and its output disagree about which nodes exist, and the check that every
+    terminal carries a reason would then pass on a map describing a different tree.
+    """
+    stray = sorted(set(terminations) - set(premises))
+    if stray:
+        raise ValueError(
+            f"termination reasons name {len(stray)} premise(s) this graph does not hold: "
+            f"{stray[:3]}"
+        )
+    return {
+        pid: (
+            premise
+            if pid not in terminations
+            else premise.model_copy(update={"termination_reason": terminations[pid]})
+        )
+        for pid, premise in premises.items()
+    }
+
+
 def assemble_graph(
     root_claim: Claim,
     results: list[DecomposedStep],
     *,
     config: DecompositionConfig,
+    terminations: dict[str, TerminationReason] | None = None,
+    caps: Sequence[CapRecord] = (),
     metadata: GraphMetadata | None = None,
     now: datetime | None = None,
 ) -> ClaimGraph:
     """Merge steps into one graph, carrying every cap that bit along the way.
+
+    `terminations` is applied *after* the merge, on the premise map the graph will hold.
+    Premise identity is the statement, so a premise two steps reached is one node, and
+    `termination_reason` is not among `_MERGEABLE_FIELDS` — annotating premise objects
+    during a descent would let one occurrence's reason be dropped by whichever copy the
+    merge kept. Applying it here means the reason is written exactly once, to the node that
+    survives. `ClaimGraph` then checks the two rules that make the map trustworthy: every
+    terminal carries a reason or none does, and a decomposed premise carries none.
+
+    `caps` are bounds the descent applied that belong to no single step — the node cap. They
+    are artifact-scoped (the tree is smaller than it would have been), so they join
+    `metadata.caps` rather than the stage record, per the rule that a cap is filed on
+    exactly one record.
 
     Goes through `ClaimGraph.build()` because a bound applied during descent can orphan a
     subtree, and `build()` is the path that prunes and reports rather than crashing.
@@ -382,6 +459,7 @@ def assemble_graph(
             )
 
     premises, merge_caps = _merge_premises(results)
+    premises = _apply_terminations(premises, terminations or {})
 
     metadata = metadata or GraphMetadata(created_at=now or utc_now())
     if metadata.depth_budget is not None and metadata.depth_budget != config.depth_budget:
@@ -392,9 +470,14 @@ def assemble_graph(
     updates: dict[str, object] = {"depth_budget": config.depth_budget}
     if now is not None:
         updates["created_at"] = now
-    caps = [*metadata.caps, *(cap for result in results for cap in result.caps), *merge_caps]
-    if caps:
-        updates["caps"] = caps
+    applied = [
+        *metadata.caps,
+        *(cap for result in results for cap in result.caps),
+        *merge_caps,
+        *caps,
+    ]
+    if applied:
+        updates["caps"] = applied
     metadata = metadata.model_copy(update=updates)
 
     graph, _ = ClaimGraph.build(

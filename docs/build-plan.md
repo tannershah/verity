@@ -117,12 +117,57 @@ tier's slot in the §3 ordering, with the artifacts that exist by then.
   design §4.3 and reports what it discards.
   *Exit:* decompositions for 5 pilot claims pass eyeball review against the criteria.
 - **T2 — Recursive descent.** Recurse on premises that are neither citation-shaped
-  nor grounded; **depth budget** (default 3) with per-branch termination reason
-  recorded: `grounded | citation-shaped | unverifiable-by-design | budget-exit`.
-  Definitional/background premises terminate as `unverifiable-by-design` without
-  burning depth budget — no paper-shaped key can verify them (see §4 for how they
-  count). Beam caps (max premises/node, max nodes/tree) for cost control — caps are
-  reported per run (**no silent caps**, evaluation §6).
+  nor grounded; **depth budget** (default 3), breadth-first so a premise is classified
+  at the shallowest depth it is reached and never reclassified. Caps are reported per
+  run (**no silent caps**, evaluation §6).
+
+  **The predicate is configuration, not a constant.** `citation-shaped` is the
+  `empirical-citable` type, whose definition — "a specific study, dataset, or registry
+  entry could verify it" — *is* the predicate; `DecompositionConfig.recurse_on`
+  (default: `statistical`) names what descends. It reaches `config_hash()` and the
+  manifest snapshot because it decides tree depth, cost, and the termination mix, and
+  because **a mix is only readable against the predicate in its own manifest**:
+  widening it does not deepen the same tree, it moves `empirical-citable` out of the
+  `citation-shaped` bucket, which then cannot occur at all. Two settings give two
+  non-comparable mixes, never one metric at two settings. Listing a
+  definitional/background type is refused — they terminate as
+  `unverifiable-by-design` without burning depth budget, since no paper-shaped key can
+  verify them (see §4 for how they count).
+
+  **Termination reasons are six, in two kinds.** Epistemic — `grounded`,
+  `citation-shaped`, `unverifiable-by-design` — describe the premise, and are the only
+  ones M5's applicability partition may read. Descent-imposed — `budget-exit`,
+  `cap-exit`, `decomposition-refused` — describe the run, and fall through to premise
+  type there. The last two are additions: folding a node-cap stop into `budget-exit`
+  would make a run bounded by tree size read as one that ran out of depth, and leaving a
+  refused branch unrecorded would put a hole in a mix whose denominator is every leaf.
+  `decomposition-refused` covers a refusal by the descent before calling (a premise
+  restating the root claim) and by the drop rule after (cyclic premise, empty proposal,
+  truncated response, provider refusal); which one is in the stage's `counts`, so
+  **M10-T1 reads the manifest alongside the graph**, and the restatement partition is
+  recoverable from the graph alone. `grounded` is structurally unreachable under
+  `decompose → verify → bind → ground` — nothing is bound while the descent runs, and
+  the decomposer's own candidate key is circular evidence — so the run reports the
+  bucket as unreachable rather than letting a zero read as "no branch grounded". M6-T3
+  makes it reachable.
+
+  **The cost bound is the node cap alone.** A per-node beam cap over premises is not
+  implemented: as a truncation it would violate T1's rule that out-of-range arity is
+  stored and measured rather than corrected, and as an expansion cap it needs an
+  ordering over premises that nothing supplies until T3 puts a verifier in the loop.
+  `max_nodes_per_tree` is checked before a node is expanded, so no call is paid for
+  whose output would be discarded — which means the premise count can overshoot the
+  limit by one step's arity, and the cap records `dropped="uncounted"` because nothing
+  was removed from the artifact and the subtrees it stopped were never built. How many
+  branches stopped there is the `cap-exit` count.
+
+  **Measured fan-out, recorded rather than targeted.** Across the five committed pilot
+  decompositions the type mix is 23 empirical-citable, 5 definitional, 2 background, 1
+  statistical — so the default predicate expands one premise in thirty-one, and four of
+  the five claims produce a depth-1 tree. That is a measurement of the decomposer, not
+  of the descent: the T1 prompt steers toward citable premises, and the typing guidance
+  in `prompt.py` is the lever on tree depth. The run says so, so a flat tree reads as
+  "every premise was typed terminal" rather than as a descent that failed.
   *Exit:* trees for the pilot claims with termination-reason and budget-exit rates
   computed and printed.
 - **T3 — Verifier-in-the-loop.** Sample k candidate decompositions per step, score

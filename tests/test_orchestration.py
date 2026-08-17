@@ -69,6 +69,54 @@ def _stub(proposal: ProposedDecomposition | None = None) -> StubAdapter:
     return StubAdapter(structured={PURPOSE: proposal or _proposal()})
 
 
+#: What a descent gets one level down. Different text from `_proposal`, so the nested step
+#: is kept rather than refused as circular, and one statistical premise so it descends again.
+_NESTED = ProposedDecomposition(
+    premises=[
+        ProposedPremise(
+            text="Nineteenth-century analyses reported spinach iron as 35 mg per 100 g.",
+            premise_type=PremiseType.EMPIRICAL_CITABLE,
+        ),
+        ProposedPremise(
+            text="Two published values for one quantity differ by a factor of ten.",
+            premise_type=PremiseType.STATISTICAL,
+        ),
+    ]
+)
+
+#: The bottom: every premise terminal, so the tree stops before the depth budget does.
+_LEAFY = ProposedDecomposition(
+    premises=[
+        ProposedPremise(
+            text="Modern food-composition tables report 2.7 mg per 100 g.",
+            premise_type=PremiseType.EMPIRICAL_CITABLE,
+        ),
+        ProposedPremise(
+            text="The higher figure appears in a nineteenth-century table.",
+            premise_type=PremiseType.EMPIRICAL_CITABLE,
+        ),
+    ]
+)
+
+
+def _descending() -> StubAdapter:
+    """A stub whose answer depends on where the node sits, so a descent runs three levels.
+
+    The discriminators are the prompt's own blocks. `<claim-…>` appears only when the
+    conclusion is not the root claim — the root's own prompt omits it — and
+    `<established-…>` only once there are premise ancestors, which a depth-1 premise has
+    none of, since its only ancestor is the claim and that travels in `root_claim`.
+    """
+    from verity.decomposition.backward_chain import PURPOSE
+
+    def by_conclusion(request: LLMRequest) -> ProposedDecomposition:
+        if "<established-" in request.prompt:
+            return _LEAFY
+        return _NESTED if "<claim-" in request.prompt else _proposal()
+
+    return StubAdapter(structured={PURPOSE: by_conclusion})
+
+
 class _FakeScorer:
     """A `StepScorer` that needs no checkpoint, so the verify stage is exercisable offline."""
 
@@ -156,7 +204,10 @@ def test_re_running_an_unchanged_claim_is_a_cache_hit_end_to_end(workspace):
         "pipeline the README describes"
     )
     calls_after_first = len(stub.calls)
-    assert calls_after_first == 1
+    assert calls_after_first == 2, (
+        "a descent, not a single step: the fixture's statistical premise is a recursion "
+        "candidate, and the criterion is only worth asserting over more than one call"
+    )
 
     second, _ = _run_all(workspace, adapter=stub, now=LATER)
     assert len(stub.calls) == calls_after_first, "the second run reached the provider"
@@ -301,10 +352,12 @@ def test_the_cache_key_moves_when_the_code_that_produced_it_moves(workspace, mon
 
     # And this is why the conservative key is affordable: the stage re-executed, the
     # cassette replayed the provider's answer, and the re-run cost nothing.
-    assert len(stub.calls) == 1, "the cassette should have absorbed the re-execution"
+    assert len(stub.calls) == 2, "the cassette should have absorbed the re-execution"
     assert second.reached_nothing_external
     decompose = next(s for s in second.manifest.stages if s.name == "decompose")
-    assert decompose.status == "ok" and decompose.cache_hits == 1
+    # One hit per call the descent re-issued, which is what "the cassette absorbed it" means
+    # when the stage is a tree rather than a single step.
+    assert decompose.status == "ok" and decompose.cache_hits == 2
 
 
 def test_the_config_hash_is_part_of_every_cacheable_key(workspace):
@@ -611,11 +664,56 @@ def test_the_notes_are_derived_from_the_graph_not_from_the_call(workspace):
     first, stub = _run(workspace, adapter=restating)
     store_outcome(conn, first)
     assert any("restates the claim" in note for note in first.notes)
-    assert any("arity 2" in note for note in first.notes)
+    assert any("arity outside the configured 3-7 range: 2" in note for note in first.notes)
 
     second, _ = _run(workspace, adapter=stub, now=LATER)
     assert second.fully_cached
     assert second.notes == first.notes, "a cached run lost its caveats"
+
+
+def test_the_notes_say_what_the_descent_did_and_what_its_mix_compares_to(workspace):
+    """All three facts reach the artifact rather than only the docs: a flat tree means the
+    decomposer typed every premise terminal, a mix is only readable against the predicate
+    that produced it, and an absent `grounded` bucket is a fact about the stage order rather
+    than a finding about the alethiology."""
+    outcome, _ = _run(workspace, adapter=_descending())
+    notes = " ".join(outcome.notes)
+
+    assert "the descent expanded" in notes and "terminals:" in notes
+    assert "same predicate" in notes, "a mix is not readable against another predicate"
+    assert "typed its premises terminal" in notes, "a flat tree is not a failed descent"
+    assert "`grounded` is structurally unreachable" in notes
+    assert outcome.manifest.config["decomposition"]["recurse_on"] == ["statistical"], (
+        "the predicate the mix is only readable against travels in the snapshot"
+    )
+
+
+def test_out_of_range_arity_is_summarized_rather_than_listed_per_step(workspace):
+    """A descent can produce a dozen of these, and a dozen near-identical lines is how a
+    reader stops reading the notes — which is the same failure as not writing them."""
+    from verity.decomposition.backward_chain import PURPOSE
+
+    def under_arity(request: LLMRequest) -> ProposedDecomposition:
+        # Two premises per step — under `min_premises` — with text unique to the node, so
+        # every step is kept, every step is out of range, and the descent runs to its budget.
+        from verity.ids import content_hash
+
+        node = content_hash(request.prompt)[:8]
+        return ProposedDecomposition(
+            premises=[
+                ProposedPremise(
+                    text=f"Premise {i} reached below node {node}.",
+                    premise_type=PremiseType.STATISTICAL,
+                )
+                for i in range(2)
+            ]
+        )
+
+    outcome, _ = _run(workspace, adapter=StubAdapter(structured={PURPOSE: under_arity}))
+    assert outcome.graph is not None and len(outcome.graph.steps) > 2
+    arity_notes = [n for n in outcome.notes if "arity outside" in n]
+    assert len(arity_notes) == 1, "one summary line, not one line per step"
+    assert f"of {len(outcome.graph.steps)} step(s)" in arity_notes[0]
 
 
 def test_the_grounding_reason_mix_is_a_measurement_of_the_run(workspace):
@@ -644,6 +742,40 @@ def test_replay_reproduces_the_graph_byte_for_byte(workspace):
     assert report.reproduced
     assert report.graph_matches
     assert not report.drifted
+
+
+def test_a_multi_call_descent_replays_byte_for_byte(workspace):
+    """One call replaying proves the cassette works; a tree proves the *descent* does. Every
+    node is a separate cassette entry keyed on its own prompt, so a replay that reproduces
+    the graph re-derived the traversal — the expansion order, the classification of every
+    terminal, and the merge — rather than reading any of it back."""
+    config, conn, cache = workspace
+    first, stub = _run(workspace, adapter=_descending())
+    store_outcome(conn, first)
+    assert len(stub.calls) == 3, "one call per level: the root, then two expansions"
+    assert first.graph is not None
+    assert len(first.graph.steps) == 3 and first.graph.recorded_depth() == 3
+
+    report = replay_run(first.manifest.run_id, conn=conn, cache=cache)
+    assert report.reproduced and report.graph_matches and not report.drifted
+
+
+def test_a_cache_entry_says_what_the_output_costs_from_cold(workspace):
+    """The count and the cost have to describe the same set of calls. Taken from two places
+    they did not: the entry stored the calls the stage *issued* beside a usage the stage
+    never filled, so every hit reported "made N call(s) costing $0.0000" — a saving of
+    nothing for work that costs real money to produce."""
+    config, conn, cache = workspace
+    first, stub = _run(workspace, adapter=_descending())
+    store_outcome(conn, first)
+
+    second, _ = _run(workspace, adapter=stub, now=LATER)
+    decompose = next(s for s in second.manifest.stages if s.name == "decompose")
+    assert decompose.status == "cache-hit"
+    assert decompose.note is not None
+    assert "made 3 LLM call(s)" in decompose.note, (
+        "the recorded call count is what producing this graph takes, not what one run paid"
+    )
 
 
 def test_replay_never_reaches_the_provider(workspace):
@@ -952,13 +1084,49 @@ def test_the_stub_can_script_a_descent(workspace):
     assert len(adapter.calls) == 2
 
 
-def test_a_single_step_records_no_termination_reason(workspace):
-    """build-plan.md M3-T1: "Termination reasons are M3-T2's alone. A single step is not a
-    descent, so T1 records none rather than asserting a decision nothing made." An
-    orchestrator that filled them in would put numbers in M10-T1's termination mix that no
-    tier produced."""
-    outcome, _ = _run(workspace)
-    assert all(p.termination_reason is None for p in outcome.graph.premises.values())
+def test_every_terminal_the_orchestrator_stores_records_why_it_stopped(workspace):
+    """M3-T2 owns termination reasons and the orchestrator stores what it produced, unaltered.
+
+    The complement matters as much: a premise the descent decomposed carries none, because a
+    node that was decomposed did not terminate — and `RenderPremise.termination_reason` is
+    projected for every edge, so a stale reason prints beside a premise with visible children.
+    """
+    outcome, _ = _run(workspace, adapter=_descending())
+    graph = outcome.graph
+    assert graph is not None
+
+    leaves = graph.leaves()
+    assert leaves and all(p.termination_reason is not None for p in leaves)
+    decomposed = {s.conclusion_id for s in graph.steps} - {graph.root_claim.id}
+    assert decomposed, "the fixture proposal must exercise a descent, not a single step"
+    assert all(graph.premises[pid].termination_reason is None for pid in decomposed)
+
+
+def test_every_rebuild_path_preserves_what_the_descent_recorded(workspace):
+    """A graph that satisfies the termination rules going in must satisfy them coming back
+    out, on every path that reconstructs one. Four do: the binder and `apply_groundings`
+    rebuild from parts, `_stamp` rebuilds again at the end of the run, and the stage cache
+    re-validates its stored JSON on the way out. A path that dropped a reason would turn a
+    valid cache entry into a permanent miss, and a run into a graph the store refuses.
+    """
+    config, conn, cache = workspace
+    first, stub = _run_all(workspace, adapter=_descending())
+    store_outcome(conn, first)
+    assert first.graph is not None
+
+    def reasons(graph):
+        return {p.id: p.termination_reason for p in graph.leaves()}
+
+    recorded = reasons(first.graph)
+    assert recorded and all(r is not None for r in recorded.values())
+
+    reloaded = load_graph(conn, first.graph.id)
+    assert reloaded is not None and reasons(reloaded) == recorded
+
+    second, _ = _run_all(workspace, adapter=stub, now=LATER)
+    assert second.fully_cached, "the cache entry re-validated rather than reading as a miss"
+    assert second.graph is not None and reasons(second.graph) == recorded
+    # Replay is the fifth path and has its own test, which runs without the scorer extra.
 
 
 # -- the fingerprint ----------------------------------------------------------------------

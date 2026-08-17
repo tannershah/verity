@@ -44,7 +44,13 @@ from pydantic import Field, model_validator
 from verity.base import FrozenModel, VerityModel
 from verity.keys import ExternalKey
 from verity.models.claim import Grounding, Premise
-from verity.models.common import ConfidenceTier, PremiseType, TerminationReason, TmsStatus
+from verity.models.common import (
+    EPISTEMIC_TERMINATIONS,
+    UNGROUNDABLE_TYPES,
+    ConfidenceTier,
+    TerminationReason,
+    TmsStatus,
+)
 from verity.models.fact import Fact
 
 #: Strongest first. Selection order among candidates that all already qualify — it decides
@@ -61,10 +67,6 @@ TIER_RANK: dict[ConfidenceTier, int] = {
         )
     )
 }
-
-#: Premise types no external identifier can verify. build-plan.md §3 terminates these as
-#: `unverifiable-by-design` without spending depth budget.
-UNGROUNDABLE_TYPES = frozenset({PremiseType.DEFINITIONAL, PremiseType.BACKGROUND})
 
 
 class CandidateReason(StrEnum):
@@ -141,12 +143,18 @@ def applicability(
 ) -> tuple[bool, Literal["termination-reason", "premise-type", "default"]]:
     """Whether an external key could verify this premise, and what decided it.
 
-    The recorded termination reason wins when there is one: it is what the decomposer
-    concluded, and the premise type is a classification that may disagree with it.
+    A recorded termination reason wins over the type, but only when it is one that carries
+    the information. `EPISTEMIC_TERMINATIONS` are conclusions about the premise — it stands
+    on a fact, a source could settle it, none could — so they answer this question directly.
+    The rest say the descent stopped for a reason of its own: a premise that hit the depth
+    budget or whose decomposition was refused has told us nothing about whether an
+    identifier could verify it, and reading `not UNVERIFIABLE_BY_DESIGN` off one of those
+    would count a definitional premise as citable and inflate the supplementary denominator
+    build-plan.md §4 reports beside the headline rate.
     """
-    if premise.termination_reason is not None:
-        applicable = premise.termination_reason is not TerminationReason.UNVERIFIABLE_BY_DESIGN
-        return applicable, "termination-reason"
+    reason = premise.termination_reason
+    if reason is not None and reason in EPISTEMIC_TERMINATIONS:
+        return reason is not TerminationReason.UNVERIFIABLE_BY_DESIGN, "termination-reason"
     if premise.premise_type is not None:
         return premise.premise_type not in UNGROUNDABLE_TYPES, "premise-type"
     return True, "default"

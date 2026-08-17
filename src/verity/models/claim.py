@@ -270,6 +270,15 @@ class ClaimGraph(VerityModel):
         caller to file. A returned-only cap is reported exactly as often as producers
         remember to fold it in, which is the silent cap this method exists to prevent; the
         list is still returned so a caller can act on the drop it just made.
+
+        **The contract covers unreachable premises, not un-reasoned leaves.** Pruning here
+        cannot produce one: reachability is transitive, so a step whose conclusion survives
+        keeps every premise it names, and only steps concluding an orphan are dropped. A
+        leaf with no termination reason therefore comes from a *caller* that dropped a step
+        before handing the graph over — and this cannot see why, so stamping one would
+        fabricate a terminal on behalf of a producer that may simply have forgotten.
+        Construction refuses it instead, and names the premise and the channel that fixes
+        it.
         """
         premises = dict(premises or {})
         steps = list(steps or [])
@@ -360,6 +369,8 @@ class ClaimGraph(VerityModel):
                 f"{len(unreachable)} premise(s) unreachable from the root: "
                 f"{sorted(unreachable)[:3]}; use ClaimGraph.build() to prune and report them"
             )
+
+        _check_terminations(self.premises, concluded)
 
         grounded_premises: set[str] = set()
         for grounding in self.groundings:
@@ -518,6 +529,43 @@ class ClaimGraph(VerityModel):
         """Shallowest depth at which `premise_id` is reached."""
         depths = [e.depth for e in self.walk() if e.premise_id == premise_id]
         return min(depths) if depths else None
+
+
+def _check_terminations(premises: dict[str, Premise], concluded: set[str]) -> None:
+    """A terminal says why it stopped, and a node that was decomposed says nothing.
+
+    Two rules, both of which a producer can violate without any other check noticing.
+
+    A premise that *has* a step did not terminate, so a reason on it is a value nothing
+    produced. `RenderPremise.termination_reason` is projected for every edge, so such a
+    value prints beside a premise the reader can see has children, and
+    `alethiology.grounding.applicability` reads it as authoritative when partitioning the
+    grounding denominators.
+
+    Reasons on some leaves and not others is the same defect as a half-recorded descent
+    depth, and it fails the same way: M10-T1's termination mix has every leaf as its
+    denominator, so a gap silently deflates every rate computed against it. Either the
+    producer records a reason for every terminal or the run reports that nothing did.
+    """
+    terminals = {pid: p for pid, p in premises.items() if pid not in concluded}
+
+    decomposed = sorted(
+        pid for pid in concluded if pid in premises and premises[pid].termination_reason
+    )
+    if decomposed:
+        raise ValueError(
+            f"premise(s) {decomposed[:3]} carry a termination reason and are decomposed by "
+            "a step; a node that was decomposed did not terminate"
+        )
+
+    recorded = [p.termination_reason is not None for p in terminals.values()]
+    if any(recorded) and not all(recorded):
+        missing = sorted(pid for pid, p in terminals.items() if p.termination_reason is None)
+        raise ValueError(
+            f"{len(missing)} terminal premise(s) carry no termination reason while others "
+            f"do: {missing[:3]}; record one for every terminal or for none. A producer that "
+            "dropped a step supplies the reason through assemble_graph(terminations=...)"
+        )
 
 
 def _adjacency(steps: list[EntailmentStep]) -> dict[str, list[str]]:

@@ -14,6 +14,8 @@ What we measure, with what, and against which thresholds.
 
 Grounding rate, depth, and budget-exit rate are **reported metrics, not internal diagnostics**. A procedure with guaranteed termination has no budget-exit rate; ours does, and publishing it is the honest form of the termination claim.
 
+**Budget-exit means the depth budget, and nothing else.** A branch stopped by a beam cap or by a refused decomposition is counted under its own reason (design.md §4.3), because a rate that mixed them would report tree-size pressure and decomposer failures as evidence that the depth budget is too small. The whole mix is only readable against the recursion predicate recorded in the same run: it decides which premises are candidates for descent at all, so two predicates give two mixes rather than one metric at two settings.
+
 ---
 
 ## 2. Thresholds

@@ -14,10 +14,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from verity.ids import content_hash
+from verity.models.common import UNGROUNDABLE_TYPES, PremiseType
 
 
 class DecompositionConfig(BaseModel):
@@ -29,6 +30,25 @@ class DecompositionConfig(BaseModel):
     max_nodes_per_tree: int = 60
     #: Sampled candidate decompositions per step (M3-T3 verifier-in-the-loop).
     candidates_per_step: int = 1
+    #: **The descent's recursion predicate** (M3-T2). A premise whose type is listed here is
+    #: expanded if depth and the node cap allow; one whose type is not is terminal, and
+    #: records `citation-shaped` — build-plan.md M3-T2's "recurse on premises that are
+    #: neither citation-shaped nor grounded", with `empirical-citable` being the type whose
+    #: own definition ("a specific study, dataset, or registry entry could verify it") is
+    #: what citation-shaped means.
+    #:
+    #: It is configuration rather than a constant because it decides tree depth, cost, and
+    #: the termination mix M10-T1 reports, and evaluation.md §2 puts exactly this class of
+    #: knob — depth budget, beam caps — outside the frozen thresholds. Being here means it
+    #: travels in `config_hash()` and the manifest snapshot, so every artifact records the
+    #: policy that produced it.
+    #:
+    #: **A mix is only readable against the `recurse_on` in its own manifest.** Widening
+    #: this does not deepen the same tree: it changes what `citation-shaped` and
+    #: `budget-exit` denote, and under a predicate containing `empirical-citable` the
+    #: `citation-shaped` bucket cannot occur at all. Two settings produce two
+    #: non-comparable mixes, never one metric at two settings.
+    recurse_on: tuple[PremiseType, ...] = (PremiseType.STATISTICAL,)
     #: How the decomposer was told to write premises relative to their ancestors.
     #: `standalone` = the model sees the ancestor chain and must still write every premise
     #: so it stands without it. DnDScore (`lit-014`) shows the strategy moves downstream
@@ -36,6 +56,30 @@ class DecompositionConfig(BaseModel):
     #: unrecorded in prompt text. Distinct from `Claim.decontextualization`, which records
     #: what M2 did to the claim before the decomposer ever saw it.
     decontextualization: str = "standalone"
+
+    @model_validator(mode="after")
+    def _canonicalize_recursion_predicate(self) -> DecompositionConfig:
+        """Sort and deduplicate, and refuse the types that terminate by design.
+
+        Canonicalized because this reaches `config_hash()`: two spellings of one predicate
+        must hash alike, or a replay rebuilding the config from a JSON list would compute a
+        key the recorded run never used. Deduplicated for the same reason.
+
+        `definitional` and `background` are refused rather than ignored. build-plan.md M3-T2
+        terminates them as `unverifiable-by-design` without spending depth budget, because
+        no paper-shaped key can verify them — a configuration asking the descent to expand
+        them states a contradiction, and silently honouring one half of it is how a run
+        comes to have been governed by a rule nobody can read off its manifest.
+        """
+        illegal = sorted(t.value for t in self.recurse_on if t in UNGROUNDABLE_TYPES)
+        if illegal:
+            raise ValueError(
+                f"recurse_on lists {illegal}, which terminate as unverifiable-by-design: "
+                "no external identifier can verify them, so a descent into them spends "
+                "budget it can never ground"
+            )
+        self.recurse_on = tuple(sorted(set(self.recurse_on), key=lambda t: t.value))
+        return self
 
 
 class VerifierConfig(BaseModel):

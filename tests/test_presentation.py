@@ -440,7 +440,12 @@ def test_a_premise_restating_the_claim_says_so_where_its_score_is_shown():
 def test_the_projection_carries_restatement_and_scorer_through_to_the_row():
     claim = Claim(text="Spinach is iron-rich.")
     echo = Premise(text="Spinach is iron-rich.", termination_reason=TerminationReason.GROUNDED)
-    other = Premise(text="Iron content is measured per 100 g.")
+    other = Premise(
+        text="Iron content is measured per 100 g.",
+        # Both terminals carry a reason: a graph recording one for some leaves and not
+        # others is refused, since M10-T1's mix has every leaf as its denominator.
+        termination_reason=TerminationReason.CITATION_SHAPED,
+    )
     graph = ClaimGraph(
         root_claim=claim,
         premises={echo.id: echo, other.id: other},

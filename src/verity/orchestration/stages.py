@@ -129,13 +129,15 @@ class DecomposeStage:
         )
 
     def run(self, ctx: RunContext, graph: ClaimGraph | None) -> StageResult:
-        steps = decompose_claim(
+        descent = decompose_claim(
             ctx.claim, adapter=ctx.adapter, config=ctx.config.decomposition, now=ctx.now
         )
         built = assemble_graph(
             ctx.claim,
-            steps,
+            descent.steps,
             config=ctx.config.decomposition,
+            terminations=descent.terminations,
+            caps=descent.caps,
             # `config_hash` is stamped here rather than at the end of the run because it is
             # graph *content*, not an execution stamp: the fingerprint that decides whether
             # a re-run changed anything compares it, and a value written after that
@@ -145,14 +147,16 @@ class DecomposeStage:
             metadata=GraphMetadata(created_at=ctx.now, config_hash=ctx.config_hash),
             now=ctx.now,
         )
-        last = steps[-1]
         return StageResult(
             graph=built,
             output_hash=graph_fingerprint(built),
-            llm_calls=len(steps),
-            llm_settings=last.llm_settings,
-            counts={"steps": len(steps), "premises": len(built.premises)},
-            notes=_decomposition_notes(built, ctx),
+            # Calls issued, not steps kept: a descent that refuses three branches and counts
+            # only the steps that survived under-reports itself, and cost is pre-registered.
+            llm_calls=descent.calls,
+            usage=descent.usage,
+            llm_settings=descent.steps[-1].llm_settings,
+            counts=descent.counts,
+            notes=[*descent.notes, *_decomposition_notes(built, ctx)],
         )
 
     def explain(self, error: Exception) -> str:
@@ -366,26 +370,62 @@ class GroundStage:
 def _decomposition_notes(graph: ClaimGraph, ctx: RunContext) -> list[str]:
     """What the decomposition says about itself — derived from the graph, never in flight.
 
-    Both facts are recoverable from the stored artifact, and they have to be read off it:
-    a run served from the stage cache never sees a `DecomposedStep`, and notes derived from
-    one would leave a cached run rendering with no caveats at all. A polished tree with its
-    warnings dropped is precisely the failure design.md §3.4 exists to prevent.
+    Every fact here is recoverable from the stored artifact, and they have to be read off
+    it: a run served from the stage cache never sees a `DecomposedStep`, and notes derived
+    from one would leave a cached run rendering with no caveats at all. A polished tree with
+    its warnings dropped is precisely the failure design.md §3.4 exists to prevent. What is
+    *not* recoverable from the graph — which refusal happened, what a call cost — travels in
+    the stage's `counts` instead of being narrated here.
     """
     notes: list[str] = []
+    config = ctx.config.decomposition
+
     if graph.restating_premise_ids():
         notes.append(
             "a premise restates the claim; that step entails trivially and its score "
             "measures nothing about the decomposition"
         )
-    config = ctx.config.decomposition
-    for step in graph.steps:
-        if not config.min_premises <= step.arity <= config.max_premises:
-            # Stored and reported, never corrected (build-plan.md M3-T1): out-of-range
-            # arity is a measurement about the decomposer.
-            notes.append(
-                f"step {step.id} has arity {step.arity}, outside the configured "
-                f"{config.min_premises}-{config.max_premises} range"
-            )
+
+    oversized = [
+        step
+        for step in graph.steps
+        if not config.min_premises <= step.arity <= config.max_premises
+    ]
+    if oversized:
+        # Stored and reported, never corrected (build-plan.md M3-T1): out-of-range arity is
+        # a measurement about the decomposer. Summarized rather than listed per step,
+        # because a descent can produce a dozen and a dozen near-identical lines is how a
+        # reader stops reading the notes.
+        arities = ", ".join(str(step.arity) for step in oversized[:5])
+        more = f" (+{len(oversized) - 5} more)" if len(oversized) > 5 else ""
+        notes.append(
+            f"{len(oversized)} of {len(graph.steps)} step(s) have arity outside the "
+            f"configured {config.min_premises}-{config.max_premises} range: {arities}{more}"
+        )
+
+    leaves = graph.leaves()
+    if not any(premise.termination_reason for premise in leaves):
+        return notes
+
+    mix: dict[str, int] = {}
+    for premise in leaves:
+        if premise.termination_reason is not None:
+            key = premise.termination_reason.value
+            mix[key] = mix.get(key, 0) + 1
+    expanded = sum(1 for step in graph.steps if step.conclusion_id != graph.root_claim.id)
+    notes.append(
+        f"the descent expanded {expanded} of {len(graph.premises)} premises to depth "
+        f"{graph.recorded_depth()} against a budget of {config.depth_budget}; terminals: "
+        + ", ".join(f"{count} {reason}" for reason, count in sorted(mix.items()))
+        + f". Recursion ran on premises typed {'/'.join(t.value for t in config.recurse_on)}"
+        + ", so a shallow tree means the decomposer typed its premises terminal, not that "
+        "the descent failed. A mix is only comparable against a run with the same predicate"
+    )
+    notes.append(
+        "`grounded` is structurally unreachable in this pipeline order — nothing is bound "
+        "while the descent runs — so an absent grounded bucket is a fact about the stage "
+        "order, not about the alethiology (M6-T3 moves it)"
+    )
     return notes
 
 

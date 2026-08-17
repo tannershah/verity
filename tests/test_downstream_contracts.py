@@ -53,6 +53,44 @@ def test_termination_mix_and_budget_exit_rate_are_computable(hand_built_graph: C
     assert recorded <= budget
 
 
+def test_the_mix_is_computable_over_a_graph_a_descent_actually_produced():
+    """The hand-built fixture proves the model can hold a mix; this proves the producer
+    fills one. M10-T1 reads both denominators off a stored graph, so every terminal a
+    descent leaves behind needs a reason *and* a type — and the budget-exit rate needs the
+    depth the budget was spent to, which is recorded rather than measured off the shape."""
+    from tests.test_descent import CONFIG, TREE, Scripted
+
+    from verity.decomposition import assemble_graph, decompose_claim
+    from verity.models.claim import Claim
+
+    claim = Claim(
+        text="A misplaced decimal point made spinach famous as an iron-rich food.",
+        source_text="Popular nutrition column.",
+        created_at=CHECKED_AT,
+    )
+    outcome = decompose_claim(
+        claim, adapter=Scripted(TREE), config=CONFIG, now=CHECKED_AT
+    )
+    graph = assemble_graph(
+        claim,
+        outcome.steps,
+        config=CONFIG,
+        terminations=outcome.terminations,
+        caps=outcome.caps,
+        now=CHECKED_AT,
+    )
+
+    leaves = graph.leaves()
+    mix = Counter(p.termination_reason for p in leaves)
+    assert None not in mix and set(mix) <= set(TerminationReason)
+    assert all(p.premise_type is not None for p in leaves)
+
+    unverifiable = TerminationReason.UNVERIFIABLE_BY_DESIGN
+    citable = sum(1 for p in leaves if p.termination_reason is not unverifiable)
+    assert 0 < citable < len(leaves), "both denominators must be non-degenerate here"
+    assert graph.recorded_depth() == graph.metadata.depth_budget
+
+
 def test_the_grounding_denominator_includes_unverifiable_terminals(
     hand_built_graph: ClaimGraph,
 ):

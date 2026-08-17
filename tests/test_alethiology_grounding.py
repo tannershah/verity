@@ -268,6 +268,30 @@ def test_a_fact_under_an_alias_of_the_key_is_reported_not_grounded(tmp_path):
             True,
             "termination-reason",
         ),
+        # The descent-imposed reasons carry no information about groundability: a branch
+        # that hit the depth budget, met a cap, or refused has said nothing about whether an
+        # identifier could verify it. Reading `not UNVERIFIABLE_BY_DESIGN` off one of these
+        # would count a definitional premise as citable and inflate the supplementary
+        # denominator build-plan.md §4 reports beside the headline rate.
+        (
+            PremiseType.DEFINITIONAL,
+            TerminationReason.BUDGET_EXIT,
+            False,
+            "premise-type",
+        ),
+        (
+            PremiseType.DEFINITIONAL,
+            TerminationReason.CAP_EXIT,
+            False,
+            "premise-type",
+        ),
+        (
+            PremiseType.EMPIRICAL_CITABLE,
+            TerminationReason.DECOMPOSITION_REFUSED,
+            True,
+            "premise-type",
+        ),
+        (None, TerminationReason.BUDGET_EXIT, True, "default"),
     ],
 )
 def test_applicability_partitions_the_supplementary_denominator(

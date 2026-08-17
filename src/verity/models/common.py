@@ -70,13 +70,65 @@ class PremiseType(StrEnum):
     BACKGROUND = "background"
 
 
+#: Premise types no external identifier can verify. Two tiers read this and they must read
+#: one definition: M3-T2 terminates them as `unverifiable-by-design` without spending depth
+#: budget (build-plan.md M3-T2), and M5's grounding partition excludes them from the
+#: supplementary citable-only denominator (build-plan.md §4). It lives here rather than in
+#: either consumer because a second copy is how the headline and supplementary
+#: grounding rates come to be computed over two different partitions.
+UNGROUNDABLE_TYPES: frozenset[PremiseType] = frozenset(
+    {PremiseType.DEFINITIONAL, PremiseType.BACKGROUND}
+)
+
+
 class TerminationReason(StrEnum):
-    """Why a branch stopped descending (M3-T2). Reported per run, never inferred."""
+    """Why a branch stopped descending (M3-T2). Reported per run, never inferred.
+
+    Six values in two kinds, and the split is load-bearing. The first three are properties
+    of the *premise*: it stands on a fact, a source could settle it, or nothing
+    paper-shaped could. The last three are properties of the *run*: the descent would have
+    expanded this premise and did not. Only the first kind says anything about whether an
+    external key could verify the premise, which is why `alethiology.grounding` reads a
+    recorded reason for the applicability partition and falls through to the premise type
+    for the rest.
+
+    `CAP_EXIT` and `DECOMPOSITION_REFUSED` extend build-plan.md M3-T2's original four.
+    Folding either into `BUDGET_EXIT` would corrupt the budget-exit rate evaluation.md §1
+    publishes — a run stopped by a node cap would read as one that ran out of depth —
+    and leaving them unrecorded would put a hole in a mix whose denominator is every leaf.
+
+    `DECOMPOSITION_REFUSED` means *no step exists here because the attempt was refused* —
+    by the descent before calling (a premise restating the root claim), or by the tier's
+    drop rule after (a cyclic premise, an empty proposal, a truncated response, a provider
+    refusal). The enum stays coarse deliberately; which of those happened is recorded in
+    the decompose stage's `counts`, so **M10-T1 reads the manifest alongside the graph**.
+    The one sub-reason recoverable from the graph alone is the restatement, through
+    `ClaimGraph.restating_premise_ids()`.
+
+    `GROUNDED` is unreachable while the pipeline runs `decompose → verify → bind → ground`:
+    nothing is bound during the descent, and the only key available then is the one the
+    decomposer proposed, which the binder already records as circular evidence. The run
+    says so rather than letting a zero read as "no branch grounded".
+    """
 
     GROUNDED = "grounded"
     CITATION_SHAPED = "citation-shaped"
     UNVERIFIABLE_BY_DESIGN = "unverifiable-by-design"
     BUDGET_EXIT = "budget-exit"
+    CAP_EXIT = "cap-exit"
+    DECOMPOSITION_REFUSED = "decomposition-refused"
+
+
+#: Reasons that describe the premise rather than the descent's own limits. Shipped as a
+#: set so no consumer re-derives the partition by listing names — `applicability` reads a
+#: reason only when it is one of these.
+EPISTEMIC_TERMINATIONS: frozenset[TerminationReason] = frozenset(
+    {
+        TerminationReason.GROUNDED,
+        TerminationReason.CITATION_SHAPED,
+        TerminationReason.UNVERIFIABLE_BY_DESIGN,
+    }
+)
 
 
 class GroundingLiveness(StrEnum):

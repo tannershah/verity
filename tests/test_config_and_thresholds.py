@@ -8,6 +8,7 @@ changing one requires a commit, not an environment variable.
 from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
 
 from verity import thresholds
 from verity.config import VerityConfig, load_config
@@ -58,3 +59,38 @@ def test_default_depth_budget_matches_the_evaluated_setting():
     assert VerityConfig().decomposition.depth_budget == 3
     assert VerityConfig().decomposition.min_premises == 3
     assert VerityConfig().decomposition.max_premises == 7
+
+
+def test_the_recursion_predicate_is_canonicalized_before_it_reaches_the_hash():
+    """It is part of the cache key and of every run id, so two spellings of one predicate
+    must hash alike — otherwise a replay rebuilding the config from the manifest's JSON
+    list computes a key the recorded run never used."""
+    from verity.config import DecompositionConfig
+    from verity.models.common import PremiseType
+
+    forward = DecompositionConfig(
+        recurse_on=(PremiseType.STATISTICAL, PremiseType.EMPIRICAL_CITABLE)
+    )
+    backward = DecompositionConfig(recurse_on=["empirical-citable", "statistical"])
+    doubled = DecompositionConfig(recurse_on=["statistical", "statistical"])
+
+    assert forward.recurse_on == backward.recurse_on
+    assert doubled.recurse_on == (PremiseType.STATISTICAL,)
+
+    config = VerityConfig()
+    config.decomposition = forward
+    assert VerityConfig(**config.snapshot()).config_hash() == config.config_hash()
+    assert config.config_hash() != VerityConfig().config_hash(), (
+        "the predicate decides the tree, so it has to reach the key that caches one"
+    )
+
+
+def test_a_predicate_that_lists_a_by_design_terminal_is_refused():
+    """`definitional` and `background` terminate as unverifiable-by-design because no
+    external identifier can verify them, so a descent into them spends budget it can never
+    ground. Honouring half of that contradiction silently is how a run comes to have been
+    governed by a rule nobody can read off its manifest."""
+    from verity.config import DecompositionConfig
+
+    with pytest.raises(ValidationError, match="unverifiable-by-design"):
+        DecompositionConfig(recurse_on=["statistical", "definitional"])

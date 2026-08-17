@@ -46,7 +46,7 @@ merged only in Phase 3. One tier per session; honor its exit criterion.
 | **1 — spine** | Sun early | Opus | ✅ **COMPLETE.** M1-T1 done: package layout, typed model, SQLite store, config/secrets, LLM adapter, run manifest, enforcement tests. See status below |
 | **2A — core loop** | Sun | Opus | ✅ **COMPLETE.** M3-T1, M4-T1, M9-T1 done. See status below |
 | **2B — grounding** | Sun, parallel | Opus | ✅ **COMPLETE.** M5-T1, M6-T1a done. See status below |
-| **3 — integrate** | Sun night | Opus | Merge lanes, M1-T2 (done — see status below), M3-T2 |
+| **3 — integrate** | Sun night | Opus | ✅ **COMPLETE.** Merged lanes, M1-T2, M3-T2. See status below |
 | **4 — demo-cuts** | Sun night / Mon early | Opus | (i) Retraction flag: RW-table + Crossref/OpenAlex check on the demo claim's DOIs — a labeled partial of M7-T1 (no full disagreement policy). (ii) Metrics logger over a 5–10 claim mini-set — a labeled partial of M10-T1 |
 | **5 — quality pass** | Mon 00:00–12:00 | **Fable** (fresh reset) | Rewrite the decomposition prompt, re-run demo claims until trees pass eyeball review against the three validity criteria. Optional Streamlit strip only if ahead. **Code freeze 12:00** |
 | **6 — repo presentation** | Mon 12:00–17:00 | Fable | Screenshots; recorded demo run; README quickstart so a reviewer can run the demo; GitHub cleanup. (Tanner handles application materials and submission in parallel — not agent work) |
@@ -105,7 +105,11 @@ are: the M4-T1 champion is near-binary and misses three of seven corruption fami
 lens and ships as the blind-spot case, and the demo graph's single grounding runs through a
 key the decomposer proposed rather than one retrieval bound.
 
-**Phase 3 status (M1-T2 complete; M3-T2 is what remains):** 550 tests green, ruff clean.
+**Phase 3 status (complete):** M1-T2 and M3-T2 both land; 593 tests green, ruff clean. The
+descent is breadth-first, bounded by depth and node budgets, and every leaf records why it
+stopped — see the rulings below. `recurse_on` moves `config_hash()`, so it belongs in the
+same commit as Phase 5's demo re-record and the `runs_dir` removal.
+
 `presentation/driver.py` is gone; `apply_groundings` moved to `verity.alethiology.apply` and
 the binder call into the bind stage. The pipeline is `python -m verity run | replay | render |
 runs`, and the render surface no longer composes anything.
@@ -134,33 +138,38 @@ stored, compared with `run_id` and `created_at` masked. And storage stays one ro
 `ClaimGraph.id` derives from the root claim alone — which is why the graph is written once at
 the end of a run rather than checkpointed per stage.
 
-### Reading in for M3-T2
+### M3-T2 — how the four open items were ruled
 
-`decomposition/descent.py` is the seam: `decompose_claim` does one step today and its
-docstring holds the open questions. The orchestrator, the stage, the cache key and the
-manifest are all unchanged by recursion. `StubAdapter` now scripts by callable over the
-request, which is the only form that works for a descent — every call carries the same
-`purpose`, so a single scripted object answers every node identically and the second level
-refuses as circular.
+- **A refused branch now has a reason.** The vocabulary gained `decomposition-refused`
+  (the descent refused before calling, or the drop rule refused after) and `cap-exit` (a
+  node cap stopped the branch). Folding either into `budget-exit` would corrupt the rate
+  evaluation.md §1 publishes. Which refusal happened is in the stage's `counts`, so
+  M10-T1 reads the manifest alongside the graph; the restatement partition is recoverable
+  from the graph alone.
+- **`GROUNDED` is never emitted, and the run says so.** The only key available during the
+  descent is the decomposer's own, which the binder already records as circular evidence.
+  The decompose stage notes the bucket as structurally unreachable, derived from the graph
+  so a cached run keeps the caveat.
+- **Cycles are refused inside the descent.** An edge `C → P` closes a cycle exactly when
+  `P` is upstream of `C`, so `DecompositionContext.upstream_statements` carries the
+  conclusion's graph-ancestors and `_materialize` checks it alongside the path. The root
+  claim is excluded, which is what keeps a root restatement kept-and-flagged rather than
+  refused. A refused branch terminates; the rest of the tree survives.
+- **The metrics split holds.** Artifact caps are on the graph, execution caps on the stage
+  record, and the termination mix is on the graph while the refusal breakdown is on the
+  manifest — so M10-T1 reads both, as it already had to.
 
-Four items M3-T2 owns, none visible from the orchestrator:
-
-- **A refused branch has no `TerminationReason`.** `CyclicPremiseError` refuses rather than
-  repairing, and the vocabulary has no value for it. Inventing one is a measurement decision.
-- **`TerminationReason.GROUNDED` is unreachable** under `decompose → verify → bind → ground`,
-  because nothing is bound while the descent runs. Either the descent gains a grounding check
-  (worth little before M6-T3's key attribution), or the run reports the value as structurally
-  unreachable rather than letting it read as "no branch grounded" in M10-T1's mix.
-- **Cross-branch cycles and double decomposition are caught at assembly**, by `ClaimGraph`,
-  after every call in the tree is paid for. The check belongs inside the descent. Until it is
-  there such a graph raises out of `decompose_claim` and the run reports it — cheaply on a
-  retry, because the cassette holds the calls. Per-claim isolation across a *set* is M1-T3's.
-- **M10-T1 computes metrics from a run's own artifacts, not by re-reading `claim_graphs`
-  later.** Storage is one row per claim, so a later run replaces it; where a metrics pass does
-  read a stored graph it checks the manifest's per-stage `output_hash` and refuses to
-  attribute numbers whose digests disagree. And after the cap-ownership rule the manifest
-  alone no longer describes a run's caps — artifact caps are on the graph, execution caps on
-  the stage record — so that pass reads both.
+**The finding that matters more than the mechanism.** Across the five committed pilot
+decompositions the premise-type mix is 23 empirical-citable, 5 definitional, 2 background,
+1 statistical. `citation-shaped` *is* the `empirical-citable` type, so under the default
+predicate the descent expands one premise in thirty-one and four of five pilot claims give
+a depth-1 tree. The mechanism is correct and rarely fires; the lever is Phase 5's typing
+guidance in `prompt.py`, not this loop. `DecompositionConfig.recurse_on` makes the
+predicate explicit and hashed, so a deeper labelled run is a config change rather than a
+code change — **and two predicates give two non-comparable mixes, never one metric at two
+settings.** If the demo tree is still flat at freeze, the labelled second run should use
+`depth_budget=2` (≈6 calls, ~$0.20, minutes) rather than 3 (≈28 serial calls at
+`effort=high`, plausibly 10–25 minutes).
 
 ### Reading in for Phase 2
 
@@ -255,7 +264,9 @@ or the command a reviewer is told to try has no artifact to try it on.
 **Removed with Phase 5's demo re-record:** `PathsConfig.runs_dir` and the auto-write to
 `data/runs/`. The store is authoritative and `--out` covers the file case; the removal
 moves `config_hash()` and therefore every run id and stage-cache key, so it belongs in the
-commit that re-records the demo graph anyway.
+commit that re-records the demo graph anyway. `DecompositionConfig.recurse_on` has already
+moved it, and `data/demo/spinach.json` carries both a hash no current config reproduces and
+premises with no termination reasons — the re-record is what makes it a descent artifact.
 
 **Open, and owned by M3:** across the eight decompositions run so far, two proposed a
 candidate key. The grounding beat depends on an identifier reaching the premise side,
